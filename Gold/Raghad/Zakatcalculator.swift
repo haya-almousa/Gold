@@ -137,11 +137,11 @@ struct ZakatCalculatorView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Zakat Calculator")
+                Text("حاسبة الزكاة")
                     .font(.system(size: 28, weight: .bold, design: .serif))
                     .foregroundColor(primaryText)
 
-                Text("Nisab threshold: 85g of gold")
+                Text("حد النصاب: 85 جرام ذهب")
                     .font(.system(size: 14, weight: .regular))
                     .foregroundColor(secondaryText)
             }
@@ -156,7 +156,7 @@ struct ZakatCalculatorView: View {
     // MARK: - Gold Input Card
     var goldInputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("YOUR TOTAL GOLD (GRAMS, 24K EQUIVALENT)")
+            Text("إجمالي الذهب لديك (جرام، ما يعادل 24 قيراط)")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(secondaryText)
                 .tracking(0.8)
@@ -218,16 +218,16 @@ struct ZakatCalculatorView: View {
                 Image(systemName: nisabMet ? "checkmark" : "xmark")
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(nisabStatusColor)
-                Text(nisabMet ? "Nisab Threshold Met" : "Nisab Threshold Not Met")
+                Text(nisabMet ? "تم بلوغ النصاب" : "لم يتم بلوغ النصاب")
                     .font(.system(size: 16, weight: .bold, design: .serif))
                     .foregroundColor(nisabStatusColor)
             }
 
             Text(nisabMet
-                 ? "Your \(formatGrams(goldGrams))g exceeds the 85g Nisab"
+                 ? "كمية \(formatGrams(goldGrams)) جم تتجاوز نصاب 85 جم"
                  : goldGrams == 0
-                    ? "Enter your gold amount to check"
-                    : "Your \(formatGrams(goldGrams))g is below the 85g Nisab")
+                    ? "أدخل كمية الذهب للتحقق"
+                    : "كمية \(formatGrams(goldGrams)) جم أقل من نصاب 85 جم")
                 .font(.system(size: 14))
                 .foregroundColor(secondaryText)
         }
@@ -242,27 +242,27 @@ struct ZakatCalculatorView: View {
     // MARK: - Zakat Due Card
     var zakatDueCard: some View {
         VStack(spacing: 10) {
-            Text("ZAKAT DUE (2.5%)")
+            Text("الزكاة المستحقة (2.5%)")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(secondaryText)
                 .tracking(0.8)
 
             if nisabMet {
-                Text("SAR \(formatCurrency(zakatDueSAR))")
+                Text("ريال \(formatCurrency(zakatDueSAR))")
                     .font(.system(size: 44, weight: .bold, design: .serif))
                     .foregroundColor(goldAccent)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
 
-                Text("of SAR \(formatCurrency(totalValueSAR)) total value")
+                Text("من إجمالي قيمة \(formatCurrency(totalValueSAR)) ريال")
                     .font(.system(size: 14))
                     .foregroundColor(secondaryText)
             } else {
-                Text("SAR —")
+                Text("ريال —")
                     .font(.system(size: 44, weight: .bold, design: .serif))
                     .foregroundColor(secondaryText.opacity(0.5))
 
-                Text(goldGrams == 0 ? "Enter gold amount above" : "Nisab threshold not met")
+                Text(goldGrams == 0 ? "أدخل كمية الذهب بالأعلى" : "لم يتم بلوغ النصاب")
                     .font(.system(size: 14))
                     .foregroundColor(secondaryText)
             }
@@ -290,14 +290,14 @@ struct ZakatCalculatorView: View {
     // MARK: - How It's Calculated Card
     var howItIsCalculatedCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("How it's calculated")
+            Text("طريقة الحساب")
                 .font(.system(size: 16, weight: .semibold, design: .serif))
                 .foregroundColor(goldAccent)
                 .padding(.bottom, 16)
 
             calculationRow(
-                label: "Nisab (gold)",
-                value: "85 grams of 24K"
+                label: "النصاب (الذهب)",
+                value: "85 جرام من 24 قيراط"
             )
 
             Divider()
@@ -305,8 +305,8 @@ struct ZakatCalculatorView: View {
                 .padding(.vertical, 14)
 
             calculationRow(
-                label: "Zakat rate",
-                value: "2.5% of total value"
+                label: "نسبة الزكاة",
+                value: "2.5% من إجمالي القيمة"
             )
 
             Divider()
@@ -314,8 +314,8 @@ struct ZakatCalculatorView: View {
                 .padding(.vertical, 14)
 
             calculationRow(
-                label: "Lunar year",
-                value: "Gold held ≥ 1 Hijri year"
+                label: "الحول",
+                value: "مرور سنة هجرية على الذهب"
             )
 
             if nisabMet && goldGrams > 0 {
@@ -324,8 +324,8 @@ struct ZakatCalculatorView: View {
                     .padding(.vertical, 14)
 
                 calculationRow(
-                    label: "Gold price used",
-                    value: "SAR \(formatCurrency(goldPricePerGram))/g"
+                    label: "سعر الذهب المستخدم",
+                    value: "ريال \(formatCurrency(goldPricePerGram))/جم"
                 )
             }
         }

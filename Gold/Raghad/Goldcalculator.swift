@@ -40,12 +40,12 @@ struct GoldCalculatorView: View {
 
     // MARK: - Karat Options
     enum KaratOption: String, CaseIterable, Identifiable {
-        case k24 = "24 Karat (999)"
-        case k22 = "22 Karat (916)"
-        case k21 = "21 Karat (875)"
-        case k18 = "18 Karat (750)"
-        case k14 = "14 Karat (585)"
-        case k10 = "10 Karat (417)"
+        case k24 = "24 قيراط (999)"
+        case k22 = "22 قيراط (916)"
+        case k21 = "21 قيراط (875)"
+        case k18 = "18 قيراط (750)"
+        case k14 = "14 قيراط (585)"
+        case k10 = "10 قيراط (417)"
 
         var id: String { rawValue }
 
@@ -150,7 +150,7 @@ struct GoldCalculatorView: View {
     // MARK: - Header
     var headerView: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Gold Calculator")
+            Text("حاسبة الذهب")
                 .font(.system(size: 30, weight: .bold, design: .serif))
                 .foregroundColor(primaryText)
 
@@ -171,7 +171,7 @@ struct GoldCalculatorView: View {
                         .foregroundColor(secondaryText)
                 case .loaded(let quote):
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Live price · 24K = SAR \(String(format: "%.2f", quote.price24KPerGramSAR))/g")
+                        Text("السعر المباشر · 24 قيراط = \(String(format: "%.2f", quote.price24KPerGramSAR)) ريال/جم")
                             .font(.system(size: 14))
                             .foregroundColor(secondaryText)
                         if quote.changePercent != 0 {
@@ -181,7 +181,7 @@ struct GoldCalculatorView: View {
                         }
                     }
                 case .failed:
-                    Text("Live price · 24K = SAR \(String(format: "%.2f", goldPrice24KSAR))/g (آخر سعر)")
+                    Text("السعر المباشر · 24 قيراط = \(String(format: "%.2f", goldPrice24KSAR)) ريال/جم (آخر سعر)")
                         .font(.system(size: 14))
                         .foregroundColor(secondaryText)
                 }
@@ -225,7 +225,7 @@ struct GoldCalculatorView: View {
 
             // Weight
             VStack(alignment: .leading, spacing: 8) {
-                Text("WEIGHT (GRAMS)")
+                Text("الوزن (جرام)")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryText)
                     .tracking(0.8)
@@ -264,7 +264,7 @@ struct GoldCalculatorView: View {
 
             // Karat Picker
             VStack(alignment: .leading, spacing: 8) {
-                Text("KARAT")
+                Text("القيراط")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryText)
                     .tracking(0.8)
@@ -292,7 +292,7 @@ struct GoldCalculatorView: View {
 
             // Manufacturing Fee
             VStack(alignment: .leading, spacing: 8) {
-                Text("MANUFACTURING FEE (%)")
+                Text("المصنعية (%)")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryText)
                     .tracking(0.8)
@@ -338,7 +338,7 @@ struct GoldCalculatorView: View {
     // MARK: - Estimated Value Card
     var estimatedValueCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("ESTIMATED VALUE")
+            Text("القيمة التقديرية")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(secondaryText)
                 .tracking(0.8)
@@ -352,13 +352,13 @@ struct GoldCalculatorView: View {
                 }
                 .frame(height: 52)
             } else {
-                Text("SAR \(fmtCurrency(totalValueSAR))")
+                Text("ريال \(fmtCurrency(totalValueSAR))")
                     .font(.system(size: 42, weight: .bold, design: .serif))
                     .foregroundColor(gold)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
 
-                Text("≈ $\(fmtCurrency(totalValueUSD)) USD")
+                Text("≈ $\(fmtCurrency(totalValueUSD)) دولار")
                     .font(.system(size: 14))
                     .foregroundColor(secondaryText)
             }
@@ -383,7 +383,7 @@ struct GoldCalculatorView: View {
     var breakdownCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Breakdown")
+                Text("التفاصيل")
                     .font(.system(size: 16, weight: .semibold, design: .serif))
                     .foregroundColor(gold)
                 Spacer()
@@ -395,19 +395,19 @@ struct GoldCalculatorView: View {
             }
             .padding(.bottom, 16)
 
-            breakdownRow("Gold value", value: "SAR \(fmtCurrency(goldValueSAR))")
+            breakdownRow("قيمة الذهب", value: "ريال \(fmtCurrency(goldValueSAR))")
             Divider().background(dividerColor).padding(.vertical, 14)
             breakdownRow(
-                "Manufacturing (\(manufacturingFee == floor(manufacturingFee) ? String(Int(manufacturingFee)) : String(format: "%.1f", manufacturingFee))%)",
-                value: "SAR \(fmtCurrency(manufacturingAmountSAR))"
+                "المصنعية (\(manufacturingFee == floor(manufacturingFee) ? String(Int(manufacturingFee)) : String(format: "%.1f", manufacturingFee))%)",
+                value: "ريال \(fmtCurrency(manufacturingAmountSAR))"
             )
             Divider().background(dividerColor).padding(.vertical, 14)
-            breakdownRow("Rate used", value: "$\(String(format: "%.2f", rateUsedUSD))/g")
+            breakdownRow("السعر المستخدم", value: "$\(String(format: "%.2f", rateUsedUSD))/جم")
 
             if let quote = currentQuote, quote.changePercent != 0 {
                 Divider().background(dividerColor).padding(.vertical, 14)
                 breakdownRow(
-                    "24hr change",
+                    "تغير 24 ساعة",
                     value: "\(quote.changePercent >= 0 ? "+" : "")\(String(format: "%.2f", quote.changePercent))%"
                 )
             }
