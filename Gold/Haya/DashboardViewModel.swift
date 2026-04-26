@@ -7,7 +7,7 @@
 
 import Combine
 import Foundation
-import SwiftUI
+internal import SwiftUI
 
 @MainActor
 final class DashboardViewModel: ObservableObject {
