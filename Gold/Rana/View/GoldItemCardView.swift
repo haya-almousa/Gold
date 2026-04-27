@@ -12,6 +12,7 @@ internal import SwiftUI
 struct GoldItemCardView: View {
     let piece:    GoldPiece
     let isBest:   Bool
+    let onEdit:   () -> Void
     let onDelete: () -> Void
     @Environment(\.theme) private var G
 
@@ -69,8 +70,15 @@ struct GoldItemCardView: View {
                             .font(.system(size: 11)).foregroundColor(G.textMuted)
                     }
                     Spacer()
-                    Button(action: onDelete) {
-                        Image(systemName: "trash").font(.system(size: 14)).foregroundColor(G.textFaint)
+                    HStack(spacing: 14) {
+                        Button(action: onEdit) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 14)).foregroundColor(G.goldLight)
+                        }
+                        Button(action: onDelete) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 14)).foregroundColor(G.textFaint)
+                        }
                     }
                 }
                 .padding(.top, 8)
@@ -132,4 +140,3 @@ extension Double {
             : String(format: "%.2g", self)
     }
 }
-

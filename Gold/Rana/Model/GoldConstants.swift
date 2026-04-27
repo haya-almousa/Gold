@@ -9,13 +9,12 @@ import Foundation
 import UIKit
 
 
-
 enum GoldConstants {
     static let price24KUSD: Double = 98.42
     static let sarRate:     Double = 3.75
     static let nisabGrams:  Double = 85.0
-    static let vatRate: Double = 0.15   // ← added, Saudi VAT, never user-editable
-
+    /// Saudi VAT — constant, never user-editable
+    static let vatRate:     Double = 0.15
 }
 
 enum Karat: Int, CaseIterable, Identifiable {
@@ -50,25 +49,25 @@ struct GoldPiece: Identifiable, Equatable {
         let preTax       = goldValueSAR + mfgChargeSAR
         return preTax + preTax * GoldConstants.vatRate
     }
-    
+
     /// Gold value only (before mfg + VAT)
     var goldOnlyValueSAR: Double {
         grams * karat.multiplier * GoldConstants.price24KUSD * GoldConstants.sarRate
     }
-    
+
     /// VAT amount in SAR
     var vatAmountSAR: Double {
         let goldValueSAR = goldOnlyValueSAR
         let preTax       = goldValueSAR + goldValueSAR * (mfgFeePercent / 100)
         return preTax * GoldConstants.vatRate
     }
-    
+
     /// SAR per gram (total including mfg + VAT)
     var perGramSAR: Double {
         guard grams > 0 else { return 0 }
         return totalValueSAR / grams
     }
-    
+
     static func == (lhs: GoldPiece, rhs: GoldPiece) -> Bool { lhs.id == rhs.id }
 }
 
@@ -78,4 +77,3 @@ extension Array where Element == GoldPiece {
     var totalGrams:    Double   { reduce(0) { $0 + $1.grams } }
     var meetsNisab:    Bool     { totalGrams >= GoldConstants.nisabGrams }
 }
-

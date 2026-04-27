@@ -8,7 +8,6 @@
 internal import SwiftUI
 
 
-
 struct ThemedTextField: View {
     private let placeholder:  String
     @Binding var text:         String

@@ -36,6 +36,7 @@ struct TojoryView: View {
                             GoldItemCardView(
                                 piece:    piece,
                                 isBest:   piece.id == vm.bestPiece?.id && vm.pieces.count > 1,
+                                onEdit:   { withAnimation { vm.beginEdit(piece: piece) } },
                                 onDelete: { vm.deletePiece(id: piece.id) }
                             )
                             .transition(.opacity.combined(with: .scale(scale: 0.96)))
