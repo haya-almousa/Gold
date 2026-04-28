@@ -5,7 +5,7 @@
 //  Created by Haya almousa on 22/04/2026.
 //
 
-import SwiftUI
+internal import SwiftUI
 
 struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel

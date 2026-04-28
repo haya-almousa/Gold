@@ -5,11 +5,11 @@
 //  Created by Haya almousa on 22/04/2026.
 //
 
-import SwiftUI
+internal import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        DashboardView()
+        TojoryView()
     }
 }
 
