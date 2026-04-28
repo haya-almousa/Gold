@@ -6,7 +6,7 @@
 //
 
 
-import SwiftUI
+internal import SwiftUI
 
 // MARK: - Zakat Calculator View
 struct ZakatCalculatorView: View {

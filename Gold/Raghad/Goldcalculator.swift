@@ -6,7 +6,7 @@
 //
 
 
-import SwiftUI
+internal import SwiftUI
 
 // MARK: - Price State
 enum PriceState {
