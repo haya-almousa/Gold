@@ -49,10 +49,10 @@ struct AddGoldFormView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [6]))
-                .foregroundColor(Color(.beige))
+                .foregroundColor(Color.darkerBeige)
                 .frame(height: 110)
                 .background(
-                    vm.selectedImage == nil ? Color(.beige) : Color.clear,
+                    vm.selectedImage == nil ? Color.darkerBeige : Color.clear,
                     in: RoundedRectangle(cornerRadius: 12)
                 )
             if let img = vm.selectedImage {
@@ -130,29 +130,26 @@ struct AddGoldFormView: View {
 
     @ViewBuilder
     private var vatBadge: some View {
-        VStack(alignment: .leading, spacing: 3) {
+        HStack(spacing: 5) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 10))
+                .foregroundColor(Color(.emarald))
             Text("VAT")
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundColor(Color(.navy))
-            HStack(spacing: 4) {
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 9))
-                    .foregroundColor(Color(.emarald))
-                Text("15%")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(.emarald))
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .background(Color(.beige))
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.beige).opacity(0.5), lineWidth: 1)
-            )
+            Text("15%")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(Color(.emarald))
         }
-        .frame(width: 80)
+        .frame(width: 100)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(Color.darkerBeige)
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.darkerBeige, lineWidth: 1)
+        )
     }
 
     // ── Sub-section 6: validation error ──────────────────────────────────────

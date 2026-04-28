@@ -17,38 +17,43 @@ struct GoldItemCardView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Thumbnail
+            // Thumbnail — stretches to the card's full height so the photo
+            // fills the rounded corner cleanly.
             ZStack(alignment: .topLeading) {
-                Group {
-                    if let img = piece.image {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 3).fill(Color.beige.opacity(0.55))
-                                .frame(width: 46, height: 26)
-                            RoundedRectangle(cornerRadius: 2).fill(Color.beige.opacity(0.4))
-                                .frame(width: 36, height: 16)
-                        }
+                if let img = piece.image {
+                    Image(uiImage: img)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 3).fill(Color.navy.opacity(0.55))
+                            .frame(width: 46, height: 26)
+                        RoundedRectangle(cornerRadius: 2).fill(Color.navy.opacity(0.4))
+                            .frame(width: 36, height: 16)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(width: 86, height: 86).clipped()
 
                 if isBest {
                     Text("BEST")
                         .font(.system(size: 9, weight: .bold)).foregroundColor(.white)
                         .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(Color.beige).cornerRadius(5).padding(5)
+                        .background(Color.navy).cornerRadius(5).padding(5)
                 }
             }
-            .frame(width: 86, height: 86).background(Color.beige)
+            .frame(width: 86)
+            .frame(maxHeight: .infinity)
+            .background(Color.navy)
+            .clipped()
 
             // Details
             VStack(alignment: .leading, spacing: 0) {
                 Text(piece.name)
-                    .font(.system(size: 14, weight: .semibold)).foregroundColor(Color.beige)
+                    .font(.system(size: 20, weight: .bold)).foregroundColor(Color.navy)
 
                 if !piece.store.isEmpty {
-                    Text(piece.store).font(.system(size: 11)).foregroundColor(Color.beige).padding(.top, 1)
+                    Text(piece.store).font(.system(size: 16, weight: .semibold)).foregroundColor(Color.navy).padding(.top, 1)
                 }
 
                 HStack(spacing: 6) {
@@ -64,7 +69,7 @@ struct GoldItemCardView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("SAR \(piece.totalValueSAR.formatted(.number.precision(.fractionLength(2))))")
-                            .font(.system(size: 15, weight: .bold)).foregroundColor(Color(.emarald))
+                            .font(.system(size: 15, weight: .bold)).foregroundColor(Color(.navy))
                         Text("SAR \(piece.perGramSAR.formatted(.number.precision(.fractionLength(2))))/g")
                             .font(.system(size: 11)).foregroundColor(Color(.emarald))
                     }
@@ -76,7 +81,7 @@ struct GoldItemCardView: View {
                         }
                         Button(action: onDelete) {
                             Image(systemName: "trash")
-                                .font(.system(size: 14)).foregroundColor(Color(.emarald))
+                                .font(.system(size: 14)).foregroundColor(Color(.red))
                         }
                     }
                 }

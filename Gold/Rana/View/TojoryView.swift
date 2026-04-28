@@ -65,6 +65,10 @@ struct TojoryView: View {
                     .frame(width: 42, height: 42)
                     .background(Color(.beige))
                     .cornerRadius(20)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color(.emarald), lineWidth: 1.5)
+                    )
             }
         }
        
