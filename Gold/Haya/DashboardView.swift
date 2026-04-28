@@ -12,12 +12,12 @@ struct DashboardView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: DashboardTab = .home
 
-    private var bg: Color { Color(hex: "F5EFE8") }
-    private var cardBg: Color { Color(hex: "FFFFFF") }
-    private var inputBg: Color { Color(hex: "F0E8DC") }
-    private var estimatedCardBg: Color { Color(hex: "FFF0DC") }
-    private var gold: Color { Color(hex: "C9A84C") }
-    private var dividerColor: Color { Color(hex: "E8DDD0") }
+    private var bg: Color { Color("F5EFE8") }
+    private var cardBg: Color { Color("FFFFFF") }
+    private var inputBg: Color { Color("F0E8DC") }
+    private var estimatedCardBg: Color { Color("FFF0DC") }
+    private var gold: Color { Color("C9A84C") }
+    private var dividerColor: Color { Color("E8DDD0") }
 
     @MainActor
     init(viewModel: DashboardViewModel? = nil) {
@@ -484,14 +484,14 @@ private enum DashboardTab {
 }
 
 extension Color {
-    static let ink = Color(hex: "2C1F0E")
-    static let secondaryInk = Color(hex: "9A8A72")
-    static let goldText = Color(hex: "C9A84C")
-    static let goldHighlight = Color(hex: "C9A84C")
-    static let goldGlow = Color(hex: "FFF0DC")
-    static let goldStroke = Color(hex: "E8DDD0")
-    static let goldBar = Color(hex: "F0E8DC")
-    static let profit = Color(hex: "4CAF50")
+    static let ink = Color("2C1F0E")
+    static let secondaryInk = Color("9A8A72")
+    static let goldText = Color("C9A84C")
+    static let goldHighlight = Color("C9A84C")
+    static let goldGlow = Color("FFF0DC")
+    static let goldStroke = Color("E8DDD0")
+    static let goldBar = Color("F0E8DC")
+    static let profit = Color("4CAF50")
 }
 
 #Preview {

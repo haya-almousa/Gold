@@ -37,51 +37,51 @@ struct ZakatCalculatorView: View {
 
     // MARK: - Colors
     var backgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "141210") : Color(hex: "F5EFE8")
+        colorScheme == .dark ? Color("141210") : Color("F5EFE8")
     }
 
     var cardBackgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "1E1A15") : Color(hex: "FFFFFF")
+        colorScheme == .dark ? Color("1E1A15") : Color("FFFFFF")
     }
 
     var nisabCardColor: Color {
         colorScheme == .dark
-            ? (nisabMet ? Color(hex: "1A2E1A") : Color(hex: "2E1A1A"))
-            : (nisabMet ? Color(hex: "FFF0E8") : Color(hex: "FFE8E8"))
+        ? (nisabMet ? Color("1A2E1A") : Color("2E1A1A"))
+        : (nisabMet ? Color("FFF0E8") : Color("FFE8E8"))
     }
 
     var zakatCardColor: Color {
-        colorScheme == .dark ? Color(hex: "2A2010") : Color(hex: "FFF8EE")
+        colorScheme == .dark ? Color("2A2010") : Color("FFF8EE")
     }
 
     var goldAccent: Color {
-        Color(hex: "C9A84C")
+        Color("C9A84C")
     }
 
     var goldAccentLight: Color {
-        Color(hex: "E8C96A")
+        Color("E8C96A")
     }
 
     var primaryText: Color {
-        colorScheme == .dark ? Color(hex: "F0E8D8") : Color(hex: "2C1F0E")
+        colorScheme == .dark ? Color("F0E8D8") : Color("2C1F0E")
     }
 
     var secondaryText: Color {
-        colorScheme == .dark ? Color(hex: "8A7A62") : Color(hex: "9A8A72")
+        colorScheme == .dark ? Color("8A7A62") : Color("9A8A72")
     }
 
     var inputBackground: Color {
-        colorScheme == .dark ? Color(hex: "2A2418") : Color(hex: "F0E8DC")
+        colorScheme == .dark ? Color("2A2418") : Color("F0E8DC")
     }
 
     var nisabStatusColor: Color {
         nisabMet
-            ? (colorScheme == .dark ? Color(hex: "5DB85D") : Color(hex: "C0522A"))
-            : Color(hex: "D94F4F")
+        ? (colorScheme == .dark ? Color("5DB85D") : Color("C0522A"))
+        : Color("D94F4F")
     }
 
     var dividerColor: Color {
-        colorScheme == .dark ? Color(hex: "2E2820") : Color(hex: "E8DDD0")
+        colorScheme == .dark ? Color("2E2820") : Color("E8DDD0")
     }
 
     // MARK: - Body
@@ -353,21 +353,6 @@ struct ZakatCalculatorView: View {
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
-    }
-}
-
-// MARK: - Color Hex Extension
-extension Color {
-    init(hex: String) {
-        let scanner = Scanner(string: hex)
-        var rgbValue: UInt64 = 0
-        scanner.scanHexInt64(&rgbValue)
-
-        let r = Double((rgbValue & 0xFF0000) >> 16) / 255.0
-        let g = Double((rgbValue & 0x00FF00) >> 8) / 255.0
-        let b = Double(rgbValue & 0x0000FF) / 255.0
-
-        self.init(red: r, green: g, blue: b)
     }
 }
 

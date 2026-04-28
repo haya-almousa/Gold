@@ -7,12 +7,9 @@
 
 internal import SwiftUI
 
-struct ContentView: View {
+struct ذ: View {
     var body: some View {
-        TojoryView()
+        DashboardView()
     }
 }
 
-#Preview {
-    ContentView()
-}

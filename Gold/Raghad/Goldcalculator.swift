@@ -98,15 +98,15 @@ struct GoldCalculatorView: View {
     }
 
     // MARK: - Colors
-    var bg: Color { colorScheme == .dark ? Color(hex: "141210") : Color(hex: "F5EFE8") }
-    var cardBg: Color { colorScheme == .dark ? Color(hex: "1E1A15") : Color(hex: "FFFFFF") }
-    var inputBg: Color { colorScheme == .dark ? Color(hex: "2A2418") : Color(hex: "F0E8DC") }
-    var estimatedCardBg: Color { colorScheme == .dark ? Color(hex: "2A2010") : Color(hex: "FFF0DC") }
-    var gold: Color { Color(hex: "C9A84C") }
-    var primaryText: Color { colorScheme == .dark ? Color(hex: "F0E8D8") : Color(hex: "2C1F0E") }
-    var secondaryText: Color { colorScheme == .dark ? Color(hex: "8A7A62") : Color(hex: "9A8A72") }
-    var dividerColor: Color { colorScheme == .dark ? Color(hex: "2E2820") : Color(hex: "E8DDD0") }
-    var errorColor: Color { Color(hex: "D94F4F") }
+    var bg: Color { colorScheme == .dark ? Color("141210") : Color("F5EFE8") }
+    var cardBg: Color { colorScheme == .dark ? Color("1E1A15") : Color("FFFFFF") }
+    var inputBg: Color { colorScheme == .dark ? Color("2A2418") : Color("F0E8DC") }
+    var estimatedCardBg: Color { colorScheme == .dark ? Color("2A2010") : Color("FFF0DC") }
+    var gold: Color { Color("C9A84C") }
+    var primaryText: Color { colorScheme == .dark ? Color("F0E8D8") : Color("2C1F0E") }
+    var secondaryText: Color { colorScheme == .dark ? Color("8A7A62") : Color("9A8A72") }
+    var dividerColor: Color { colorScheme == .dark ? Color("2E2820") : Color("E8DDD0") }
+    var errorColor: Color { Color("D94F4F") }
 
     // MARK: - Body
     var body: some View {
@@ -160,7 +160,7 @@ struct GoldCalculatorView: View {
                 case .loading:
                     ProgressView().scaleEffect(0.65).frame(width: 10, height: 10)
                 case .loaded:
-                    Circle().fill(Color(hex: "4CAF50")).frame(width: 7, height: 7)
+                    Circle().fill(Color("4CAF50")).frame(width: 7, height: 7)
                 case .failed:
                     Circle().fill(errorColor).frame(width: 7, height: 7)
                 }
@@ -178,7 +178,7 @@ struct GoldCalculatorView: View {
                         if quote.changePercent != 0 {
                             Text("\(quote.changePercent >= 0 ? "▲" : "▼") \(String(format: "%.2f", abs(quote.changePercent)))%")
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(quote.changePercent >= 0 ? Color(hex: "4CAF50") : errorColor)
+                                .foregroundColor(quote.changePercent >= 0 ? Color("4CAF50") : errorColor)
                         }
                     }
                 case .failed:
