@@ -12,54 +12,64 @@ struct DashboardView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab: DashboardTab = .home
 
+    private var bg: Color { Color(hex: "F5EFE8") }
+    private var cardBg: Color { Color(hex: "FFFFFF") }
+    private var inputBg: Color { Color(hex: "F0E8DC") }
+    private var estimatedCardBg: Color { Color(hex: "FFF0DC") }
+    private var gold: Color { Color(hex: "C9A84C") }
+    private var dividerColor: Color { Color(hex: "E8DDD0") }
+
     @MainActor
     init(viewModel: DashboardViewModel? = nil) {
         _viewModel = StateObject(wrappedValue: viewModel ?? DashboardViewModel())
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            let metrics = DashboardMetrics(screenSize: geometry.size)
+        NavigationStack {
+            GeometryReader { geometry in
+                let metrics = DashboardMetrics(screenSize: geometry.size)
 
-            ZStack {
-                dashboardBackground
+                ZStack {
+                    dashboardBackground
 
-                VStack(spacing: 0) {
-                    topBar(metrics: metrics)
+                    VStack(spacing: 0) {
+                        topBar(metrics: metrics)
 
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
-                            heroSection(metrics: metrics)
-                            marketTicker(metrics: metrics)
-                            quickActionsSection(metrics: metrics)
+                        ScrollView(showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: metrics.sectionSpacing) {
+                                heroSection(metrics: metrics)
+                                marketTicker(metrics: metrics)
+                                quickActionsSection(metrics: metrics)
 
-                            if let errorMessage = viewModel.errorMessage {
-                                Text(errorMessage)
-                                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.orange)
-                                    .padding(.horizontal, 4)
+                                if let errorMessage = viewModel.errorMessage {
+                                    Text(errorMessage)
+                                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                                        .foregroundStyle(.orange)
+                                        .padding(.horizontal, 4)
+                                }
                             }
+                            .padding(.horizontal, metrics.horizontalPadding)
+                            .padding(.top, metrics.contentTopPadding)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.horizontal, metrics.horizontalPadding)
-                        .padding(.top, metrics.contentTopPadding)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .refreshable {
-                        await viewModel.refreshManually()
+                        .refreshable {
+                            await viewModel.refreshManually()
+                        }
+
+                        bottomNavigation(metrics: metrics)
                     }
 
-                    bottomNavigation(metrics: metrics)
+                    VStack(spacing: metrics.iconStackSpacing) {
+                        actionIcon(symbol: "bookmark", metrics: metrics)
+                        actionIcon(symbol: "arrow.up.left.and.arrow.down.right", metrics: metrics)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .padding(.top, metrics.floatingIconsTopPadding)
+                    .padding(.trailing, metrics.floatingIconsTrailingPadding)
                 }
-
-                VStack(spacing: metrics.iconStackSpacing) {
-                    actionIcon(symbol: "bookmark", metrics: metrics)
-                    actionIcon(symbol: "arrow.up.left.and.arrow.down.right", metrics: metrics)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                .padding(.top, metrics.floatingIconsTopPadding)
-                .padding(.trailing, metrics.floatingIconsTrailingPadding)
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
         .preferredColorScheme(.light)
         .task {
             viewModel.start()
@@ -80,30 +90,7 @@ struct DashboardView: View {
     }
 
     private var dashboardBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.99, green: 0.97, blue: 0.92),
-                    Color(red: 0.96, green: 0.92, blue: 0.82),
-                    Color(red: 0.98, green: 0.96, blue: 0.90)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Circle()
-                .fill(Color.white.opacity(0.8))
-                .frame(width: 300, height: 300)
-                .blur(radius: 26)
-                .offset(x: 120, y: -260)
-
-            Circle()
-                .fill(Color.goldGlow.opacity(0.26))
-                .frame(width: 250, height: 250)
-                .blur(radius: 40)
-                .offset(x: 115, y: -130)
-        }
+        bg.ignoresSafeArea()
     }
 
     private func topBar(metrics: DashboardMetrics) -> some View {
@@ -183,21 +170,11 @@ struct DashboardView: View {
             .padding(metrics.heroCardPadding)
             .background(
                 RoundedRectangle(cornerRadius: metrics.heroCornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.9),
-                                Color(red: 0.97, green: 0.94, blue: 0.86)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(cardBg)
                     .overlay(
                         RoundedRectangle(cornerRadius: metrics.heroCornerRadius, style: .continuous)
-                            .stroke(Color.goldStroke.opacity(0.5), lineWidth: 1.2)
+                            .stroke(dividerColor, lineWidth: 1)
                     )
-                    .shadow(color: Color.black.opacity(0.06), radius: 14, y: 8)
             )
         }
     }
@@ -230,10 +207,10 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.goldBar.opacity(0.24))
+                .fill(inputBg)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(Color.goldStroke.opacity(0.45), lineWidth: 1)
+                        .stroke(dividerColor, lineWidth: 1)
                 )
         )
     }
@@ -245,19 +222,29 @@ struct DashboardView: View {
                 .foregroundStyle(Color.secondaryInk.opacity(0.8))
 
             HStack(spacing: metrics.cardSpacing) {
-                quickActionCard(
-                    title: "حاسبة الذهب",
-                    subtitle: "احسب القيمة",
-                    symbol: "building.columns",
-                    metrics: metrics
-                )
+                NavigationLink {
+                    GoldCalculatorView()
+                } label: {
+                    quickActionCard(
+                        title: "حاسبة الذهب",
+                        subtitle: "احسب القيمة",
+                        symbol: "building.columns",
+                        metrics: metrics
+                    )
+                }
+                .buttonStyle(.plain)
 
-                quickActionCard(
-                    title: "الزكاة",
-                    subtitle: "تحقق من النصاب",
-                    symbol: "star",
-                    metrics: metrics
-                )
+                NavigationLink {
+                    ZakatCalculatorView()
+                } label: {
+                    quickActionCard(
+                        title: "الزكاة",
+                        subtitle: "تحقق من النصاب",
+                        symbol: "star",
+                        metrics: metrics
+                    )
+                }
+                .buttonStyle(.plain)
             }
 
             portfolioCard(metrics: metrics)
@@ -341,10 +328,10 @@ struct DashboardView: View {
                 topLeadingRadius: metrics.navCornerRadius,
                 topTrailingRadius: metrics.navCornerRadius
             )
-            .fill(Color(red: 0.97, green: 0.95, blue: 0.88))
+            .fill(cardBg)
             .overlay(alignment: .top) {
                 Rectangle()
-                    .fill(Color.goldStroke.opacity(0.3))
+                    .fill(dividerColor)
                     .frame(height: 1)
             }
             .ignoresSafeArea(edges: .bottom)
@@ -359,15 +346,8 @@ struct DashboardView: View {
                 ZStack {
                     if selectedTab == tab {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.goldHighlight, Color.goldText],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(gold)
                             .frame(width: metrics.selectedTabSize, height: metrics.selectedTabSize)
-                            .shadow(color: Color.goldText.opacity(0.25), radius: 12, y: 8)
                     }
 
                     Image(systemName: symbol)
@@ -387,11 +367,11 @@ struct DashboardView: View {
     private func actionIcon(symbol: String, metrics: DashboardMetrics) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.goldBar.opacity(0.24))
+                .fill(inputBg)
                 .frame(width: metrics.actionIconSize, height: metrics.actionIconSize)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.goldStroke.opacity(0.5), lineWidth: 1)
+                        .stroke(dividerColor, lineWidth: 1)
                 )
 
             Image(systemName: symbol)
@@ -416,27 +396,17 @@ struct DashboardView: View {
         .padding(.vertical, metrics.karatVerticalPadding)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(red: 0.96, green: 0.94, blue: 0.88))
+                .fill(inputBg)
         )
     }
 
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.white.opacity(0.88),
-                        Color(red: 0.97, green: 0.94, blue: 0.87)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .fill(cardBg)
             .overlay(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(Color.goldStroke.opacity(0.38), lineWidth: 1)
+                    .stroke(dividerColor, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.04), radius: 12, y: 8)
     }
 
     private var trendIcon: String {
@@ -514,14 +484,14 @@ private enum DashboardTab {
 }
 
 extension Color {
-    static let ink = Color(red: 0.19, green: 0.16, blue: 0.10)
-    static let secondaryInk = Color(red: 0.45, green: 0.39, blue: 0.28)
-    static let goldText = Color(red: 0.68, green: 0.53, blue: 0.18)
-    static let goldHighlight = Color(red: 0.89, green: 0.76, blue: 0.39)
-    static let goldGlow = Color(red: 0.92, green: 0.80, blue: 0.48)
-    static let goldStroke = Color(red: 0.75, green: 0.63, blue: 0.34)
-    static let goldBar = Color(red: 0.86, green: 0.76, blue: 0.50)
-    static let profit = Color(red: 0.17, green: 0.60, blue: 0.40)
+    static let ink = Color(hex: "2C1F0E")
+    static let secondaryInk = Color(hex: "9A8A72")
+    static let goldText = Color(hex: "C9A84C")
+    static let goldHighlight = Color(hex: "C9A84C")
+    static let goldGlow = Color(hex: "FFF0DC")
+    static let goldStroke = Color(hex: "E8DDD0")
+    static let goldBar = Color(hex: "F0E8DC")
+    static let profit = Color(hex: "4CAF50")
 }
 
 #Preview {
