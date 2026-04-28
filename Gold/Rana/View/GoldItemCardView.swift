@@ -25,9 +25,9 @@ struct GoldItemCardView: View {
                         Image(uiImage: img).resizable().scaledToFill()
                     } else {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 3).fill(G.gold.opacity(0.55))
+                            RoundedRectangle(cornerRadius: 3).fill(Color.beige.opacity(0.55))
                                 .frame(width: 46, height: 26)
-                            RoundedRectangle(cornerRadius: 2).fill(G.goldLight.opacity(0.4))
+                            RoundedRectangle(cornerRadius: 2).fill(Color.beige.opacity(0.4))
                                 .frame(width: 36, height: 16)
                         }
                     }
@@ -38,24 +38,24 @@ struct GoldItemCardView: View {
                     Text("BEST")
                         .font(.system(size: 9, weight: .bold)).foregroundColor(.white)
                         .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(G.warn).cornerRadius(5).padding(5)
+                        .background(Color.beige).cornerRadius(5).padding(5)
                 }
             }
-            .frame(width: 86, height: 86).background(G.surface2)
+            .frame(width: 86, height: 86).background(Color.beige)
 
             // Details
             VStack(alignment: .leading, spacing: 0) {
                 Text(piece.name)
-                    .font(.system(size: 14, weight: .semibold)).foregroundColor(G.text)
+                    .font(.system(size: 14, weight: .semibold)).foregroundColor(Color.beige)
 
                 if !piece.store.isEmpty {
-                    Text(piece.store).font(.system(size: 11)).foregroundColor(G.textMuted).padding(.top, 1)
+                    Text(piece.store).font(.system(size: 11)).foregroundColor(Color.beige).padding(.top, 1)
                 }
 
                 HStack(spacing: 6) {
                     ForEach(["\(piece.grams.clean)g", "\(piece.karat.rawValue)K",
                              "\(piece.mfgFeePercent.clean)%"], id: \.self) { tag in
-                        Text(tag).font(.system(size: 11)).foregroundColor(G.textMuted)
+                        Text(tag).font(.system(size: 11)).foregroundColor(Color(.navy))
                             .padding(.horizontal, 7).padding(.vertical, 2)
                             .background(G.surface3).cornerRadius(5)
                     }
@@ -97,7 +97,7 @@ struct BestValueBannerView: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(G.warn).font(.system(size: 17))
+                .foregroundColor(Color(.beige)).font(.system(size: 17))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Best Value: \(piece.name)")
                     .font(.system(size: 13, weight: .semibold)).foregroundColor(G.warn)
@@ -117,16 +117,16 @@ struct TojoryEmptyStateView: View {
     var body: some View {
         VStack(spacing: 18) {
             ZStack {
-                Circle().fill(G.gold.opacity(0.08)).frame(width: 76, height: 76)
-                Circle().strokeBorder(G.border, lineWidth: 1).frame(width: 76, height: 76)
+                Circle().fill(Color(.beige).opacity(0.1)).frame(width: 76, height: 76)
+                Circle().strokeBorder(Color(.emarald), lineWidth: 0.5).frame(width: 76, height: 76)
                 Image(systemName: "lock.square.stack.fill")
-                    .font(.system(size: 32)).foregroundColor(G.gold)
+                    .font(.system(size: 32)).foregroundColor(Color(.beige))
             }
             VStack(spacing: 7) {
                 Text("Your safe is empty")
-                    .font(.custom("Georgia", size: 20).weight(.semibold)).foregroundColor(G.text)
+                    .font(.custom("Georgia", size: 20).weight(.bold)).foregroundColor(Color(.beige))
                 Text("Tap + to add your first gold piece")
-                    .font(.system(size: 14)).foregroundColor(G.textMuted)
+                    .font(.custom("Georgia", size: 14).weight(.semibold)).foregroundColor(Color(.emarald))
             }
         }
         .frame(maxWidth: .infinity).padding(.vertical, 56)

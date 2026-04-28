@@ -15,7 +15,7 @@ struct TojoryView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            G.bg.ignoresSafeArea()
+            Color(.navy).ignoresSafeArea()
             VStack(spacing: 0) {
                 header
                     .padding(.horizontal, 24).padding(.top, 52).padding(.bottom, 18)
@@ -51,12 +51,13 @@ struct TojoryView: View {
     }
 
     private var header: some View {
+        
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Tojory")
-                    .font(.custom("Georgia", size: 28).weight(.semibold)).foregroundColor(G.text)
+                Text("Wishlist")
+                    .font(.custom("Georgia", size: 28).weight(.bold)).foregroundColor(Color(.beige))
                 Text("Compare gold pieces")
-                    .font(.system(size: 13)).foregroundColor(G.textMuted)
+                    .font(.custom("Georgia", size: 13).weight(.semibold)).foregroundColor(Color(.emarald))
             }
             Spacer()
             Button(action: { withAnimation { vm.toggleForm() } }) {
@@ -69,6 +70,7 @@ struct TojoryView: View {
                     .cornerRadius(13)
             }
         }
+       
     }
 }
 
@@ -76,5 +78,6 @@ struct TojoryView: View {
 
 #Preview {
     TojoryView()
-        .environment(\.theme, AppTheme.dark)
+        .environment(\.theme, AppTheme.light)
 }
+

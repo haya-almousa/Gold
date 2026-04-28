@@ -62,9 +62,9 @@ struct AddGoldFormView: View {
             } else {
                 VStack(spacing: 7) {
                     Image(systemName: "camera")
-                        .font(.system(size: 26)).foregroundColor(G.textMuted)
+                        .font(.system(size: 26)).foregroundColor(Color.navy)
                     Text("Tap to add photo")
-                        .font(.system(size: 12)).foregroundColor(G.textMuted)
+                        .font(.system(size: 12)).foregroundColor(Color.navy)
                 }
             }
         }
@@ -73,6 +73,7 @@ struct AddGoldFormView: View {
     // ── Sub-section 3: name + store ───────────────────────────────────────────
     @ViewBuilder
     private var nameAndStoreFields: some View {
+        var textColor: Color = Color(.navy)
         ThemedTextField(
             "Piece name (e.g. Gold Bracelet)",
             text: Binding(
@@ -87,6 +88,7 @@ struct AddGoldFormView: View {
                 set: { vm.updateField(\.store, value: $0) }
             )
         )
+        .foregroundColor(Color(.navy))
     }
 
     // ── Sub-section 4: weight + karat ─────────────────────────────────────────
@@ -194,10 +196,10 @@ struct AddGoldFormView: View {
                 }
             }
             .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(G.bg)
+            .foregroundColor(Color.navy)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
-            .background(G.buttonGradient)
+            .background(Color.emarald)
             .cornerRadius(10)
         }
         if vm.isEditing {
@@ -210,4 +212,3 @@ struct AddGoldFormView: View {
         }
     }
 }
-
