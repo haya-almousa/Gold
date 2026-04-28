@@ -5,6 +5,7 @@
 //  Created by Raghad Alamoudi on 09/11/1447 AH.
 //
 
+
 import SwiftUI
 
 // MARK: - Zakat Calculator View
@@ -126,16 +127,7 @@ struct ZakatCalculatorView: View {
     var headerView: some View {
         HStack(alignment: .top) {
             Button(action: {}) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(colorScheme == .dark ? Color(hex: "2A2418") : Color(hex: "EDE3D8"))
-                        .frame(width: 44, height: 44)
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(goldAccent)
-                }
             }
-
             VStack(alignment: .leading, spacing: 4) {
                 Text("حاسبة الزكاة")
                     .font(.system(size: 28, weight: .bold, design: .serif))
