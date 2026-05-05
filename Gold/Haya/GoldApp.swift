@@ -6,27 +6,18 @@
 //
 
 internal import SwiftUI
-import SwiftData
+
 
 @main
 struct GoldApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    @StateObject private var auth = AuthenticationManager.shared
 
     var body: some Scene {
         WindowGroup {
-            DashboardView()
+            if auth.isSignedIn {
+                DashboardView()
+                    .environmentObject(auth)
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }
