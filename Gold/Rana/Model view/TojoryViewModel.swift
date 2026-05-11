@@ -11,6 +11,60 @@ import UIKit
 internal import SwiftUI
 import PhotosUI
 
+extension Notification.Name {
+    static let tojoryPiecesDidChange = Notification.Name("tojoryPiecesDidChange")
+}
+
+private struct StoredGoldPiece: Codable {
+    let id: UUID
+    let name: String
+    let store: String
+    let grams: Double
+    let karatRawValue: Int
+    let mfgFeePercent: Double
+}
+
+private enum TojoryStorage {
+    static let piecesKey = "tojory.pieces.v1"
+
+    static func save(_ pieces: [GoldPiece], defaults: UserDefaults = .standard) {
+        let stored = pieces.map {
+            StoredGoldPiece(
+                id: $0.id,
+                name: $0.name,
+                store: $0.store,
+                grams: $0.grams,
+                karatRawValue: $0.karat.rawValue,
+                mfgFeePercent: $0.mfgFeePercent
+            )
+        }
+        if let data = try? JSONEncoder().encode(stored) {
+            defaults.set(data, forKey: piecesKey)
+        }
+    }
+
+    static func load(defaults: UserDefaults = .standard) -> [GoldPiece] {
+        guard
+            let data = defaults.data(forKey: piecesKey),
+            let stored = try? JSONDecoder().decode([StoredGoldPiece].self, from: data)
+        else {
+            return []
+        }
+
+        return stored.compactMap { item in
+            guard let karat = Karat(rawValue: item.karatRawValue) else { return nil }
+            return GoldPiece(
+                id: item.id,
+                name: item.name,
+                store: item.store,
+                grams: item.grams,
+                karat: karat,
+                mfgFeePercent: item.mfgFeePercent,
+                image: nil
+            )
+        }
+    }
+}
 
 @MainActor
 final class TojoryViewModel: ObservableObject {
@@ -27,6 +81,10 @@ final class TojoryViewModel: ObservableObject {
 
     /// True when the form is being used to edit (vs. add new)
     var isEditing: Bool { editingID != nil }
+
+    init() {
+        pieces = TojoryStorage.load()
+    }
 
     // Derived
     var bestPiece:     GoldPiece? { pieces.bestValue }
@@ -71,6 +129,7 @@ final class TojoryViewModel: ObservableObject {
         do {
             let piece = try form.validated(image: selectedImage)
             pieces.append(piece)
+            persistPieces()
             resetForm()
             showForm = false
         } catch {
@@ -96,6 +155,7 @@ final class TojoryViewModel: ObservableObject {
             if let idx = pieces.firstIndex(where: { $0.id == id }) {
                 pieces[idx] = updated
             }
+            persistPieces()
             resetForm()
             showForm = false
         } catch {
@@ -105,12 +165,21 @@ final class TojoryViewModel: ObservableObject {
 
     func deletePiece(id: UUID) {
         pieces.removeAll { $0.id == id }
+        persistPieces()
         if editingID == id { resetForm(); showForm = false }
     }
-    func deletePieces(at offsets: IndexSet) { pieces.remove(atOffsets: offsets) }
+    func deletePieces(at offsets: IndexSet) {
+        pieces.remove(atOffsets: offsets)
+        persistPieces()
+    }
 
     private func resetForm() {
         form = .empty(); selectedImage = nil; pickerItem = nil
         formError = nil; editingID = nil
+    }
+
+    private func persistPieces() {
+        TojoryStorage.save(pieces)
+        NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
     }
 }
