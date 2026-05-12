@@ -1,5 +1,5 @@
 //
-//  StoredGoldPiece.swift
+//  ComparisonList.swift
 //  Gold
 //
 //  Created by Rana Alqubaly on 25/11/1447 AH.
