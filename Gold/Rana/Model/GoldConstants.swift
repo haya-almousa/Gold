@@ -2,26 +2,25 @@
 //  GoldConstants.swift
 //  Gold
 //
-//  Created by Rana Alqubaly on 09/11/1447 AH.
+//  Created by Rana Alqubaly on 25/11/1447 AH.
 //
+
 
 import Foundation
 import UIKit
-
 
 enum GoldConstants {
     static let price24KUSD: Double = 98.42
     static let sarRate:     Double = 3.75
     static let nisabGrams:  Double = 85.0
-    /// Saudi VAT — constant, never user-editable
     static let vatRate:     Double = 0.15
 }
 
 enum Karat: Int, CaseIterable, Identifiable {
-    case k24 = 24, k22 = 22, k21 = 21, k18 = 18
+    case k24 = 24, k21 = 21, k18 = 18, k14 = 14
     var id: Int { rawValue }
     var multiplier: Double { Double(rawValue) / 24.0 }
-    var label: String { "\(rawValue)K" }
+    var label: String { "\(rawValue)k" }
 }
 
 struct GoldPiece: Identifiable, Equatable {
@@ -31,18 +30,28 @@ struct GoldPiece: Identifiable, Equatable {
     var grams:         Double
     var karat:         Karat
     var mfgFeePercent: Double
+    var shopPrice:     Double
     var image:         UIImage?
 
     init(id: UUID = UUID(), name: String, store: String = "",
          grams: Double, karat: Karat = .k21,
-         mfgFeePercent: Double = 8.0, image: UIImage? = nil) {
+         mfgFeePercent: Double = 0.0,
+         shopPrice: Double = 0.0,
+         image: UIImage? = nil) {
         self.id = id; self.name = name; self.store = store
         self.grams = grams; self.karat = karat
-        self.mfgFeePercent = mfgFeePercent; self.image = image
+        self.mfgFeePercent = mfgFeePercent
+        self.shopPrice = shopPrice
+        self.image = image
     }
 
-    /// Total SAR value using the official formula:
-    /// (Weight × Purity Factor × Spot Price/g) + Manufacturing Charges + VAT (15%)
+    var shopTotalWithVAT: Double { shopPrice * (1 + GoldConstants.vatRate) }
+
+    var shopPricePerGram: Double {
+        guard grams > 0 else { return 0 }
+        return shopTotalWithVAT / grams
+    }
+
     var totalValueSAR: Double {
         let goldValueSAR = grams * karat.multiplier * GoldConstants.price24KUSD * GoldConstants.sarRate
         let mfgChargeSAR = goldValueSAR * (mfgFeePercent / 100)
@@ -50,19 +59,16 @@ struct GoldPiece: Identifiable, Equatable {
         return preTax + preTax * GoldConstants.vatRate
     }
 
-    /// Gold value only (before mfg + VAT)
     var goldOnlyValueSAR: Double {
         grams * karat.multiplier * GoldConstants.price24KUSD * GoldConstants.sarRate
     }
 
-    /// VAT amount in SAR
     var vatAmountSAR: Double {
         let goldValueSAR = goldOnlyValueSAR
         let preTax       = goldValueSAR + goldValueSAR * (mfgFeePercent / 100)
         return preTax * GoldConstants.vatRate
     }
 
-    /// SAR per gram (total including mfg + VAT)
     var perGramSAR: Double {
         guard grams > 0 else { return 0 }
         return totalValueSAR / grams
@@ -72,8 +78,15 @@ struct GoldPiece: Identifiable, Equatable {
 }
 
 extension Array where Element == GoldPiece {
-    var bestValue:    GoldPiece? { count >= 2 ? min(by: { $0.totalValueSAR < $1.totalValueSAR }) : nil }
-    var totalValueSAR: Double   { reduce(0) { $0 + $1.totalValueSAR } }
-    var totalGrams:    Double   { reduce(0) { $0 + $1.grams } }
-    var meetsNisab:    Bool     { totalGrams >= GoldConstants.nisabGrams }
+    var bestValue: GoldPiece? {
+        guard count >= 2 else { return nil }
+        let withPrice = filter { $0.shopPrice > 0 }
+        if !withPrice.isEmpty {
+            return withPrice.min(by: { $0.shopTotalWithVAT < $1.shopTotalWithVAT })
+        }
+        return min(by: { $0.totalValueSAR < $1.totalValueSAR })
+    }
+    var totalValueSAR: Double { reduce(0) { $0 + $1.totalValueSAR } }
+    var totalGrams:    Double { reduce(0) { $0 + $1.grams } }
+    var meetsNisab:    Bool   { totalGrams >= GoldConstants.nisabGrams }
 }

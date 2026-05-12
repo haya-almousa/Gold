@@ -2,21 +2,15 @@
 //  ThemedTextField.swift
 //  Gold
 //
-//  Created by Rana Alqubaly on 09/11/1447 AH.
+//  Created by Rana Alqubaly on 25/11/1447 AH.
 //
+
 
 internal import SwiftUI
 
-
-extension Color {
-    /// Slightly darker beige used as the fill color for input controls
-    /// so they stand out from a `Color(.beige)` form container.
-    static let darkerBeige = Color(red: 0.84, green: 0.80, blue: 0.72)
-}
-
 struct ThemedTextField: View {
     private let placeholder:  String
-    @Binding var text:         String
+    @Binding var text:        String
     private let keyboardType: UIKeyboardType
 
     init(_ placeholder: String, text: Binding<String>,
@@ -30,7 +24,7 @@ struct ThemedTextField: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 14))
-                    .foregroundColor(Color(.navy))
+                    .foregroundColor(Color(.navy).opacity(0.42))
                     .allowsHitTesting(false)
             }
             TextField("", text: $text)
@@ -39,9 +33,9 @@ struct ThemedTextField: View {
                 .foregroundColor(Color(.navy))
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
-        .background(Color.darkerBeige)
+        .background(Color(.beige))
         .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.darkerBeige, lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.beige), lineWidth: 1))
     }
 }
 
@@ -62,8 +56,8 @@ struct KaratPicker: View {
             }
             .font(.system(size: 14)).foregroundColor(Color(.navy))
             .padding(.horizontal, 16).padding(.vertical, 12)
-            .background(Color.darkerBeige).cornerRadius(10)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.darkerBeige, lineWidth: 1))
+            .background(Color(.beige)).cornerRadius(10)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.beige), lineWidth: 1))
         }
     }
 }

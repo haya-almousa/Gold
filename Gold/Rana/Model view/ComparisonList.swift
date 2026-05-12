@@ -1,9 +1,10 @@
 //
-//  TojoryViewModel.swift
+//  StoredGoldPiece.swift
 //  Gold
 //
-//  Created by Rana Alqubaly on 09/11/1447 AH.
+//  Created by Rana Alqubaly on 25/11/1447 AH.
 //
+
 
 import Foundation
 import Combine
@@ -16,26 +17,28 @@ extension Notification.Name {
 }
 
 private struct StoredGoldPiece: Codable {
-    let id: UUID
-    let name: String
-    let store: String
-    let grams: Double
+    let id:            UUID
+    let name:          String
+    let store:         String
+    let grams:         Double
     let karatRawValue: Int
     let mfgFeePercent: Double
+    let shopPrice:     Double?
 }
 
-private enum TojoryStorage {
+private enum ComparisonStorage {
     static let piecesKey = "tojory.pieces.v1"
 
     static func save(_ pieces: [GoldPiece], defaults: UserDefaults = .standard) {
         let stored = pieces.map {
             StoredGoldPiece(
-                id: $0.id,
-                name: $0.name,
-                store: $0.store,
-                grams: $0.grams,
+                id:            $0.id,
+                name:          $0.name,
+                store:         $0.store,
+                grams:         $0.grams,
                 karatRawValue: $0.karat.rawValue,
-                mfgFeePercent: $0.mfgFeePercent
+                mfgFeePercent: $0.mfgFeePercent,
+                shopPrice:     $0.shopPrice
             )
         }
         if let data = try? JSONEncoder().encode(stored) {
@@ -45,58 +48,52 @@ private enum TojoryStorage {
 
     static func load(defaults: UserDefaults = .standard) -> [GoldPiece] {
         guard
-            let data = defaults.data(forKey: piecesKey),
+            let data   = defaults.data(forKey: piecesKey),
             let stored = try? JSONDecoder().decode([StoredGoldPiece].self, from: data)
-        else {
-            return []
-        }
+        else { return [] }
 
         return stored.compactMap { item in
             guard let karat = Karat(rawValue: item.karatRawValue) else { return nil }
             return GoldPiece(
-                id: item.id,
-                name: item.name,
-                store: item.store,
-                grams: item.grams,
-                karat: karat,
+                id:            item.id,
+                name:          item.name,
+                store:         item.store,
+                grams:         item.grams,
+                karat:         karat,
                 mfgFeePercent: item.mfgFeePercent,
-                image: nil
+                shopPrice:     item.shopPrice ?? 0.0,
+                image:         nil
             )
         }
     }
 }
 
 @MainActor
-final class TojoryViewModel: ObservableObject {
+final class ComparisonListViewModel: ObservableObject {
 
-    // State
-    @Published private(set) var pieces:       [GoldPiece]      = []
-    @Published var            showForm:        Bool              = false
-    @Published var            form:            AddGoldFormState  = .empty()
-    @Published var            selectedImage:   UIImage?          = nil
-    @Published var            pickerItem:      PhotosPickerItem? = nil
-    @Published private(set) var formError:     String?           = nil
-    /// Non-nil while the user is editing an existing piece
-    @Published private(set) var editingID:     UUID?             = nil
+    @Published private(set) var pieces:        [GoldPiece]      = []
+    @Published var            showForm:         Bool              = false
+    @Published var            form:             AddGoldFormState  = .empty()
+    @Published var            selectedImage:    UIImage?          = nil
+    @Published var            pickerItem:       PhotosPickerItem? = nil
+    @Published private(set) var formError:      String?           = nil
+    @Published private(set) var editingID:      UUID?             = nil
 
-    /// True when the form is being used to edit (vs. add new)
     var isEditing: Bool { editingID != nil }
 
-    init() {
-        pieces = TojoryStorage.load()
-    }
+    init() { pieces = ComparisonStorage.load() }
 
-    // Derived
     var bestPiece:     GoldPiece? { pieces.bestValue }
     var totalValueSAR: Double     { pieces.totalValueSAR }
     var totalGrams:    Double     { pieces.totalGrams }
     var meetsNisab:    Bool       { pieces.meetsNisab }
 
-    // Commands
     func toggleForm() {
         if showForm { resetForm() }
         showForm.toggle()
     }
+
+    func cancelForm() { resetForm(); showForm = false }
 
     func updateField<T>(_ keyPath: WritableKeyPath<AddGoldFormState, T>, value: T) {
         form[keyPath: keyPath] = value
@@ -110,21 +107,19 @@ final class TojoryViewModel: ObservableObject {
         selectedImage = image
     }
 
-    /// Open the form pre-filled with an existing piece for editing
     func beginEdit(piece: GoldPiece) {
         editingID     = piece.id
         selectedImage = piece.image
         form = AddGoldFormState(
-            name:       piece.name,
-            store:      piece.store,
-            gramsText:  piece.grams.clean,
-            karat:      piece.karat,
-            mfgFeeText: piece.mfgFeePercent.clean
+            name:          piece.name,
+            store:         piece.store,
+            gramsText:     piece.grams.clean,
+            karat:         piece.karat,
+            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : ""
         )
         showForm = true
     }
 
-    /// Save a new piece (add mode)
     func saveAndCompare() {
         do {
             let piece = try form.validated(image: selectedImage)
@@ -137,12 +132,10 @@ final class TojoryViewModel: ObservableObject {
         }
     }
 
-    /// Commit edits to an existing piece (edit mode)
     func saveEdit() {
         guard let id = editingID else { saveAndCompare(); return }
         do {
             var updated = try form.validated(image: selectedImage)
-            // Preserve original id so the list stays stable
             updated = GoldPiece(
                 id:            id,
                 name:          updated.name,
@@ -150,6 +143,7 @@ final class TojoryViewModel: ObservableObject {
                 grams:         updated.grams,
                 karat:         updated.karat,
                 mfgFeePercent: updated.mfgFeePercent,
+                shopPrice:     updated.shopPrice,
                 image:         updated.image
             )
             if let idx = pieces.firstIndex(where: { $0.id == id }) {
@@ -168,6 +162,7 @@ final class TojoryViewModel: ObservableObject {
         persistPieces()
         if editingID == id { resetForm(); showForm = false }
     }
+
     func deletePieces(at offsets: IndexSet) {
         pieces.remove(atOffsets: offsets)
         persistPieces()
@@ -179,7 +174,7 @@ final class TojoryViewModel: ObservableObject {
     }
 
     private func persistPieces() {
-        TojoryStorage.save(pieces)
+        ComparisonStorage.save(pieces)
         NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
     }
 }
