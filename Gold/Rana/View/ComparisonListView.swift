@@ -117,7 +117,6 @@ struct ComparisonListView: View {
 
     private var premiumBannerView: some View {
         HStack(spacing: 12) {
-            // Trailing in RTL (left): try button
             Button(action: {}) {
                 Text("جرب مجانا")
                     .font(.system(size: 13, weight: .semibold))
@@ -133,7 +132,6 @@ struct ComparisonListView: View {
             }
             .buttonStyle(.plain)
 
-            // Leading in RTL (right): text + sparkle
             HStack(alignment: .top, spacing: 6) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("فتح المقارنة بالكامل")
@@ -146,20 +144,19 @@ struct ComparisonListView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                // Sparkle icon
                 VStack(spacing: 2) {
                     Image(systemName: "sparkle")
                         .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(Color(.beige))
+                        .foregroundColor(Color("Gold"))          // ← was Color(.beige)
                     Image(systemName: "sparkle")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color(.beige))
+                        .foregroundColor(Color("Gold"))          // ← was Color(.beige)
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color(.emarald).opacity(0.15))
+        .background(Color("maincolor").opacity(0.08))           // ← was Color(.emarald).opacity(0.15)
         .cornerRadius(16)
     }
 
@@ -171,14 +168,14 @@ struct ComparisonListView: View {
             .foregroundColor(Color(.navy))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 12)
-            .background(Color(.beige).opacity(0.4))
+            .background(Color("Light gold").opacity(0.35))      // ← was Color(.beige).opacity(0.4)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(
                         style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
                     )
-                    .foregroundColor(Color(.beige))
+                    .foregroundColor(Color("Gold"))              // ← was Color(.beige)
             )
     }
 
@@ -186,7 +183,6 @@ struct ComparisonListView: View {
 
     private var filterSearchRow: some View {
         HStack {
-            // Leading in RTL (right): search
             Button(action: {
                 withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
             }) {
@@ -201,7 +197,6 @@ struct ComparisonListView: View {
 
             Spacer()
 
-            // Trailing in RTL (left): filter
             Button(action: {
                 withAnimation { showFilter.toggle(); if showFilter { showSearch = false } }
             }) {
@@ -310,7 +305,7 @@ struct ComparisonListView: View {
         .padding(.vertical, active ? 7 : 0)
         .background(
             active
-                ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color(.emarald).opacity(0.15)))
+                ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("maincolor").opacity(0.1)))  // ← was Color(.emarald).opacity(0.15)
                 : AnyView(Color.clear)
         )
     }

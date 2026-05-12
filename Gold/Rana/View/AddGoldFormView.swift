@@ -6,6 +6,14 @@
 //
 
 
+//
+//  AddGoldFormView.swift
+//  Gold
+//
+//  Created by Rana Alqubaly on 25/11/1447 AH.
+//
+
+
 internal import SwiftUI
 import _PhotosUI_SwiftUI
 
@@ -14,7 +22,6 @@ struct AddGoldFormView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top action bar
             topBar
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -46,13 +53,12 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var topBar: some View {
         HStack {
-            // Leading in RTL (right side): حفظ
             Button(action: {
                 vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
             }) {
                 Text("حفظ")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color("background"))          // ← was .white
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
                     .background(Color("maincolor"))
@@ -62,11 +68,10 @@ struct AddGoldFormView: View {
 
             Spacer()
 
-            // Trailing in RTL (left side): الغاء
             Button(action: { vm.cancelForm() }) {
                 Text("الغاء")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color("background"))          // ← was .white
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
                     .background(Color(.navy).opacity(0.35))
@@ -82,7 +87,7 @@ struct AddGoldFormView: View {
     private var formTitle: some View {
         Text("مقارنة قطعة ذهب")
             .font(.system(size: 17, weight: .bold))
-            .foregroundColor(Color(.navy))
+            .foregroundColor(Color("maincolor"))                   // ← was Color(.navy)
             .frame(maxWidth: .infinity, alignment: .center)
     }
 
@@ -137,7 +142,7 @@ struct AddGoldFormView: View {
         }
     }
 
-    // MARK: - Weight (full width)
+    // MARK: - Weight
 
     @ViewBuilder
     private var weightSection: some View {
@@ -175,21 +180,20 @@ struct AddGoldFormView: View {
         return Button(action: { vm.updateField(\.karat, value: k) }) {
             Text(k.label)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(selected ? Color("background") : Color(.navy))
+                .foregroundColor(selected ? Color("background") : Color(.navy))  // ← was Color("background") already correct
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
-                .background(selected ? Color("maincolor") : Color(.beige))
+                .background(selected ? Color("maincolor") : Color("Light gold").opacity(0.6))  // ← was Color(.beige)
                 .cornerRadius(10)
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - Shop Price + Tax Badge (side by side)
+    // MARK: - Shop Price + Tax Badge
 
     @ViewBuilder
     private var shopPriceTaxRow: some View {
         HStack(alignment: .top, spacing: 10) {
-            // Leading in RTL (right side): shop price field
             VStack(alignment: .leading, spacing: 6) {
                 Text("سعر المحل بدون الضريبة*")
                     .font(.system(size: 13, weight: .medium))
@@ -204,7 +208,6 @@ struct AddGoldFormView: View {
                 )
             }
 
-            // Trailing in RTL (left side): VAT badge
             VStack(alignment: .leading, spacing: 6) {
                 Text("الضريبة")
                     .font(.system(size: 13, weight: .medium))
@@ -258,7 +261,7 @@ struct AddGoldFormView: View {
         if let error = vm.formError {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundColor(Color(.emarald))
+                    .foregroundColor(Color("Red"))                 // ← was Color(.emarald)
                     .font(.system(size: 13))
                 Text(error)
                     .font(.system(size: 13))
@@ -267,7 +270,7 @@ struct AddGoldFormView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.beige))
+            .background(Color("Light red").opacity(0.4))           // ← was Color(.beige)
             .cornerRadius(10)
         }
     }

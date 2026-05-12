@@ -20,7 +20,7 @@ struct ThemedTextField: View {
     }
 
     var body: some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .trailing) {                          // ← was .leading
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 14))
@@ -29,13 +29,14 @@ struct ThemedTextField: View {
             }
             TextField("", text: $text)
                 .keyboardType(keyboardType)
+                .multilineTextAlignment(.trailing)              // ← added
                 .font(.system(size: 14))
                 .foregroundColor(Color(.navy))
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
         .background(Color(.beige))
         .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.beige), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.navy).opacity(0.08), lineWidth: 1))
     }
 }
 
@@ -52,12 +53,12 @@ struct KaratPicker: View {
                 Text(selection.label)
                 Spacer()
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 11)).foregroundColor(Color(.emarald))
+                    .font(.system(size: 11)).foregroundColor(Color("maincolor"))
             }
             .font(.system(size: 14)).foregroundColor(Color(.navy))
             .padding(.horizontal, 16).padding(.vertical, 12)
             .background(Color(.beige)).cornerRadius(10)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.beige), lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.navy).opacity(0.08), lineWidth: 1))
         }
     }
 }
