@@ -6,7 +6,7 @@
 	<string>development</string>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
-		<string>iCloud.HayaAlmousa.Gold</string>
+		<string>iCloud.Haya.GoldApp</string>
 	</array>
 	<key>com.apple.developer.icloud-services</key>
 	<array>
