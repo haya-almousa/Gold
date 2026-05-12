@@ -20,7 +20,7 @@ struct ThemedTextField: View {
     }
 
     var body: some View {
-        ZStack(alignment: .trailing) {                          // ← was .leading
+        ZStack(alignment: .leading) {                    // ← back to .leading
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 14))
@@ -29,7 +29,7 @@ struct ThemedTextField: View {
             }
             TextField("", text: $text)
                 .keyboardType(keyboardType)
-                .multilineTextAlignment(.trailing)              // ← added
+                // no multilineTextAlignment line
                 .font(.system(size: 14))
                 .foregroundColor(Color(.navy))
         }
