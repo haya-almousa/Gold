@@ -134,14 +134,18 @@ private enum GoldPieceRecord {
 @MainActor
 final class ComparisonListViewModel: ObservableObject {
 
-    @Published private(set) var pieces:        [GoldPiece]      = []
-    @Published var            showForm:         Bool              = false
-    @Published var            form:             AddGoldFormState  = .empty()
-    @Published var            selectedImage:    UIImage?          = nil
-    @Published var            pickerItem:       PhotosPickerItem? = nil
-    @Published private(set) var formError:      String?           = nil
-    @Published private(set) var editingID:      UUID?             = nil
-    @Published private(set) var isSyncing:      Bool              = false
+    @Published private(set) var pieces:              [GoldPiece]      = []
+    @Published var            showForm:               Bool              = false
+    @Published var            form:                   AddGoldFormState  = .empty()
+    @Published var            selectedImage:          UIImage?          = nil
+    @Published var            pickerItem:             PhotosPickerItem? = nil
+    @Published private(set) var formError:            String?           = nil
+    @Published private(set) var editingID:            UUID?             = nil
+    @Published private(set) var isSyncing:            Bool              = false
+    @Published private(set) var liveGoldPrice24KSAR:  Double?
+
+    private let apiService        = GoldAPIService()
+    private var priceRefreshTask: Task<Void, Never>?
 
     var isEditing: Bool { editingID != nil }
 
@@ -149,14 +153,32 @@ final class ComparisonListViewModel: ObservableObject {
                         .privateCloudDatabase
 
     init() {
-        pieces = ComparisonStorage.load()   // show cached data instantly
-        Task { await loadFromCloudKit() }   // then sync from CloudKit
+        pieces = ComparisonStorage.load()
+        Task { await loadFromCloudKit() }
+        startLivePriceUpdates()
     }
 
-    var bestPiece:     GoldPiece? { pieces.bestValue }
-    var totalValueSAR: Double     { pieces.totalValueSAR }
-    var totalGrams:    Double     { pieces.totalGrams }
-    var meetsNisab:    Bool       { pieces.meetsNisab }
+    deinit {
+        priceRefreshTask?.cancel()
+    }
+
+    var bestPiece: GoldPiece? {
+        guard pieces.count >= 2 else { return nil }
+        let withPrice = pieces.filter { $0.shopPrice > 0 }
+        if !withPrice.isEmpty {
+            return withPrice.min(by: { $0.shopTotalWithVAT < $1.shopTotalWithVAT })
+        }
+        guard let livePrice = liveGoldPrice24KSAR else { return pieces.bestValue }
+        return pieces.min(by: { $0.liveValueSAR(price24KSAR: livePrice) < $1.liveValueSAR(price24KSAR: livePrice) })
+    }
+
+    var totalValueSAR: Double {
+        guard let livePrice = liveGoldPrice24KSAR else { return pieces.totalValueSAR }
+        return pieces.reduce(0) { $0 + $1.liveValueSAR(price24KSAR: livePrice) }
+    }
+
+    var totalGrams: Double  { pieces.totalGrams }
+    var meetsNisab: Bool    { pieces.meetsNisab }
 
     func toggleForm() {
         if showForm { resetForm() }
@@ -245,6 +267,25 @@ final class ComparisonListViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Live Gold Price
+
+    private func startLivePriceUpdates() {
+        priceRefreshTask = Task {
+            await fetchLivePrice()
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(60))
+                if Task.isCancelled { break }
+                await fetchLivePrice()
+            }
+        }
+    }
+
+    private func fetchLivePrice() async {
+        if let quote = try? await apiService.fetchGoldQuote() {
+            liveGoldPrice24KSAR = quote.price24KPerGramSAR
+        }
+    }
+
     // MARK: - CloudKit
 
     private func saveToCloudKit(_ piece: GoldPiece) async {
@@ -290,5 +331,16 @@ final class ComparisonListViewModel: ObservableObject {
     private func persistPieces() {
         ComparisonStorage.save(pieces)
         NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
+    }
+}
+
+// MARK: - Live value helper
+
+private extension GoldPiece {
+    func liveValueSAR(price24KSAR: Double) -> Double {
+        let goldValueSAR = grams * karat.multiplier * price24KSAR
+        let mfgChargeSAR = goldValueSAR * (mfgFeePercent / 100)
+        let preTax       = goldValueSAR + mfgChargeSAR
+        return preTax + preTax * GoldConstants.vatRate
     }
 }
