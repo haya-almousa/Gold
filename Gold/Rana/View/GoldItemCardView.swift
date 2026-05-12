@@ -14,42 +14,126 @@ struct GoldItemCardView: View {
     let onEdit:   () -> Void
     let onDelete: () -> Void
 
-    var body: some View {
-        ZStack(alignment: .topTrailing) {
-            HStack(spacing: 0) {
-                cameraBox
-                contentArea
-            }
-            .background(Color(.beige))
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        isBest ? Color("maincolor") : Color(.beige).opacity(0.5),  // ← was Color(.emarald)
-                        lineWidth: 1.5
-                    )
-            )
+    @State private var showActions = false
 
-            if isBest {
-                Text("أفضل سعر!")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(Color("background"))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color("maincolor"))                // ← was Color(.emarald)
-                    .cornerRadius(8)
-                    .padding(.top, 10)
-                    .padding(.trailing, 10)
+    var body: some View {
+        HStack(spacing: 0) {
+            cameraBox
+            contentArea
+        }
+        .background(Color("Lightest gold"))
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    isBest ? Color("maincolor") : Color("Gold"),
+                    lineWidth: 0.3
+                )
+        )
+        .overlay(alignment: .topLeading) {
+            if isBest { bestBadge }
+        }
+        .overlay(alignment: .topTrailing) {
+            VStack(alignment: .trailing, spacing: 2) {
+                Button(action: {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
+                        showActions.toggle()
+                    }
+                }) {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(Color(.navy).opacity(0.45))
+                        .rotationEffect(.degrees(90))
+                        .frame(width: 36, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                if showActions {
+                    actionMenu
+                        .transition(
+                            .scale(scale: 0.85, anchor: .topTrailing)
+                            .combined(with: .opacity)
+                        )
+                }
+            }
+            .padding(.top, 6)
+            .padding(.trailing, 6)
+            .zIndex(1)
+        }
+        .onTapGesture {
+            if showActions {
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
+                    showActions = false
+                }
             }
         }
-        .contextMenu {
-            Button(role: .destructive, action: onDelete) {
-                Label("حذف", systemImage: "trash")
+    }
+
+    // MARK: - Themed Action Menu
+
+    private var actionMenu: some View {
+        VStack(spacing: 0) {
+            Button(action: {
+                withAnimation { showActions = false }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { onEdit() }
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("تعديل")
+                        .font(.system(size: 14, weight: .medium))
+                    Spacer()
+                }
+                .foregroundColor(Color("maincolor"))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
             }
-            Button(action: onEdit) {
-                Label("تعديل", systemImage: "pencil")
+            .buttonStyle(.plain)
+
+            Rectangle()
+                .fill(Color(.navy).opacity(0.08))
+                .frame(height: 1)
+
+            Button(action: {
+                withAnimation { showActions = false }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { onDelete() }
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("حذف")
+                        .font(.system(size: 14, weight: .medium))
+                    Spacer()
+                }
+                .foregroundColor(Color("Red"))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
             }
+            .buttonStyle(.plain)
         }
+        .frame(width: 118)
+        .background(Color("background"))
+        .cornerRadius(12)
+        .shadow(color: Color(.navy).opacity(0.13), radius: 12, x: 0, y: 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.navy).opacity(0.07), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Best Badge
+
+    private var bestBadge: some View {
+        Text("افضل سعرا")
+            .font(.system(size: 11, weight: .bold))
+            .foregroundColor(Color("maincolor"))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Color("Light blue"))
+            .cornerRadius(8)
+            .padding(.top, 10)
+            .padding(.leading, 10)
     }
 
     // MARK: - Camera Box
@@ -62,16 +146,22 @@ struct GoldItemCardView: View {
                     .scaledToFill()
                     .clipped()
             } else {
-                Color(.beige).opacity(0.6)
-                Image(systemName: "camera")
+                Color("Gold")
+                Image(systemName: "camera.fill")
                     .font(.system(size: 24))
-                    .foregroundColor(Color(.navy).opacity(0.4))
+                    .foregroundColor(Color("Dark gold"))
             }
         }
         .frame(width: 90)
         .frame(maxHeight: .infinity)
-        .background(Color(.beige).opacity(0.6))
-        .onTapGesture { onEdit() }
+        .background(Color("Gold"))
+        .onTapGesture {
+            if showActions {
+                withAnimation { showActions = false }
+            } else {
+                onEdit()
+            }
+        }
     }
 
     // MARK: - Content Area
@@ -80,8 +170,9 @@ struct GoldItemCardView: View {
         VStack(alignment: .trailing, spacing: 0) {
             Text(piece.name)
                 .font(.system(size: 17, weight: .bold))
-                .foregroundColor(Color(.navy))
+                .foregroundColor(Color("Dark gold"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.trailing, 28)
 
             Text("SAR \(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))")
                 .font(.system(size: 20, weight: .heavy))
@@ -92,7 +183,7 @@ struct GoldItemCardView: View {
             if piece.shopPrice > 0 {
                 Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
                     .font(.system(size: 12))
-                    .foregroundColor(Color(.navy).opacity(0.5))
+                    .foregroundColor(Color("Grey"))
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.top, 4)
             }
@@ -115,10 +206,10 @@ struct GoldItemCardView: View {
     private func tagPill(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 11, weight: .medium))
-            .foregroundColor(Color(.navy))
+            .foregroundColor(Color("maincolor"))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(Color("Light gold").opacity(0.55))         // ← was Color(.beige).opacity(0.7)
+            .background(Color("Lightest blue"))
             .cornerRadius(6)
     }
 }
@@ -133,7 +224,7 @@ struct ComparisonEmptyStateView: View {
                     .fill(Color(.beige))
                     .frame(width: 76, height: 76)
                 Circle()
-                    .strokeBorder(Color("maincolor"), lineWidth: 0.5)  // ← was Color(.emarald)
+                    .strokeBorder(Color("maincolor"), lineWidth: 0.5)
                     .frame(width: 76, height: 76)
                 Image(systemName: "bookmark.square.fill")
                     .font(.system(size: 32))

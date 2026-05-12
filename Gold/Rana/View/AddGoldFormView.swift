@@ -6,14 +6,6 @@
 //
 
 
-//
-//  AddGoldFormView.swift
-//  Gold
-//
-//  Created by Rana Alqubaly on 25/11/1447 AH.
-//
-
-
 internal import SwiftUI
 import _PhotosUI_SwiftUI
 
@@ -58,7 +50,7 @@ struct AddGoldFormView: View {
             }) {
                 Text("حفظ")
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color("background"))          // ← was .white
+                    .foregroundColor(Color("background"))
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
                     .background(Color("maincolor"))
@@ -71,10 +63,10 @@ struct AddGoldFormView: View {
             Button(action: { vm.cancelForm() }) {
                 Text("الغاء")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color("background"))          // ← was .white
+                    .foregroundColor(Color("background"))
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
-                    .background(Color(.navy).opacity(0.35))
+                    .background(Color("Light grey"))
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -87,7 +79,7 @@ struct AddGoldFormView: View {
     private var formTitle: some View {
         Text("مقارنة قطعة ذهب")
             .font(.system(size: 17, weight: .bold))
-            .foregroundColor(Color("maincolor"))                   // ← was Color(.navy)
+            .foregroundColor(Color("maincolor"))
             .frame(maxWidth: .infinity, alignment: .center)
     }
 
@@ -99,10 +91,10 @@ struct AddGoldFormView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                    .foregroundColor(Color(.navy).opacity(0.25))
+                    .foregroundColor(Color("Gold"))
                     .frame(height: 130)
                     .background(
-                        RoundedRectangle(cornerRadius: 14).fill(Color(.beige).opacity(0.4))
+                        RoundedRectangle(cornerRadius: 14).fill(Color("Lightest gold").opacity(0.4))
                     )
 
                 if let img = vm.selectedImage {
@@ -112,12 +104,12 @@ struct AddGoldFormView: View {
                         .cornerRadius(14)
                 } else {
                     VStack(spacing: 10) {
-                        Image(systemName: "camera")
+                        Image(systemName: "camera.fill")
                             .font(.system(size: 28))
-                            .foregroundColor(Color(.navy).opacity(0.5))
+                            .foregroundColor(Color("Light grey"))
                         Text("اضغط لاضافة صورة")
                             .font(.system(size: 13))
-                            .foregroundColor(Color(.navy).opacity(0.5))
+                            .foregroundColor(Color("Light grey"))
                     }
                 }
             }
@@ -164,8 +156,8 @@ struct AddGoldFormView: View {
     private var karatSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("العيار*")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(.navy))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("maincolor"))
 
             HStack(spacing: 8) {
                 ForEach(Karat.allCases) { k in
@@ -180,10 +172,10 @@ struct AddGoldFormView: View {
         return Button(action: { vm.updateField(\.karat, value: k) }) {
             Text(k.label)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(selected ? Color("background") : Color(.navy))  // ← was Color("background") already correct
+                .foregroundColor(selected ? Color("background") : Color("maincolor"))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
-                .background(selected ? Color("maincolor") : Color("Light gold").opacity(0.6))  // ← was Color(.beige)
+                .background(selected ? Color("maincolor") : Color("Lightest gold"))
                 .cornerRadius(10)
         }
         .buttonStyle(.plain)
@@ -196,8 +188,8 @@ struct AddGoldFormView: View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("سعر المحل بدون الضريبة*")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color(.navy))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color("maincolor"))
                 ThemedTextField(
                     "مثال: 1500",
                     text: Binding(
@@ -208,10 +200,10 @@ struct AddGoldFormView: View {
                 )
             }
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .center, spacing: 6) {
                 Text("الضريبة")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color(.navy))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color("Dark grey"))
                 vatBadge
             }
             .frame(width: 92)
@@ -222,16 +214,16 @@ struct AddGoldFormView: View {
     private var vatBadge: some View {
         HStack(spacing: 5) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 10))
-                .foregroundColor(Color(.navy).opacity(0.6))
+                .font(.system(size: 13).bold())
+                .foregroundColor(Color("Grey"))
             Text("0.15%")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color(.navy))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("Grey"))
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 10)
         .padding(.vertical, 12)
-        .background(Color(.beige))
+        .background(Color("Lightest grey"))
         .cornerRadius(10)
         .overlay(
             RoundedRectangle(cornerRadius: 10)
@@ -261,7 +253,7 @@ struct AddGoldFormView: View {
         if let error = vm.formError {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundColor(Color("Red"))                 // ← was Color(.emarald)
+                    .foregroundColor(Color("Red"))
                     .font(.system(size: 13))
                 Text(error)
                     .font(.system(size: 13))
@@ -270,7 +262,7 @@ struct AddGoldFormView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color("Light red").opacity(0.4))           // ← was Color(.beige)
+            .background(Color("Light red").opacity(0.4))
             .cornerRadius(10)
         }
     }
@@ -281,8 +273,8 @@ struct AddGoldFormView: View {
     private func labeledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(.navy))
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("maincolor"))
             content()
         }
     }

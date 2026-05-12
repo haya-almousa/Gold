@@ -20,21 +20,20 @@ struct ThemedTextField: View {
     }
 
     var body: some View {
-        ZStack(alignment: .leading) {                    // ← back to .leading
+        ZStack(alignment: .leading) {
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 14))
-                    .foregroundColor(Color(.navy).opacity(0.42))
+                    .foregroundColor(Color("Light grey"))
                     .allowsHitTesting(false)
             }
             TextField("", text: $text)
                 .keyboardType(keyboardType)
-                // no multilineTextAlignment line
-                .font(.system(size: 14))
-                .foregroundColor(Color(.navy))
+                .font(.system(size: 14).bold())
+                .foregroundColor(Color("maincolor"))
         }
         .padding(.horizontal, 16).padding(.vertical, 12)
-        .background(Color(.beige))
+        .background(Color("Lightest gold"))
         .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.navy).opacity(0.08), lineWidth: 1))
     }
@@ -57,8 +56,8 @@ struct KaratPicker: View {
             }
             .font(.system(size: 14)).foregroundColor(Color(.navy))
             .padding(.horizontal, 16).padding(.vertical, 12)
-            .background(Color(.beige)).cornerRadius(10)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.navy).opacity(0.08), lineWidth: 1))
+            .background(Color("Lightest gold")).cornerRadius(10)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("maincolor").opacity(0.08), lineWidth: 1))
         }
     }
 }

@@ -83,7 +83,7 @@ struct ComparisonListView: View {
 
             bottomTabBar
         }
-        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.layoutDirection, .leftToRight)
         .sheet(isPresented: $vm.showForm, onDismiss: { vm.cancelForm() }) {
             AddGoldFormView(vm: vm)
                 .environment(\.layoutDirection, .rightToLeft)
@@ -96,20 +96,20 @@ struct ComparisonListView: View {
 
     private var headerBar: some View {
         HStack(alignment: .center) {
-            Text("قائمة المقارنة")
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(Color(.navy))
-            Spacer()
             Button(action: { withAnimation { vm.toggleForm() } }) {
                 ZStack {
                     Circle()
-                        .fill(Color(.beige))
+                        .fill(Color("Gold"))
                         .frame(width: 46, height: 46)
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color(.navy))
+                        .foregroundColor(Color("background"))
                 }
             }
+            Spacer()
+            Text("قائمة المقارنة")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(Color(.navy))
         }
     }
 
@@ -123,7 +123,7 @@ struct ComparisonListView: View {
                     .foregroundColor(Color(.navy))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color("background"))
+                    .background(Color("Very Light blue"))
                     .cornerRadius(22)
                     .overlay(
                         RoundedRectangle(cornerRadius: 22)
@@ -133,30 +133,31 @@ struct ComparisonListView: View {
             .buttonStyle(.plain)
 
             HStack(alignment: .top, spacing: 6) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .trailing, spacing: 4) {
                     Text("فتح المقارنة بالكامل")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(Color(.navy))
-                    Text("تجربة مجانية لمدة 7 ايام - احفظ\nوقارن قطع الذهب")
+                    Text("تجربة مجانية لمدة 7 ايام - احفظ \nوقارن قطع الذهب")
                         .font(.system(size: 11))
-                        .foregroundColor(Color(.navy).opacity(0.65))
+                        .foregroundColor(Color(.navy))
                         .lineLimit(3)
+                        .multilineTextAlignment(.trailing)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .trailing)
 
                 VStack(spacing: 2) {
                     Image(systemName: "sparkle")
                         .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(Color("Gold"))          // ← was Color(.beige)
+                        .foregroundColor(Color(.yellow))
                     Image(systemName: "sparkle")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color("Gold"))          // ← was Color(.beige)
+                        .foregroundColor(Color(.yellow))
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color("maincolor").opacity(0.08))           // ← was Color(.emarald).opacity(0.15)
+        .background(Color("Lightest blue"))
         .cornerRadius(16)
     }
 
@@ -164,18 +165,18 @@ struct ComparisonListView: View {
 
     private var draftWarningView: some View {
         Text("محفوظة كمسودة تنتهي خلال 4 ايام")
-            .font(.system(size: 13, weight: .medium))
-            .foregroundColor(Color(.navy))
+            .font(.system(size: 13, weight: .bold))
+            .foregroundColor(Color("Dark gold"))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 12)
-            .background(Color("Light gold").opacity(0.35))      // ← was Color(.beige).opacity(0.4)
+            .background(Color("Lightest gold"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(
                         style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
                     )
-                    .foregroundColor(Color("Gold"))              // ← was Color(.beige)
+                    .foregroundColor(Color("Gold"))
             )
     }
 
@@ -184,13 +185,13 @@ struct ComparisonListView: View {
     private var filterSearchRow: some View {
         HStack {
             Button(action: {
-                withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
+                withAnimation { showFilter.toggle(); if showFilter { showSearch = false } }
             }) {
-                Image(systemName: showSearch ? "xmark" : "magnifyingglass")
+                Image(systemName: showFilter ? "xmark" : "slider.horizontal.3")
                     .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(Color(.navy))
+                    .foregroundColor(Color("background"))
                     .frame(width: 44, height: 44)
-                    .background(Color(.beige))
+                    .background(showFilter ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -198,13 +199,13 @@ struct ComparisonListView: View {
             Spacer()
 
             Button(action: {
-                withAnimation { showFilter.toggle(); if showFilter { showSearch = false } }
+                withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
             }) {
-                Image(systemName: showFilter ? "xmark" : "slider.horizontal.3")
+                Image(systemName: showSearch ? "xmark" : "magnifyingglass")
                     .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(showFilter ? Color("background") : Color(.navy))
+                    .foregroundColor(Color("background"))
                     .frame(width: 44, height: 44)
-                    .background(showFilter ? Color("maincolor") : Color(.beige))
+                    .background(showSearch ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -305,7 +306,7 @@ struct ComparisonListView: View {
         .padding(.vertical, active ? 7 : 0)
         .background(
             active
-                ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("maincolor").opacity(0.1)))  // ← was Color(.emarald).opacity(0.15)
+                ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
                 : AnyView(Color.clear)
         )
     }
