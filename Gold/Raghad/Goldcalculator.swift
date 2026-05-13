@@ -5,7 +5,6 @@
 //  Created by Raghad Alamoudi on 09/11/1447 AH.
 //
 
-
 internal import SwiftUI
 
 // MARK: - Price State
@@ -17,7 +16,7 @@ enum PriceState {
 
 // MARK: - Gold Calculator View
 struct GoldCalculatorView: View {
-    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
 
     // MARK: - API
     let apiService: any GoldPriceProviding
@@ -27,9 +26,10 @@ struct GoldCalculatorView: View {
     // MARK: - State
     @State private var weightText: String = ""
     @State private var weight: Double = 0
-    @State private var selectedKarat: KaratOption = .k24
+    @State private var selectedKarat: KaratOption = .k18
     @State private var manufacturingFeeText: String = ""
     @State private var manufacturingFee: Double = 0
+    @State private var isLocalManufacturing: Bool = true
     @FocusState private var focusedField: Field?
 
     enum Field { case weight, fee }
@@ -98,34 +98,28 @@ struct GoldCalculatorView: View {
     }
 
     // MARK: - Colors
-    var bg: Color { colorScheme == .dark ? Color("141210") : Color("F5EFE8") }
-    var cardBg: Color { colorScheme == .dark ? Color("1E1A15") : Color("FFFFFF") }
-    var inputBg: Color { colorScheme == .dark ? Color("2A2418") : Color("F0E8DC") }
-    var estimatedCardBg: Color { colorScheme == .dark ? Color("2A2010") : Color("FFF0DC") }
-    var gold: Color { Color("C9A84C") }
-    var primaryText: Color { colorScheme == .dark ? Color("F0E8D8") : Color("2C1F0E") }
-    var secondaryText: Color { colorScheme == .dark ? Color("8A7A62") : Color("9A8A72") }
-    var dividerColor: Color { colorScheme == .dark ? Color("2E2820") : Color("E8DDD0") }
-    var errorColor: Color { Color("D94F4F") }
+    private var backgroundColor: Color { Color(red: 0.96, green: 0.95, blue: 0.92) }
+    private var primaryTeal: Color { Color(red: 0.02, green: 0.43, blue: 0.47) }
+    private var secondaryTeal: Color { Color(red: 0.15, green: 0.53, blue: 0.56) }
+    private var softTeal: Color { Color(red: 0.75, green: 0.84, blue: 0.85) }
+    private var mutedGold: Color { Color(red: 0.66, green: 0.52, blue: 0.16) }
 
     // MARK: - Body
     var body: some View {
         ZStack {
-            bg.ignoresSafeArea()
+            backgroundColor.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 16) {
-                    headerView
-                    if case .failed(let msg) = priceState {
-                        errorBanner(msg)
-                    }
-                    inputsCard
-                    estimatedValueCard
-                    breakdownCard
-                    Spacer(minLength: 30)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    topBar
+                    karatSection
+                    weightSection
+                    manufacturingSourceSection
+                    totalSection
+                    Spacer(minLength: 16)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
                 .padding(.bottom, 16)
             }
             .refreshable {
@@ -148,287 +142,163 @@ struct GoldCalculatorView: View {
         }
     }
 
-    // MARK: - Header
-    var headerView: some View {
-        VStack(alignment: .leading, spacing: 4) {
+    // MARK: - Layout Sections
+    private var topBar: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(primaryTeal)
+                        .frame(width: 54, height: 54)
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 21, weight: .medium))
+                        .foregroundColor(.white)
+                }
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
             Text("حاسبة الذهب")
-                .font(.system(size: 30, weight: .bold, design: .serif))
-                .foregroundColor(primaryText)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.black)
+                .minimumScaleFactor(0.6)
+        }
+        .padding(.top, 8)
+    }
 
-            HStack(spacing: 6) {
-                switch priceState {
-                case .loading:
-                    ProgressView().scaleEffect(0.65).frame(width: 10, height: 10)
-                case .loaded:
-                    Circle().fill(Color("4CAF50")).frame(width: 7, height: 7)
-                case .failed:
-                    Circle().fill(errorColor).frame(width: 7, height: 7)
+    private var karatSection: some View {
+        VStack(alignment: .trailing, spacing: 10) {
+            Text("العيار")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(primaryTeal)
+
+            HStack(spacing: 10) {
+                karatChip(.k24, title: "24k")
+                karatChip(.k21, title: "21k")
+                karatChip(.k18, title: "18k")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+
+    private var weightSection: some View {
+        VStack(alignment: .trailing, spacing: 10) {
+            Text("الوزن (جرام)*")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(primaryTeal)
+
+            ZStack(alignment: .trailing) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(softTeal)
+                    .frame(height: 48)
+
+                if weightText.isEmpty {
+                    Text("مثال:5.5")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(secondaryTeal.opacity(0.75))
+                        .padding(.horizontal, 18)
+                        .allowsHitTesting(false)
                 }
 
-                switch priceState {
-                case .loading:
-                    Text("جارٍ تحميل السعر المباشر...")
-                        .font(.system(size: 14))
-                        .foregroundColor(secondaryText)
-                case .loaded(let quote):
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("السعر المباشر · 24 قيراط = \(String(format: "%.2f", quote.price24KPerGramSAR)) ريال/جم")
-                            .font(.system(size: 14))
-                            .foregroundColor(secondaryText)
-                        if quote.changePercent != 0 {
-                            Text("\(quote.changePercent >= 0 ? "▲" : "▼") \(String(format: "%.2f", abs(quote.changePercent)))%")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(quote.changePercent >= 0 ? Color("4CAF50") : errorColor)
-                        }
+                TextField("", text: $weightText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(primaryTeal)
+                    .padding(.horizontal, 18)
+                    .focused($focusedField, equals: .weight)
+                    .onChange(of: weightText) {
+                        let filtered = weightText.filter { $0.isNumber || $0 == "." }
+                        if filtered != weightText { weightText = filtered }
+                        weight = Double(filtered) ?? 0
                     }
-                case .failed:
-                    Text("السعر المباشر · 24 قيراط = \(String(format: "%.2f", goldPrice24KSAR)) ريال/جم (آخر سعر)")
-                        .font(.system(size: 14))
-                        .foregroundColor(secondaryText)
-                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
 
-                Spacer()
+    private var manufacturingSourceSection: some View {
+        VStack(alignment: .trailing, spacing: 10) {
+            HStack(spacing: 6) {
+                Text("منشأ المصنعية")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(primaryTeal)
+
+                Image(systemName: "questionmark.circle")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(primaryTeal)
+            }
+
+            HStack(spacing: 0) {
+                Button {
+                    isLocalManufacturing = false
+                } label: {
+                    sourceSegmentTitle("مستور", isSelected: !isLocalManufacturing)
+                }
 
                 Button {
-                    Task { await fetchPrice() }
+                    isLocalManufacturing = true
                 } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(gold)
+                    sourceSegmentTitle("محلي", isSelected: isLocalManufacturing)
                 }
             }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 16)
-        .padding(.bottom, 4)
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    // MARK: - Error Banner
-    func errorBanner(_ message: String) -> some View {
-        HStack(spacing: 8) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(errorColor)
-                .font(.system(size: 13))
-            Text(message)
-                .font(.system(size: 13))
-                .foregroundColor(errorColor)
-            Spacer()
+    private var totalSection: some View {
+        VStack(spacing: 8) {
+            Text("إجمالي السعر التقديري")
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(mutedGold)
+
+            Text("SAR \(fmtCurrency(totalValueSAR))")
+                .font(.system(size: 34, weight: .heavy))
+                .foregroundColor(primaryTeal)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+                .animation(.easeInOut(duration: 0.25), value: totalValueSAR)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(errorColor.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.top, 28)
     }
 
-    // MARK: - Inputs Card
-    var inputsCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+    // MARK: - Small Components
+    private func karatChip(_ option: KaratOption, title: String) -> some View {
+        let isSelected = selectedKarat == option
 
-            // Weight
-            VStack(alignment: .leading, spacing: 8) {
-                Text("الوزن (جرام)")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryText)
-                    .tracking(0.8)
-
-                HStack {
-                    ZStack(alignment: .leading) {
-                        if weightText.isEmpty {
-                            Text("10")
-                                .font(.system(size: 18))
-                                .foregroundColor(secondaryText.opacity(0.45))
-                                .allowsHitTesting(false)
-                        }
-                        TextField("", text: $weightText)
-                            .keyboardType(.decimalPad)
-                            .font(.system(size: 18))
-                            .foregroundColor(primaryText)
-                            .tint(gold)
-                    }
-                        .focused($focusedField, equals: .weight)
-                        .onChange(of: weightText) { v in
-                            let f = v.filter { $0.isNumber || $0 == "." }
-                            if f != v { weightText = f }
-                            weight = Double(f) ?? 0
-                        }
-                    Spacer()
-                    stepperButtons(
-                        increment: { weight = max(0, weight + 1); weightText = fmt(weight) },
-                        decrement: { weight = max(0, weight - 1); weightText = fmt(weight) }
-                    )
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(inputBg)
-                .cornerRadius(12)
-            }
-
-            // Karat Picker
-            VStack(alignment: .leading, spacing: 8) {
-                Text("القيراط")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryText)
-                    .tracking(0.8)
-
-                Menu {
-                    ForEach(KaratOption.allCases) { option in
-                        Button(option.rawValue) { selectedKarat = option }
-                    }
-                } label: {
-                    HStack {
-                        Text(selectedKarat.rawValue)
-                            .font(.system(size: 16))
-                            .foregroundColor(primaryText)
-                        Spacer()
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 12))
-                            .foregroundColor(secondaryText)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
-                    .background(inputBg)
-                    .cornerRadius(12)
-                }
-            }
-
-            // Manufacturing Fee
-            VStack(alignment: .leading, spacing: 8) {
-                Text("المصنعية (%)")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryText)
-                    .tracking(0.8)
-
-                HStack {
-                    ZStack(alignment: .leading) {
-                        if manufacturingFeeText.isEmpty {
-                            Text("5")
-                                .font(.system(size: 18))
-                                .foregroundColor(secondaryText.opacity(0.45))
-                                .allowsHitTesting(false)
-                        }
-                        TextField("", text: $manufacturingFeeText)
-                            .keyboardType(.decimalPad)
-                            .font(.system(size: 18))
-                            .foregroundColor(primaryText)
-                            .tint(gold)
-                    }
-                        .focused($focusedField, equals: .fee)
-                        .onChange(of: manufacturingFeeText) { v in
-                            let f = v.filter { $0.isNumber || $0 == "." }
-                            if f != v { manufacturingFeeText = f }
-                            manufacturingFee = Double(f) ?? 0
-                        }
-                    Spacer()
-                    stepperButtons(
-                        increment: { manufacturingFee = min(100, manufacturingFee + 1); manufacturingFeeText = fmt(manufacturingFee) },
-                        decrement: { manufacturingFee = max(0, manufacturingFee - 1); manufacturingFeeText = fmt(manufacturingFee) }
-                    )
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(inputBg)
-                .cornerRadius(12)
-            }
+        return Button {
+            selectedKarat = option
+        } label: {
+            Text(title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(isSelected ? .white : primaryTeal)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .background(isSelected ? primaryTeal : softTeal)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .padding(18)
-        .background(cardBg)
-        .cornerRadius(18)
-        .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.06), radius: 12, x: 0, y: 4)
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Estimated Value Card
-    var estimatedValueCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("القيمة التقديرية")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(secondaryText)
-                .tracking(0.8)
-
-            if case .loading = priceState {
-                HStack(spacing: 10) {
-                    ProgressView()
-                    Text("جارٍ تحميل السعر...")
-                        .font(.system(size: 18))
-                        .foregroundColor(secondaryText)
-                }
-                .frame(height: 52)
-            } else {
-                Text("ريال \(fmtCurrency(totalValueSAR))")
-                    .font(.system(size: 42, weight: .bold, design: .serif))
-                    .foregroundColor(gold)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-
-                Text("≈ $\(fmtCurrency(totalValueUSD)) دولار")
-                    .font(.system(size: 14))
-                    .foregroundColor(secondaryText)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(estimatedCardBg)
-        .cornerRadius(18)
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .strokeBorder(
-                    LinearGradient(colors: [gold.opacity(0.35), gold.opacity(0.08)],
-                                   startPoint: .topLeading, endPoint: .bottomTrailing),
-                    lineWidth: 1
-                )
-        )
-        .shadow(color: gold.opacity(0.12), radius: 14, x: 0, y: 6)
-        .animation(.easeInOut(duration: 0.3), value: totalValueSAR)
-    }
-
-    // MARK: - Breakdown Card
-    var breakdownCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("التفاصيل")
-                    .font(.system(size: 16, weight: .semibold, design: .serif))
-                    .foregroundColor(gold)
-                Spacer()
-                if let refreshed = lastRefreshed {
-                    Text("آخر تحديث: \(timeAgo(refreshed))")
-                        .font(.system(size: 11))
-                        .foregroundColor(secondaryText)
-                }
-            }
-            .padding(.bottom, 16)
-
-            breakdownRow("قيمة الذهب", value: "ريال \(fmtCurrency(goldValueSAR))")
-            Divider().background(dividerColor).padding(.vertical, 14)
-            breakdownRow(
-                "المصنعية (\(manufacturingFee == floor(manufacturingFee) ? String(Int(manufacturingFee)) : String(format: "%.1f", manufacturingFee))%)",
-                value: "ريال \(fmtCurrency(manufacturingAmountSAR))"
-            )
-            Divider().background(dividerColor).padding(.vertical, 14)
-            breakdownRow("السعر المستخدم", value: "$\(String(format: "%.2f", rateUsedUSD))/جم")
-
-            if let quote = currentQuote, quote.changePercent != 0 {
-                Divider().background(dividerColor).padding(.vertical, 14)
-                breakdownRow(
-                    "تغير 24 ساعة",
-                    value: "\(quote.changePercent >= 0 ? "+" : "")\(String(format: "%.2f", quote.changePercent))%"
-                )
-            }
-        }
-        .padding(20)
-        .background(cardBg)
-        .cornerRadius(18)
-        .shadow(color: .black.opacity(colorScheme == .dark ? 0.3 : 0.06), radius: 12, x: 0, y: 4)
+    private func sourceSegmentTitle(_ title: String, isSelected: Bool) -> some View {
+        Text(title)
+            .font(.system(size: 20, weight: .bold))
+            .foregroundColor(isSelected ? .white : primaryTeal)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(isSelected ? primaryTeal : softTeal)
     }
 
     // MARK: - Helpers
     func breakdownRow(_ label: String, value: String) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 15))
-                .foregroundColor(secondaryText)
             Spacer()
             Text(value)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(primaryText)
         }
     }
 
@@ -437,13 +307,13 @@ struct GoldCalculatorView: View {
             Button(action: increment) {
                 Image(systemName: "chevron.up")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryText)
+                    .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
             Button(action: decrement) {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(secondaryText)
+                    .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
         }
