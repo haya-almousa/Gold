@@ -17,7 +17,7 @@ enum GoldConstants {
 }
 
 enum Karat: Int, CaseIterable, Identifiable {
-    case k24 = 24, k21 = 21, k18 = 18, k14 = 14
+    case k24 = 24, k21 = 21, k18 = 18
     var id: Int { rawValue }
     var multiplier: Double { Double(rawValue) / 24.0 }
     var label: String { "\(rawValue)k" }

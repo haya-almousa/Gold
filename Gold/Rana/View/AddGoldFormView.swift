@@ -48,7 +48,7 @@ struct AddGoldFormView: View {
             Button(action: {
                 vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
             }) {
-                Text("حفظ")
+                Text("قارن")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 28)
@@ -216,7 +216,7 @@ struct AddGoldFormView: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 13).bold())
                 .foregroundColor(Color("Grey"))
-            Text("0.15%")
+            Text("15%")
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(Color("Grey"))
         }
