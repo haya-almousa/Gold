@@ -1,130 +1,212 @@
-// The body is deliberately split into named @ViewBuilder sub-properties.
-// This avoids the "Failed to produce diagnostic for expression" compiler crash
-// that Swift triggers when a single body closure exceeds its type-checking limit.
+//
+//  AddGoldFormView.swift
+//  Gold
+//
+//  Created by Rana Alqubaly on 25/11/1447 AH.
+//
+
 
 internal import SwiftUI
 import _PhotosUI_SwiftUI
 
 struct AddGoldFormView: View {
-    @ObservedObject var vm: TojoryViewModel
+    @ObservedObject var vm: ComparisonListViewModel
 
-    // ── body: lean — just stacks the named sub-sections ──────────────────────
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            formHeader
-            photoPicker
-            nameAndStoreFields
-            weightKaratRow
-            mfgVatRow
-            errorBanner
-            actionButtons
+        VStack(spacing: 0) {
+            topBar
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+
+            Divider()
+                .overlay(Color(.navy).opacity(0.08))
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    formTitle
+                    photoPickerSection
+                    nameSection
+                    weightSection
+                    karatSection
+                    shopPriceTaxRow
+                    storeSection
+                    errorBanner
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 40)
+            }
         }
-        .padding(18)
-        .background(Color(.beige))
-        .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.navy), lineWidth: 1))
     }
 
-    // ── Sub-section 1: title ──────────────────────────────────────────────────
+    // MARK: - Top Bar
+
     @ViewBuilder
-    private var formHeader: some View {
-        Text(vm.isEditing ? "Edit Gold Piece" : "Add Gold Piece")
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(Color(.navy))
+    private var topBar: some View {
+        HStack {
+            Button(action: {
+                vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
+            }) {
+                Text("حفظ")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color("background"))
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 10)
+                    .background(Color("maincolor"))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Button(action: { vm.cancelForm() }) {
+                Text("الغاء")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Color("background"))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .background(Color("Light grey"))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
-    // ── Sub-section 2: photo picker ───────────────────────────────────────────
+    // MARK: - Title
+
     @ViewBuilder
-    private var photoPicker: some View {
+    private var formTitle: some View {
+        Text("مقارنة قطعة ذهب")
+            .font(.system(size: 17, weight: .bold))
+            .foregroundColor(Color("maincolor"))
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    // MARK: - Photo Picker
+
+    @ViewBuilder
+    private var photoPickerSection: some View {
         PhotosPicker(selection: $vm.pickerItem, matching: .images) {
-            photoPickerLabel
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                    .foregroundColor(Color("Gold"))
+                    .frame(height: 130)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14).fill(Color("Lightest gold").opacity(0.4))
+                    )
+
+                if let img = vm.selectedImage {
+                    Image(uiImage: img)
+                        .resizable().scaledToFill()
+                        .frame(height: 130).clipped()
+                        .cornerRadius(14)
+                } else {
+                    VStack(spacing: 10) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(Color("Light grey"))
+                        Text("اضغط لاضافة صورة")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color("Light grey"))
+                    }
+                }
+            }
         }
         .onChange(of: vm.pickerItem) { _ in
             Task { await vm.loadSelectedImage() }
         }
     }
 
+    // MARK: - Piece Name
+
     @ViewBuilder
-    private var photoPickerLabel: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [6]))
-                .foregroundColor(Color.darkerBeige)
-                .frame(height: 110)
-                .background(
-                    vm.selectedImage == nil ? Color.darkerBeige : Color.clear,
-                    in: RoundedRectangle(cornerRadius: 12)
+    private var nameSection: some View {
+        labeledField("اسم القطعة") {
+            ThemedTextField(
+                "مثال: اسوارة، خاتم",
+                text: Binding(
+                    get: { vm.form.name },
+                    set: { vm.updateField(\.name, value: $0) }
                 )
-            if let img = vm.selectedImage {
-                Image(uiImage: img).resizable().scaledToFill()
-                    .frame(height: 110).clipped().cornerRadius(12)
-            } else {
-                VStack(spacing: 7) {
-                    Image(systemName: "camera")
-                        .font(.system(size: 26)).foregroundColor(Color.navy)
-                    Text("Tap to add photo")
-                        .font(.system(size: 12)).foregroundColor(Color.navy)
+            )
+        }
+    }
+
+    // MARK: - Weight
+
+    @ViewBuilder
+    private var weightSection: some View {
+        labeledField("الوزن (جرام)*") {
+            ThemedTextField(
+                "مثال: 5.5",
+                text: Binding(
+                    get: { vm.form.gramsText },
+                    set: { vm.updateField(\.gramsText, value: $0) }
+                ),
+                keyboardType: .decimalPad
+            )
+        }
+    }
+
+    // MARK: - Karat Selector
+
+    @ViewBuilder
+    private var karatSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("العيار*")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("maincolor"))
+
+            HStack(spacing: 8) {
+                ForEach(Karat.allCases) { k in
+                    karatButton(k)
                 }
             }
         }
     }
 
-    // ── Sub-section 3: name + store ───────────────────────────────────────────
-    @ViewBuilder
-    private var nameAndStoreFields: some View {
-        var textColor: Color = Color(.navy)
-        ThemedTextField(
-            "Piece name (e.g. Gold Bracelet)",
-            text: Binding(
-                get: { vm.form.name },
-                set: { vm.updateField(\.name, value: $0) }
-            )
-        )
-        ThemedTextField(
-            "Store / Jeweler (optional)",
-            text: Binding(
-                get: { vm.form.store },
-                set: { vm.updateField(\.store, value: $0) }
-            )
-        )
-        .foregroundColor(Color(.navy))
-    }
-
-    // ── Sub-section 4: weight + karat ─────────────────────────────────────────
-    @ViewBuilder
-    private var weightKaratRow: some View {
-        HStack(spacing: 10) {
-            ThemedTextField(
-                "Grams",
-                text: Binding(
-                    get: { vm.form.gramsText },
-                    set: { vm.updateField(\.gramsText, value: $0) }
-                ),
-                keyboardType: .decimalPad,
-            )
-            KaratPicker(
-                selection: Binding(
-                    get: { vm.form.karat },
-                    set: { vm.updateField(\.karat, value: $0) }
-                )
-            )
-            .foregroundColor(Color(.navy))
+    private func karatButton(_ k: Karat) -> some View {
+        let selected = vm.form.karat == k
+        return Button(action: { vm.updateField(\.karat, value: k) }) {
+            Text(k.label)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(selected ? Color("background") : Color("maincolor"))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .background(selected ? Color("maincolor") : Color("Lightest gold"))
+                .cornerRadius(10)
         }
+        .buttonStyle(.plain)
     }
 
-    // ── Sub-section 5: manufacturing fee + VAT badge ──────────────────────────
+    // MARK: - Shop Price + Tax Badge
+
     @ViewBuilder
-    private var mfgVatRow: some View {
-        HStack(spacing: 10) {
-            ThemedTextField(
-                "Manufacturing fee %",
-                text: Binding(
-                    get: { vm.form.mfgFeeText },
-                    set: { vm.updateField(\.mfgFeeText, value: $0) }
-                ),
-                keyboardType: .decimalPad
-            )
-            vatBadge
+    private var shopPriceTaxRow: some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("سعر المحل بدون الضريبة*")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color("maincolor"))
+                ThemedTextField(
+                    "مثال: 1500",
+                    text: Binding(
+                        get: { vm.form.shopPriceText },
+                        set: { vm.updateField(\.shopPriceText, value: $0) }
+                    ),
+                    keyboardType: .decimalPad
+                )
+            }
+
+            VStack(alignment: .center, spacing: 6) {
+                Text("الضريبة")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color("Dark grey"))
+                vatBadge
+            }
+            .frame(width: 92)
         }
     }
 
@@ -132,80 +214,68 @@ struct AddGoldFormView: View {
     private var vatBadge: some View {
         HStack(spacing: 5) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 10))
-                .foregroundColor(Color(.emarald))
-            Text("VAT")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(Color(.navy))
-            Text("15%")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(Color(.emarald))
+                .font(.system(size: 13).bold())
+                .foregroundColor(Color("Grey"))
+            Text("0.15%")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("Grey"))
         }
-        .frame(width: 100)
-        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 10)
         .padding(.vertical, 12)
-        .background(Color.darkerBeige)
+        .background(Color("Lightest grey"))
         .cornerRadius(10)
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.darkerBeige, lineWidth: 1)
+                .stroke(Color(.navy).opacity(0.12), lineWidth: 1)
         )
     }
 
-    // ── Sub-section 6: validation error ──────────────────────────────────────
+    // MARK: - Store Info
+
+    @ViewBuilder
+    private var storeSection: some View {
+        labeledField("معلومات المحل") {
+            ThemedTextField(
+                "مثال: 05534XXXXX، الفياض للذهب",
+                text: Binding(
+                    get: { vm.form.store },
+                    set: { vm.updateField(\.store, value: $0) }
+                )
+            )
+        }
+    }
+
+    // MARK: - Error Banner
+
     @ViewBuilder
     private var errorBanner: some View {
         if let error = vm.formError {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundColor(Color(.emarald))
+                    .foregroundColor(Color("Red"))
                     .font(.system(size: 13))
                 Text(error)
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .foregroundColor(Color(.navy))
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color(.beige))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color(.beige).opacity(0.4), lineWidth: 1)
-            )
-            .cornerRadius(8)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color("Light red").opacity(0.4))
+            .cornerRadius(10)
         }
     }
 
-    // ── Sub-section 7: primary CTA + cancel ──────────────────────────────────
+    // MARK: - Helper
+
     @ViewBuilder
-    private var actionButtons: some View {
-        Button(action: {
-            if vm.isEditing {
-                vm.saveEdit()
-            } else {
-                vm.saveAndCompare()
-            }
-        }) {
-            Group {
-                if vm.isEditing {
-                    Text("Update Piece")
-                } else {
-                    Text("Save & Compare")
-                }
-            }
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(Color.navy)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 13)
-            .background(Color.emarald)
-            .cornerRadius(10)
-        }
-        if vm.isEditing {
-            Button(action: { withAnimation { vm.toggleForm() } }) {
-                Text("Cancel")
-                    .font(.system(size: 13))
-                    .foregroundColor(Color(.navy))
-                    .frame(maxWidth: .infinity)
-            }
+    private func labeledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Color("maincolor"))
+            content()
         }
     }
 }
