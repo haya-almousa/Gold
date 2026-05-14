@@ -16,6 +16,12 @@ struct ComparisonListView: View {
     @State private var showFilter:    Bool    = false
     @State private var filterKarat:   Karat?  = nil
 
+    @Binding var selectedTab: AppTab
+    
+    init(selectedTab: Binding<AppTab> = .constant(.comparison)) {
+        _selectedTab = selectedTab
+    }
+    
     private var filteredPieces: [GoldPiece] {
         vm.pieces.filter { piece in
             let matchesSearch = searchText.isEmpty
@@ -81,7 +87,7 @@ struct ComparisonListView: View {
                 }
             }
 
-            bottomTabBar
+            
         }
         .environment(\.layoutDirection, .leftToRight)
         .sheet(isPresented: $vm.showForm, onDismiss: { vm.cancelForm() }) {
@@ -268,48 +274,6 @@ struct ComparisonListView: View {
             .padding(.vertical, 80)
     }
 
-    // MARK: - Bottom Tab Bar
-
-    private var bottomTabBar: some View {
-        HStack(spacing: 0) {
-            tabItem(symbol: "briefcase.fill",   title: "التجوري",  active: false)
-            Spacer()
-            tabItem(symbol: "book.closed.fill", title: "تعلم",     active: false)
-            Spacer()
-            tabItem(symbol: "bookmark.fill",    title: "المقارنة", active: true)
-            Spacer()
-            tabItem(symbol: "house.fill",       title: "اليوم",    active: false)
-        }
-        .padding(.horizontal, 22)
-        .padding(.top, 7)
-        .padding(.bottom, 10)
-        .background(
-            Rectangle()
-                .fill(Color("background"))
-                .overlay(alignment: .top) {
-                    Divider().overlay(Color(.navy).opacity(0.08))
-                }
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
-
-    private func tabItem(symbol: String, title: String, active: Bool) -> some View {
-        VStack(spacing: 4) {
-            Image(systemName: symbol)
-                .font(.system(size: 20, weight: active ? .semibold : .regular))
-                .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
-            Text(title)
-                .font(.system(size: 11, weight: active ? .semibold : .regular))
-                .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
-        }
-        .padding(.horizontal, active ? 14 : 0)
-        .padding(.vertical, active ? 7 : 0)
-        .background(
-            active
-                ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
-                : AnyView(Color.clear)
-        )
-    }
 }
 
 #Preview {

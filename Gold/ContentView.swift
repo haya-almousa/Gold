@@ -7,7 +7,7 @@
 
 internal import SwiftUI
 
-struct ذ: View {
+struct ContentView : View {
     var body: some View {
         DashboardView()
     }

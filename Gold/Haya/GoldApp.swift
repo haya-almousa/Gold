@@ -7,17 +7,14 @@
 
 internal import SwiftUI
 
-
 @main
 struct GoldApp: App {
     @StateObject private var auth = AuthenticationManager.shared
 
     var body: some Scene {
         WindowGroup {
-            if auth.isSignedIn {
-                DashboardView()
-                    .environmentObject(auth)
-            }
+            MainTabView()
+                .environmentObject(auth)
         }
     }
 }

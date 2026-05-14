@@ -48,9 +48,8 @@ struct DashboardView: View {
                         Spacer(minLength: 0)
                     }
                     .padding(.top, 0)
-                    .padding(.bottom, 94 * scale)
+                    .padding(.bottom, 80)
 
-                    bottomNavigation(scale: scale)
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
@@ -303,38 +302,9 @@ struct DashboardView: View {
         }
     }
 
-    private func bottomNavigation(scale: CGFloat) -> some View {
-        HStack {
-            navItem(symbol: "briefcase.fill", title: "التجوري", active: false, scale: scale)
-            Spacer()
-            navItem(symbol: "book.closed.fill", title: "تعلم", active: false, scale: scale)
-            Spacer()
-            navItem(symbol: "bookmark.fill", title: "المقارنة", active: false, scale: scale)
-            Spacer()
-            navItem(symbol: "house.fill", title: "الرئيسية", active: true, scale: scale)
-        }
-        .padding(.horizontal, 22 * scale)
-        .padding(.top, 7 * scale)
-        .padding(.bottom, 10 * scale)
-        .background(
-            Rectangle()
-                .fill(.white)
-                .overlay(alignment: .top) { Divider().overlay(Color.gray.opacity(0.25)) }
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
+  
 
-    private func navItem(symbol: String, title: String, active: Bool, scale: CGFloat) -> some View {
-        VStack(spacing: 5 * scale) {
-            Image(systemName: symbol)
-                .font(.system(size: 20 * scale, weight: .semibold))
-                .foregroundStyle(active ? Self.activeTab : Self.inactiveTab)
-
-            Text(title)
-                .font(.system(size: 12 * scale, weight: .semibold))
-                .foregroundStyle(active ? Self.activeTab : Self.inactiveTab)
-        }
-    }
+    
 
     private func liveBadge(scale: CGFloat) -> some View {
         HStack(spacing: 7 * scale) {
