@@ -139,7 +139,9 @@ final class ComparisonListViewModel: ObservableObject {
     @Published var            form:                   AddGoldFormState  = .empty()
     @Published var            selectedImage:          UIImage?          = nil
     @Published var            pickerItem:             PhotosPickerItem? = nil
-    @Published private(set) var formError:            String?           = nil
+    @Published private(set) var nameError:            String?           = nil
+    @Published private(set) var gramsError:           String?           = nil
+    @Published private(set) var priceError:           String?           = nil
     @Published private(set) var editingID:            UUID?             = nil
     @Published private(set) var isSyncing:            Bool              = false
     @Published private(set) var liveGoldPrice24KSAR:  Double?
@@ -189,7 +191,7 @@ final class ComparisonListViewModel: ObservableObject {
 
     func updateField<T>(_ keyPath: WritableKeyPath<AddGoldFormState, T>, value: T) {
         form[keyPath: keyPath] = value
-        formError = nil
+        nameError = nil; gramsError = nil; priceError = nil
     }
 
     func loadSelectedImage() async {
@@ -220,8 +222,14 @@ final class ComparisonListViewModel: ObservableObject {
             Task { await saveToCloudKit(piece) }
             resetForm()
             showForm = false
+        } catch let e as FormValidationError {
+            switch e {
+            case .emptyName:    nameError  = e.localizedDescription
+            case .invalidGrams: gramsError = e.localizedDescription
+            case .invalidPrice: priceError = e.localizedDescription
+            }
         } catch {
-            formError = error.localizedDescription
+            nameError = error.localizedDescription
         }
     }
 
@@ -246,8 +254,15 @@ final class ComparisonListViewModel: ObservableObject {
             Task { await saveToCloudKit(updated) }
             resetForm()
             showForm = false
+            
+        } catch let e as FormValidationError {
+            switch e {
+            case .emptyName:    nameError  = e.localizedDescription
+            case .invalidGrams: gramsError = e.localizedDescription
+            case .invalidPrice: priceError = e.localizedDescription
+            }
         } catch {
-            formError = error.localizedDescription
+            nameError = error.localizedDescription
         }
     }
 
@@ -325,9 +340,9 @@ final class ComparisonListViewModel: ObservableObject {
 
     private func resetForm() {
         form = .empty(); selectedImage = nil; pickerItem = nil
-        formError = nil; editingID = nil
+        nameError = nil; gramsError = nil; priceError = nil; editingID = nil
     }
-
+    
     private func persistPieces() {
         ComparisonStorage.save(pieces)
         NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)

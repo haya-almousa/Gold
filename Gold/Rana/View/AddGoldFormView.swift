@@ -31,7 +31,7 @@ struct AddGoldFormView: View {
                     karatSection
                     shopPriceTaxRow
                     storeSection
-                    errorBanner
+                    
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -131,6 +131,13 @@ struct AddGoldFormView: View {
                     set: { vm.updateField(\.name, value: $0) }
                 )
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(vm.nameError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
+            )
+            if let error = vm.nameError {
+                inlineError(error)
+            }
         }
     }
 
@@ -147,6 +154,13 @@ struct AddGoldFormView: View {
                 ),
                 keyboardType: .decimalPad
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(vm.gramsError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
+            )
+            if let error = vm.gramsError {
+                inlineError(error)
+            }
         }
     }
 
@@ -182,7 +196,6 @@ struct AddGoldFormView: View {
     }
 
     // MARK: - Shop Price + Tax Badge
-
     @ViewBuilder
     private var shopPriceTaxRow: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -198,7 +211,15 @@ struct AddGoldFormView: View {
                     ),
                     keyboardType: .decimalPad
                 )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(vm.priceError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
+                )
+                if let error = vm.priceError {
+                    inlineError(error)
+                }
             }
+            
 
             VStack(alignment: .center, spacing: 6) {
                 Text("الضريبة")
@@ -246,25 +267,20 @@ struct AddGoldFormView: View {
         }
     }
 
-    // MARK: - Error Banner
-
+    // MARK: - inlineError
+    
     @ViewBuilder
-    private var errorBanner: some View {
-        if let error = vm.formError {
-            HStack(spacing: 6) {
-                Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundColor(Color("Red"))
-                    .font(.system(size: 13))
-                Text(error)
-                    .font(.system(size: 13))
-                    .foregroundColor(Color(.navy))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color("Light red").opacity(0.4))
-            .cornerRadius(10)
+    private func inlineError(_ message: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .font(.system(size: 12))
+                .foregroundColor(Color("Red"))
+            Text(message)
+                .font(.system(size: 12))
+                .foregroundColor(Color("Red"))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
     }
 
     // MARK: - Helper
