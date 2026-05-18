@@ -10,12 +10,16 @@ internal import SwiftUI
 private struct OnboardingPage {
     let color: Color
     let title: String
+    let symbol: String
+    let symbolColor: Color
+
+
 }
 
 private let pages: [OnboardingPage] = [
-    OnboardingPage(color: Color("maincolor"),     title: "تابع سعر الذهب\nلحظة بلحظة"),
-    OnboardingPage(color: Color("Lightest blue"), title: "أضف ذهباً بكل\nسهولة وبدون تعقيد"),
-    OnboardingPage(color: Color("Light gold"),    title: "قارن أسعار الذهب\nواختار الأفضل")
+    OnboardingPage(color: Color("maincolor"),     title: "تابع سعر الذهب\nلحظة بلحظة",          symbol: "chart.line.uptrend.xyaxis",                    symbolColor: Color("Light gold")),
+    OnboardingPage(color: Color("Lightest blue"), title: "أضف ذهباً بكل\nسهولة وبدون تعقيد",    symbol: "bag.badge.plus",              symbolColor: Color("Gold")),
+    OnboardingPage(color: Color("Light gold"),    title: "قارن أسعار الذهب\nواختار الأفضل",     symbol: "arrow.up.left.arrow.down.right",    symbolColor: Color("maincolor"))
 ]
 
 struct OnboardingView: View {
@@ -65,6 +69,12 @@ struct OnboardingView: View {
                 .position(x: geo.size.width / 2,
                           y: geo.safeAreaInsets.top + geo.size.width * 0.3)
             
+            // symbol inside the circle
+            Image(systemName: page.symbol)
+                .font(.system(size: 150, weight: .bold))
+                .foregroundColor(page.symbolColor)
+                .position(x: geo.size.width / 2,
+                          y: 225)
 
             // nav row
             HStack {
