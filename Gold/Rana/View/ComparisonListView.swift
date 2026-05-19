@@ -39,7 +39,7 @@ struct ComparisonListView: View {
             VStack(spacing: 0) {
                 headerBar
                     .padding(.horizontal, 20)
-                    .padding(.top, 56)
+                    .padding(.top, 40)
                     .padding(.bottom, 16)
 
                 ScrollView(showsIndicators: false) {
