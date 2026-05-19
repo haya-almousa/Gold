@@ -153,7 +153,7 @@ struct GoldCalculatorView: View {
                         .fill(primaryTeal)
                         .frame(width: 54, height: 54)
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 21, weight: .medium))
+                        .font(.appTitle3(.medium))
                         .foregroundColor(.white)
                 }
             }
@@ -162,7 +162,7 @@ struct GoldCalculatorView: View {
             Spacer()
 
             Text("حاسبة الذهب")
-                .font(.system(size: 28, weight: .bold))
+                .font(.appTitle(.bold))
                 .foregroundColor(.black)
                 .minimumScaleFactor(0.6)
         }
@@ -172,7 +172,7 @@ struct GoldCalculatorView: View {
     private var karatSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("العيار")
-                .font(.system(size: 24, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(primaryTeal)
 
             HStack(spacing: 10) {
@@ -187,7 +187,7 @@ struct GoldCalculatorView: View {
     private var weightSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("الوزن (جرام)*")
-                .font(.system(size: 22, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
@@ -197,7 +197,7 @@ struct GoldCalculatorView: View {
 
                 if weightText.isEmpty {
                     Text("مثال:5.5")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.appTitle3(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -206,7 +206,7 @@ struct GoldCalculatorView: View {
                 TextField("", text: $weightText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.appTitle3(.semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
                     .focused($focusedField, equals: .weight)
@@ -224,11 +224,11 @@ struct GoldCalculatorView: View {
         VStack(alignment: .trailing, spacing: 10) {
             HStack(spacing: 6) {
                 Text("منشأ المصنعية")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.appTitle2(.bold))
                     .foregroundColor(primaryTeal)
 
                 Image(systemName: "questionmark.circle")
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.appTitle3(.regular))
                     .foregroundColor(primaryTeal)
             }
 
@@ -253,11 +253,11 @@ struct GoldCalculatorView: View {
     private var totalSection: some View {
         VStack(spacing: 8) {
             Text("إجمالي السعر التقديري")
-                .font(.system(size: 24, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(mutedGold)
 
             Text("SAR \(fmtCurrency(totalValueSAR))")
-                .font(.system(size: 34, weight: .heavy))
+                .font(.appDisplay(.heavy))
                 .foregroundColor(primaryTeal)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
@@ -274,7 +274,7 @@ struct GoldCalculatorView: View {
             selectedKarat = option
         } label: {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
+                .font(.appTitle3(.bold))
                 .foregroundColor(isSelected ? .white : primaryTeal)
                 .frame(maxWidth: .infinity)
                 .frame(height: 40)
@@ -286,7 +286,7 @@ struct GoldCalculatorView: View {
 
     private func sourceSegmentTitle(_ title: String, isSelected: Bool) -> some View {
         Text(title)
-            .font(.system(size: 20, weight: .bold))
+            .font(.appTitle3(.bold))
             .foregroundColor(isSelected ? .white : primaryTeal)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
@@ -306,13 +306,13 @@ struct GoldCalculatorView: View {
         VStack(spacing: 0) {
             Button(action: increment) {
                 Image(systemName: "chevron.up")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.appCaption(.semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
             Button(action: decrement) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.appCaption(.semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }

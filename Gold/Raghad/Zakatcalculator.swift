@@ -130,11 +130,11 @@ struct ZakatCalculatorView: View {
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("حاسبة الزكاة")
-                    .font(.system(size: 28, weight: .bold, design: .serif))
+                    .font(.appTitle(.bold))
                     .foregroundColor(primaryText)
 
                 Text("حد النصاب: 85 جرام ذهب")
-                    .font(.system(size: 14, weight: .regular))
+                    .font(.appSubheadline(.regular))
                     .foregroundColor(secondaryText)
             }
             .padding(.leading, 8)
@@ -149,14 +149,14 @@ struct ZakatCalculatorView: View {
     var goldInputCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("إجمالي الذهب لديك (جرام، ما يعادل 24 قيراط)")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.appCaption(.semibold))
                 .foregroundColor(secondaryText)
                 .tracking(0.8)
 
             HStack {
                 TextField("0", text: $goldGramsText)
                     .keyboardType(.decimalPad)
-                    .font(.system(size: 20, weight: .regular))
+                    .font(.appTitle3(.regular))
                     .foregroundColor(primaryText)
                     .focused($isInputFocused)
                     .onChange(of: goldGramsText) { newValue in
@@ -175,7 +175,7 @@ struct ZakatCalculatorView: View {
                         goldGramsText = formatGrams(goldGrams)
                     }) {
                         Image(systemName: "chevron.up")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.appCaption(.semibold))
                             .foregroundColor(secondaryText)
                             .frame(width: 28, height: 20)
                     }
@@ -208,10 +208,10 @@ struct ZakatCalculatorView: View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: nisabMet ? "checkmark" : "xmark")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(nisabStatusColor)
                 Text(nisabMet ? "تم بلوغ النصاب" : "لم يتم بلوغ النصاب")
-                    .font(.system(size: 16, weight: .bold, design: .serif))
+                    .font(.appCallout(.bold))
                     .foregroundColor(nisabStatusColor)
             }
 
@@ -220,7 +220,7 @@ struct ZakatCalculatorView: View {
                  : goldGrams == 0
                     ? "أدخل كمية الذهب للتحقق"
                     : "كمية \(formatGrams(goldGrams)) جم أقل من نصاب 85 جم")
-                .font(.system(size: 14))
+                .font(.appSubheadline())
                 .foregroundColor(secondaryText)
         }
         .frame(maxWidth: .infinity)
@@ -235,27 +235,27 @@ struct ZakatCalculatorView: View {
     var zakatDueCard: some View {
         VStack(spacing: 10) {
             Text("الزكاة المستحقة (2.5%)")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.appCaption(.semibold))
                 .foregroundColor(secondaryText)
                 .tracking(0.8)
 
             if nisabMet {
                 Text("ريال \(formatCurrency(zakatDueSAR))")
-                    .font(.system(size: 44, weight: .bold, design: .serif))
+                    .font(.appDisplay(.bold))
                     .foregroundColor(goldAccent)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
 
                 Text("من إجمالي قيمة \(formatCurrency(totalValueSAR)) ريال")
-                    .font(.system(size: 14))
+                    .font(.appSubheadline())
                     .foregroundColor(secondaryText)
             } else {
                 Text("ريال —")
-                    .font(.system(size: 44, weight: .bold, design: .serif))
+                    .font(.appDisplay(.bold))
                     .foregroundColor(secondaryText.opacity(0.5))
 
                 Text(goldGrams == 0 ? "أدخل كمية الذهب بالأعلى" : "لم يتم بلوغ النصاب")
-                    .font(.system(size: 14))
+                    .font(.appSubheadline())
                     .foregroundColor(secondaryText)
             }
         }
@@ -283,7 +283,7 @@ struct ZakatCalculatorView: View {
     var howItIsCalculatedCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("طريقة الحساب")
-                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .font(.appCallout(.semibold))
                 .foregroundColor(goldAccent)
                 .padding(.bottom, 16)
 
@@ -330,11 +330,11 @@ struct ZakatCalculatorView: View {
     func calculationRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 15))
+                .font(.appSubheadline())
                 .foregroundColor(secondaryText)
             Spacer()
             Text(value)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.appSubheadline(.semibold))
                 .foregroundColor(primaryText)
         }
     }

@@ -19,7 +19,7 @@ struct EducationView: View {
             Color("background").ignoresSafeArea()
             
             Text("قريباً")
-                .font(.system(size: 22, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(Color("maincolor"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             

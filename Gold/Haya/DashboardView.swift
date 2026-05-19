@@ -76,11 +76,11 @@ struct DashboardView: View {
             HStack(alignment: .center) {
                 VStack(alignment: .trailing, spacing: 4 * scale) {
                     Text("صباح الخير ☀️")
-                        .font(.system(size: 15 * scale, weight: .medium))
+                        .font(.appSubheadline(.medium))
                         .foregroundStyle(Self.warmLight)
 
                     Text("هياء!")
-                        .font(.system(size: 44 * scale, weight: .bold))
+                        .font(.appTitle(.bold))
                         .foregroundStyle(Self.goldMain)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -93,20 +93,20 @@ struct DashboardView: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 8 * scale) {
                 Text(displayedPrice)
-                    .font(.system(size: 56 * scale, weight: .heavy))
+                    .font(.appDisplay(.heavy))
                     .foregroundStyle(Self.goldMain)
                     .contentTransition(.numericText())
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
 
                 Text("ر.س/ج")
-                    .font(.system(size: 24 * scale, weight: .bold))
+                    .font(.appTitle2(.bold))
                     .foregroundStyle(Self.warmLight)
 
                 Spacer()
 
                 Text("سعر الذهب اليوم")
-                    .font(.system(size: 15 * scale, weight: .semibold))
+                    .font(.appSubheadline(.semibold))
                     .foregroundStyle(Self.warmLight)
             }
 
@@ -136,7 +136,7 @@ struct DashboardView: View {
                 Spacer()
 
                 Text(viewModel.lastUpdatedText)
-                    .font(.system(size: 14 * scale, weight: .semibold))
+                    .font(.appFootnote(.semibold))
                     .foregroundStyle(Self.warmLight)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
@@ -160,7 +160,7 @@ struct DashboardView: View {
     private func quickActionsSection(scale: CGFloat) -> some View {
         VStack(alignment: .trailing, spacing: 13 * scale) {
             Text("الاجراءات السريعة")
-                .font(.system(size: 24 * scale, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -172,11 +172,11 @@ struct DashboardView: View {
 
                     VStack(alignment: .trailing, spacing: 4 * scale) {
                         Text("حاسبة الذهب")
-                            .font(.system(size: 20 * scale, weight: .bold))
+                            .font(.appTitle3(.bold))
                             .foregroundStyle(Color("maincolor"))
 
                         Text("احسب سعر الذهب فورياً مع الضريبة")
-                            .font(.system(size: 13 * scale, weight: .semibold))
+                            .font(.appFootnote(.semibold))
                             .foregroundStyle(Self.mutedTealText)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -191,7 +191,7 @@ struct DashboardView: View {
                             Image(systemName: "plus")
                             Image(systemName: "minus")
                         }
-                        .font(.system(size: 20 * scale, weight: .bold))
+                        .font(.appTitle3(.bold))
                         .foregroundStyle(Color.white.opacity(0.95))
                     }
                 }
@@ -213,11 +213,11 @@ struct DashboardView: View {
                 ZStack(alignment: .topTrailing) {
                     VStack(alignment: .trailing, spacing: 2 * scale) {
                         Text("قيمة ذهبك اليوم")
-                            .font(.system(size: 20 * scale, weight: .bold))
+                            .font(.appTitle3(.bold))
                             .foregroundStyle(Color("maincolor"))
 
                         Text(viewModel.formattedPortfolioValueToday)
-                            .font(.system(size: 50 * scale, weight: .heavy))
+                            .font(.appDisplay(.heavy))
                             .foregroundStyle(Self.goldValue)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
@@ -225,7 +225,7 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     Text("التجوري")
-                        .font(.system(size: 14 * scale, weight: .bold))
+                        .font(.appFootnote(.bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12 * scale)
                         .padding(.vertical, 7 * scale)
@@ -233,7 +233,7 @@ struct DashboardView: View {
                 }
 
                 Text("\(viewModel.formattedWeeklyPortfolioChange) \(viewModel.weeklyPortfolioChangeIsPositive ? "▲" : "▼")")
-                    .font(.system(size: 14 * scale, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundStyle(viewModel.weeklyPortfolioChangeIsPositive ? Self.activeTab : .red)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -248,7 +248,7 @@ struct DashboardView: View {
                 .frame(height: 11 * scale)
 
                 Text(viewModel.formattedTotalTojoryGrams)
-                    .font(.system(size: 14 * scale, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundStyle(Self.secondaryGray)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -265,16 +265,16 @@ struct DashboardView: View {
             HStack {
                 HStack(spacing: 8 * scale) {
                     Image(systemName: "moon.fill")
-                        .font(.system(size: 22 * scale, weight: .semibold))
+                        .font(.appTitle2(.semibold))
                         .foregroundStyle(Color("maincolor"))
 
                     VStack(alignment: .trailing, spacing: 2 * scale) {
                         Text("الزكاة مستحقة")
-                            .font(.system(size: 22 * scale, weight: .bold))
+                            .font(.appTitle2(.bold))
                             .foregroundStyle(Color("maincolor"))
 
                         Text(viewModel.formattedZakatDueText)
-                            .font(.system(size: 18 * scale, weight: .bold))
+                            .font(.appTitle3(.bold))
                             .foregroundStyle(Color("maincolor"))
                     }
                 }
@@ -283,7 +283,7 @@ struct DashboardView: View {
                 Spacer()
 
                 Text(viewModel.nisabStatusText)
-                    .font(.system(size: 16 * scale, weight: .bold))
+                    .font(.appCallout(.bold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12 * scale)
                     .padding(.vertical, 7 * scale)
@@ -313,7 +313,7 @@ struct DashboardView: View {
                 .frame(width: 8 * scale, height: 8 * scale)
 
             Text("مباشر")
-                .font(.system(size: 15 * scale, weight: .bold))
+                .font(.appSubheadline(.bold))
                 .foregroundStyle(Self.liveText)
         }
         .padding(.horizontal, 12 * scale)
@@ -327,7 +327,7 @@ struct DashboardView: View {
             selectedKarat = option
         } label: {
             Text(option.rawValue)
-                .font(.system(size: 12 * scale, weight: .bold))
+                .font(.appCaption(.bold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12 * scale)
                 .padding(.vertical, 7 * scale)

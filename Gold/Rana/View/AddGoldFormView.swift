@@ -49,7 +49,7 @@ struct AddGoldFormView: View {
                 vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
             }) {
                 Text("قارن")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.appSubheadline(.semibold))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
@@ -62,7 +62,7 @@ struct AddGoldFormView: View {
 
             Button(action: { vm.cancelForm() }) {
                 Text("الغاء")
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.appSubheadline(.medium))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
@@ -78,7 +78,7 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var formTitle: some View {
         Text("مقارنة قطعة ذهب")
-            .font(.system(size: 17, weight: .bold))
+            .font(.appBody(.bold))
             .foregroundColor(Color("maincolor"))
             .frame(maxWidth: .infinity, alignment: .center)
     }
@@ -105,10 +105,10 @@ struct AddGoldFormView: View {
                 } else {
                     VStack(spacing: 10) {
                         Image(systemName: "camera.fill")
-                            .font(.system(size: 28))
+                            .font(.appTitle())
                             .foregroundColor(Color("Light grey"))
                         Text("اضغط لاضافة صورة")
-                            .font(.system(size: 13))
+                            .font(.appFootnote())
                             .foregroundColor(Color("Light grey"))
                     }
                 }
@@ -170,7 +170,7 @@ struct AddGoldFormView: View {
     private var karatSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("العيار*")
-                .font(.system(size: 13, weight: .bold))
+                .font(.appFootnote(.bold))
                 .foregroundColor(Color("maincolor"))
 
             HStack(spacing: 8) {
@@ -185,7 +185,7 @@ struct AddGoldFormView: View {
         let selected = vm.form.karat == k
         return Button(action: { vm.updateField(\.karat, value: k) }) {
             Text(k.label)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.appSubheadline(.semibold))
                 .foregroundColor(selected ? Color("background") : Color("maincolor"))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
@@ -201,7 +201,7 @@ struct AddGoldFormView: View {
         HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("سعر المحل بدون الضريبة*")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(Color("maincolor"))
                 ThemedTextField(
                     "مثال: 1500",
@@ -223,7 +223,7 @@ struct AddGoldFormView: View {
 
             VStack(alignment: .center, spacing: 6) {
                 Text("الضريبة")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(Color("Dark grey"))
                 vatBadge
             }
@@ -235,10 +235,10 @@ struct AddGoldFormView: View {
     private var vatBadge: some View {
         HStack(spacing: 5) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 13).bold())
+                .font(.appFootnote(.bold))
                 .foregroundColor(Color("Grey"))
             Text("15%")
-                .font(.system(size: 13, weight: .bold))
+                .font(.appFootnote(.bold))
                 .foregroundColor(Color("Grey"))
         }
         .frame(maxWidth: .infinity)
@@ -273,10 +273,10 @@ struct AddGoldFormView: View {
     private func inlineError(_ message: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: "exclamationmark.circle.fill")
-                .font(.system(size: 12))
+                .font(.appCaption())
                 .foregroundColor(Color("Red"))
             Text(message)
-                .font(.system(size: 12))
+                .font(.appCaption())
                 .foregroundColor(Color("Red"))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -289,7 +289,7 @@ struct AddGoldFormView: View {
     private func labeledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 13, weight: .bold))
+                .font(.appFootnote(.bold))
                 .foregroundColor(Color("maincolor"))
             content()
         }

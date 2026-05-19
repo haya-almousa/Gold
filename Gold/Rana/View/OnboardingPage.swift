@@ -25,6 +25,7 @@ private let pages: [OnboardingPage] = [
 struct OnboardingView: View {
     @State private var currentPage = 0
     var onFinished: () -> Void
+    @ScaledMetric(relativeTo: .largeTitle) private var symbolSize: CGFloat = 120
 
     var body: some View {
         GeometryReader { geo in
@@ -69,9 +70,9 @@ struct OnboardingView: View {
                 .position(x: geo.size.width / 2,
                           y: geo.safeAreaInsets.top + geo.size.width * 0.3)
             
-            // symbol inside the circle
+            // symbol inside the circle — symbolSize scales with Dynamic Type
             Image(systemName: page.symbol)
-                .font(.system(size: 150, weight: .bold))
+                .font(.system(size: symbolSize, weight: .bold))
                 .foregroundColor(page.symbolColor)
                 .position(x: geo.size.width / 2,
                           y: 225)
@@ -85,9 +86,9 @@ struct OnboardingView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.appFootnote(.semibold))
                             Text("تخطى")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .font(.appSubheadline(.medium))
                         }
                         .foregroundColor(.black)
                     }
@@ -102,9 +103,9 @@ struct OnboardingView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Text("رجوع")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .font(.appSubheadline(.medium))
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.appFootnote(.semibold))
                         }
                         .foregroundColor(.black)
                     }
@@ -116,7 +117,7 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 Spacer()
                 Text(page.title)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.appTitle(.bold))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.black)
                     .lineSpacing(6)
@@ -148,7 +149,7 @@ struct OnboardingView: View {
             }
         } label: {
             Text("التالي")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .font(.appTitle3(.semibold))
                 .foregroundColor(Color("background"))
                 .frame(maxWidth: 250)
                 .frame(height: 45)

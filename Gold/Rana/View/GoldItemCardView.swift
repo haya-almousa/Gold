@@ -41,7 +41,7 @@ struct GoldItemCardView: View {
                     }
                 }) {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.appFootnote(.bold))
                         .foregroundColor(Color(.navy).opacity(0.45))
                         .rotationEffect(.degrees(90))
                         .frame(width: 36, height: 32)
@@ -80,9 +80,9 @@ struct GoldItemCardView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "pencil")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.appFootnote(.medium))
                     Text("تعديل")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.appSubheadline(.medium))
                     Spacer()
                 }
                 .foregroundColor(Color("maincolor"))
@@ -101,9 +101,9 @@ struct GoldItemCardView: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "trash")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.appFootnote(.medium))
                     Text("حذف")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.appSubheadline(.medium))
                     Spacer()
                 }
                 .foregroundColor(Color("Red"))
@@ -126,7 +126,7 @@ struct GoldItemCardView: View {
 
     private var bestBadge: some View {
         Text("افضل سعرا")
-            .font(.system(size: 11, weight: .bold))
+            .font(.appCaption(.bold))
             .foregroundColor(Color("maincolor"))
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
@@ -148,7 +148,7 @@ struct GoldItemCardView: View {
             } else {
                 Color("Gold")
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 24))
+                    .font(.appTitle2())
                     .foregroundColor(Color("Dark gold"))
             }
         }
@@ -169,20 +169,20 @@ struct GoldItemCardView: View {
     private var contentArea: some View {
         VStack(alignment: .trailing, spacing: 0) {
             Text(piece.name)
-                .font(.system(size: 17, weight: .bold))
+                .font(.appBody(.bold))
                 .foregroundColor(Color("Dark gold"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.trailing, 28)
 
             Text("SAR \(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))")
-                .font(.system(size: 20, weight: .heavy))
+                .font(.appTitle3(.heavy))
                 .foregroundColor(Color("maincolor"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.top, 2)
 
             if piece.shopPrice > 0 {
                 Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
-                    .font(.system(size: 12))
+                    .font(.appCaption())
                     .foregroundColor(Color("Grey"))
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.top, 4)
@@ -205,7 +205,7 @@ struct GoldItemCardView: View {
 
     private func tagPill(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 11, weight: .medium))
+            .font(.appCaption(.medium))
             .foregroundColor(Color("maincolor"))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
@@ -227,15 +227,15 @@ struct ComparisonEmptyStateView: View {
                     .strokeBorder(Color("maincolor"), lineWidth: 0.5)
                     .frame(width: 76, height: 76)
                 Image(systemName: "bookmark.square.fill")
-                    .font(.system(size: 32))
+                    .font(.appTitle(.regular))
                     .foregroundColor(Color(.navy))
             }
             VStack(spacing: 7) {
                 Text("القائمة فارغة")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.appTitle3(.bold))
                     .foregroundColor(Color(.navy))
                 Text("اضغط + لاضافة قطعة ذهب للمقارنة")
-                    .font(.system(size: 13))
+                    .font(.appFootnote())
                     .foregroundColor(Color(.navy).opacity(0.55))
             }
         }

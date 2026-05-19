@@ -61,7 +61,7 @@ struct ComparisonListView: View {
 
                         if filteredPieces.isEmpty && !vm.pieces.isEmpty {
                             Text("لا توجد نتائج")
-                                .font(.system(size: 14))
+                                .font(.appSubheadline())
                                 .foregroundColor(Color(.navy).opacity(0.4))
                                 .padding(.vertical, 40)
                                 .frame(maxWidth: .infinity)
@@ -108,13 +108,13 @@ struct ComparisonListView: View {
                         .fill(Color("Gold"))
                         .frame(width: 46, height: 46)
                     Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.appTitle3(.bold))
                         .foregroundColor(Color("background"))
                 }
             }
             Spacer()
             Text("قائمة المقارنة")
-                .font(.system(size: 22, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(Color(.navy))
         }
     }
@@ -125,7 +125,7 @@ struct ComparisonListView: View {
         HStack(spacing: 12) {
             Button(action: {}) {
                 Text("جرب مجانا")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.appFootnote(.semibold))
                     .foregroundColor(Color(.navy))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -141,10 +141,10 @@ struct ComparisonListView: View {
             HStack(alignment: .top, spacing: 6) {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("فتح المقارنة بالكامل")
-                        .font(.system(size: 15, weight: .bold))
+                        .font(.appSubheadline(.bold))
                         .foregroundColor(Color(.navy))
                     Text("تجربة مجانية لمدة 7 ايام - احفظ \nوقارن قطع الذهب")
-                        .font(.system(size: 11))
+                        .font(.appCaption())
                         .foregroundColor(Color(.navy))
                         .lineLimit(3)
                         .multilineTextAlignment(.trailing)
@@ -153,10 +153,10 @@ struct ComparisonListView: View {
 
                 VStack(spacing: 2) {
                     Image(systemName: "sparkle")
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.appTitle2(.bold))
                         .foregroundColor(Color(.yellow))
                     Image(systemName: "sparkle")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.appSubheadline(.bold))
                         .foregroundColor(Color(.yellow))
                 }
             }
@@ -171,7 +171,7 @@ struct ComparisonListView: View {
 
     private var draftWarningView: some View {
         Text("محفوظة كمسودة تنتهي خلال 4 ايام")
-            .font(.system(size: 13, weight: .bold))
+            .font(.appFootnote(.bold))
             .foregroundColor(Color("Dark gold"))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, 12)
@@ -194,7 +194,7 @@ struct ComparisonListView: View {
                 withAnimation { showFilter.toggle(); if showFilter { showSearch = false } }
             }) {
                 Image(systemName: showFilter ? "xmark" : "slider.horizontal.3")
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.appBody(.medium))
                     .foregroundColor(Color("background"))
                     .frame(width: 44, height: 44)
                     .background(showFilter ? Color("maincolor") : Color("Gold"))
@@ -208,7 +208,7 @@ struct ComparisonListView: View {
                 withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
             }) {
                 Image(systemName: showSearch ? "xmark" : "magnifyingglass")
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.appBody(.medium))
                     .foregroundColor(Color("background"))
                     .frame(width: 44, height: 44)
                     .background(showSearch ? Color("maincolor") : Color("Gold"))
@@ -223,10 +223,10 @@ struct ComparisonListView: View {
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
+                .font(.appSubheadline())
                 .foregroundColor(Color(.navy).opacity(0.5))
             TextField("ابحث عن قطعة أو محل...", text: $searchText)
-                .font(.system(size: 14))
+                .font(.appSubheadline())
                 .foregroundColor(Color(.navy))
         }
         .padding(.horizontal, 14)
@@ -253,7 +253,7 @@ struct ComparisonListView: View {
         let active = filterKarat == karat
         return Button(action: { withAnimation { filterKarat = karat } }) {
             Text(label)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.appFootnote(.semibold))
                 .foregroundColor(active ? Color("background") : Color(.navy))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -267,7 +267,7 @@ struct ComparisonListView: View {
 
     private var emptyStateView: some View {
         Text("اضغط + لاضافة قطعة ذهب للمقارنة")
-            .font(.system(size: 15))
+            .font(.appSubheadline())
             .foregroundColor(Color(.navy).opacity(0.4))
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)

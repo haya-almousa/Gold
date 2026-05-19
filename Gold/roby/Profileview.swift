@@ -34,7 +34,7 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 0) {
 
                 Text("Profile")
-                    .font(.custom("Georgia", size: 28).weight(.bold))
+                    .font(.custom("Georgia", size: 28, relativeTo: .title).weight(.bold))
                     .foregroundColor(Color("beige"))
                     .padding(.horizontal, 20)
                     .padding(.top, 24)
@@ -47,18 +47,18 @@ struct ProfileView: View {
                             .fill(Color("beige").opacity(0.15))
                             .frame(width: 52, height: 52)
                         Image(systemName: "person.fill")
-                            .font(.system(size: 22))
+                            .font(.appTitle2())
                             .foregroundColor(Color("beige"))
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(auth.userName.isEmpty ? "مستخدم Gold" : auth.userName)
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(.appBody(.bold))
                             .foregroundColor(Color("beige"))
 
                         if !auth.userEmail.isEmpty {
                             Text(auth.userEmail)
-                                .font(.system(size: 13, weight: .regular, design: .rounded))
+                                .font(.appFootnote(.regular))
                                 .foregroundColor(Color("emarald"))
                         }
                     }
@@ -86,7 +86,7 @@ struct ProfileView: View {
                     auth.signOut()
                 } label: {
                     Text("تسجيل الخروج")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.appSubheadline(.semibold))
                         .foregroundColor(.red.opacity(0.85))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -104,7 +104,7 @@ struct ProfileView: View {
     private var guestView: some View {
         VStack(spacing: 0) {
             Text("Profile")
-                .font(.custom("Georgia", size: 28).weight(.bold))
+                .font(.custom("Georgia", size: 28, relativeTo: .title).weight(.bold))
                 .foregroundColor(Color("beige"))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
@@ -118,17 +118,17 @@ struct ProfileView: View {
                         .fill(Color("beige").opacity(0.1))
                         .frame(width: 80, height: 80)
                     Image(systemName: "person.fill")
-                        .font(.system(size: 34))
+                        .font(.appTitle())
                         .foregroundColor(Color("beige").opacity(0.6))
                 }
 
                 VStack(spacing: 8) {
                     Text("Sign in to sync")
-                        .font(.custom("Georgia", size: 22).weight(.bold))
+                        .font(.custom("Georgia", size: 22, relativeTo: .title2).weight(.bold))
                         .foregroundColor(Color("beige"))
 
                     Text("Access your portfolio, history, and preferences\nfrom any device.")
-                        .font(.system(size: 14, weight: .regular, design: .rounded))
+                        .font(.appSubheadline(.regular))
                         .foregroundColor(Color("emarald"))
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
@@ -143,7 +143,7 @@ struct ProfileView: View {
                     showSignIn = true
                 } label: {
                     Text("Sign In")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.appCallout(.bold))
                         .foregroundColor(Color("navy"))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -155,7 +155,7 @@ struct ProfileView: View {
                     showSignIn = true
                 } label: {
                     Text("Create account")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.appCallout(.semibold))
                         .foregroundColor(Color("beige"))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -181,7 +181,7 @@ struct ProfileView: View {
                     .fill(Color("beige").opacity(0.12))
                     .frame(width: 34, height: 34)
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.appSubheadline(.medium))
                     .foregroundColor(Color("beige"))
             }
 
@@ -192,7 +192,7 @@ struct ProfileView: View {
             Spacer()
 
             Image(systemName: "arrow.right")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.appFootnote(.semibold))
                 .foregroundColor(Color("emarald"))
         }
         .padding(.horizontal, 16)
