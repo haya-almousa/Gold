@@ -14,114 +14,67 @@ struct GoldItemCardView: View {
     let onEdit:   () -> Void
     let onDelete: () -> Void
 
-    @State private var showActions = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var showDeleteAlert = false
+    private let deleteThreshold: CGFloat = 80
 
     var body: some View {
-        HStack(spacing: 0) {
-            cameraBox
-            contentArea
-        }
-        .background(Color("Lightest gold"))
-        .cornerRadius(16)
-        .overlay(
+        ZStack(alignment: .leading) {
+            // Delete background revealed on swipe
             RoundedRectangle(cornerRadius: 16)
-                .stroke(
-                    isBest ? Color("maincolor") : Color("Gold"),
-                    lineWidth: 0.3
-                )
-        )
-        .overlay(alignment: .topLeading) {
-            if isBest { bestBadge }
-        }
-        .overlay(alignment: .topTrailing) {
-            VStack(alignment: .trailing, spacing: 2) {
-                Button(action: {
-                    withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                        showActions.toggle()
-                    }
-                }) {
-                    Image(systemName: "ellipsis")
-                        .font(.appFootnote(.bold))
-                        .foregroundColor(Color(.navy).opacity(0.45))
-                        .rotationEffect(.degrees(90))
-                        .frame(width: 36, height: 32)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                if showActions {
-                    actionMenu
-                        .transition(
-                            .scale(scale: 0.85, anchor: .topTrailing)
-                            .combined(with: .opacity)
-                        )
-                }
-            }
-            .padding(.top, 6)
-            .padding(.trailing, 6)
-            .zIndex(1)
-        }
-        .onTapGesture {
-            if showActions {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                    showActions = false
-                }
-            } else {
-                           onEdit()
-            }
-        }
-    }
-
-    // MARK: - Themed Action Menu
-
-    private var actionMenu: some View {
-        VStack(spacing: 0) {
-            Button(action: {
-                withAnimation { showActions = false }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { onEdit() }
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "pencil")
-                        .font(.appFootnote(.medium))
-                    Text("تعديل")
-                        .font(.appSubheadline(.medium))
-                    Spacer()
-                }
-                .foregroundColor(Color("maincolor"))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-            }
-            .buttonStyle(.plain)
-
-            Rectangle()
-                .fill(Color(.navy).opacity(0.08))
-                .frame(height: 1)
-
-            Button(action: {
-                withAnimation { showActions = false }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { onDelete() }
-            }) {
-                HStack(spacing: 8) {
+                .fill(Color("Light red"))
+                .overlay(
                     Image(systemName: "trash")
-                        .font(.appFootnote(.medium))
-                    Text("حذف")
-                        .font(.appSubheadline(.medium))
-                    Spacer()
-                }
-                .foregroundColor(Color("Red"))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
+                        .font(.appTitle3(.bold))
+                        .foregroundColor(Color("Red"))
+                        .padding(.leading, 24),
+                    alignment: .leading
+                )
+
+            // Card content
+            HStack(spacing: 0) {
+                contentArea
+                cameraBox
             }
-            .buttonStyle(.plain)
+            .background(Color("Lightest gold"))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        isBest ? Color("maincolor") : Color("Gold"),
+                        lineWidth: 0.3
+                    )
+            )
+            .offset(x: dragOffset)
+            .onTapGesture { onEdit() }
+            .gesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    .onChanged { value in
+                        guard abs(value.translation.width) > abs(value.translation.height),
+                              value.translation.width > 0 else { return }
+                        dragOffset = min(value.translation.width, 120)
+                    }
+                    .onEnded { _ in
+                        if dragOffset > deleteThreshold {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                dragOffset = 0
+                            }
+                            showDeleteAlert = true
+                        } else {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                dragOffset = 0
+                            }
+                        }
+                    }
+            )
         }
-        .frame(width: 118)
-        .background(Color("background"))
-        .cornerRadius(12)
-        .shadow(color: Color(.navy).opacity(0.13), radius: 12, x: 0, y: 4)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(.navy).opacity(0.07), lineWidth: 1)
-        )
+        .clipped()
+        .alert("\tحذف القطعة",isPresented: $showDeleteAlert) {
+            Button("حذف", role: .destructive) { onDelete() }
+            Button("الغاء", role: .cancel) { }
+        } message: {
+            Text("\t\tهل أنت متأكد من حذف \(piece.name)؟")
+        }
     }
 
     // MARK: - Best Badge
@@ -134,8 +87,6 @@ struct GoldItemCardView: View {
             .padding(.vertical, 5)
             .background(Color("Light blue"))
             .cornerRadius(8)
-            .padding(.top, 10)
-            .padding(.leading, 10)
     }
 
     // MARK: - Camera Box
@@ -157,40 +108,53 @@ struct GoldItemCardView: View {
         .frame(width: 90)
         .frame(maxHeight: .infinity)
         .background(Color("Gold"))
-        
+        .clipped()
     }
 
     // MARK: - Content Area
 
     private var contentArea: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            Text(piece.name)
-                .font(.appBody(.bold))
-                .foregroundColor(Color("Dark gold"))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 28)
 
-            Text("SAR \(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))")
-                .font(.appTitle3(.heavy))
-                .foregroundColor(Color("maincolor"))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.top, 2)
-
-            if piece.shopPrice > 0 {
-                Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
-                    .font(.appCaption())
-                    .foregroundColor(Color("Grey"))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 4)
+            // Badge | spacer | name
+            HStack(alignment: .center, spacing: 4) {
+                if isBest { bestBadge }
+                Spacer()
+                Text(piece.name)
+                    .font(.appBody(.bold))
+                    .foregroundColor(Color("Dark gold"))
             }
 
-            HStack(spacing: 6) {
-                Spacer()
-                if !piece.store.isEmpty {
-                    tagPill(piece.store)
+            HStack(alignment: .center, spacing: 0) {
+                // Price on the left
+                HStack(alignment: .center, spacing: 4) {
+                    Image("SaudiRiyalSymbol")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 18)
+                        .foregroundColor(Color("maincolor"))
+                    Text(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))
+                        .font(.appTitle3(.heavy))
+                        .foregroundColor(Color("maincolor"))
                 }
-                tagPill("\(piece.karat.rawValue)K")
-                tagPill("\(piece.grams.clean)g")
+
+                Spacer()
+
+                // Details + tags on the right
+                VStack(alignment: .trailing, spacing: 6) {
+                    if piece.shopPrice > 0 {
+                        Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
+                            .font(.appCaption())
+                            .foregroundColor(Color("Grey"))
+                    }
+                    HStack(spacing: 6) {
+                        if !piece.store.isEmpty {
+                            tagPill(piece.store)
+                        }
+                        tagPill("\(piece.karat.rawValue)K")
+                        tagPill("\(piece.grams.clean)g")
+                    }
+                }
             }
             .padding(.top, 8)
         }
