@@ -15,6 +15,7 @@ struct DashboardView: View {
     }
 
     @StateObject private var viewModel: DashboardViewModel
+    @ObservedObject private var authManager = AuthenticationManager.shared
     @State private var selectedKarat: KaratOption = .k24
     @Environment(\.scenePhase) private var scenePhase
 
@@ -27,28 +28,27 @@ struct DashboardView: View {
         NavigationStack {
             GeometryReader { geo in
                 let width = geo.size.width
-                let height = geo.size.height
-                let scale = min(max(min(width / 390, height / 844), 0.84), 1.0)
+                let scale = min(max(width / 390, 0.92), 1.0)
 
                 ZStack(alignment: .bottom) {
                     Color("background")
                         .ignoresSafeArea()
 
-                    VStack(spacing: 12 * scale) {
-                        topPriceCard(scale: scale)
+                    VStack(spacing: 14 * scale) {
+                        topPriceCard(scale: scale, topInset: geo.safeAreaInsets.top)
                             .padding(.horizontal, 0)
-                            .padding(.top, -(geo.safeAreaInsets.top))
+                            .padding(.top, 0)
 
                         quickActionsSection(scale: scale)
-                            .padding(.horizontal, 10 * scale)
+                            .padding(.horizontal, 16 * scale)
 
                         portfolioAndZakatCard(scale: scale)
-                            .padding(.horizontal, 10 * scale)
+                            .padding(.horizontal, 16 * scale)
 
                         Spacer(minLength: 0)
                     }
                     .padding(.top, 0)
-                    .padding(.bottom, 80)
+                    .padding(.bottom, 92 * scale)
 
                 }
             }
@@ -71,15 +71,15 @@ struct DashboardView: View {
         }
     }
 
-    private func topPriceCard(scale: CGFloat) -> some View {
+    private func topPriceCard(scale: CGFloat, topInset: CGFloat) -> some View {
         VStack(spacing: 11 * scale) {
             HStack(alignment: .center) {
                 VStack(alignment: .trailing, spacing: 4 * scale) {
-                    Text("صباح الخير ☀️")
+                    Text(greetingText)
                         .font(.appSubheadline(.medium))
                         .foregroundStyle(Self.warmLight)
 
-                    Text("هياء!")
+                    Text(displayedUserName)
                         .font(.appTitle(.bold))
                         .foregroundStyle(Self.goldMain)
                         .lineLimit(1)
@@ -143,7 +143,7 @@ struct DashboardView: View {
             }
         }
         .padding(.horizontal, 16 * scale)
-        .padding(.top, 22 * scale)
+        .padding(.top, 12 * scale)
         .padding(.bottom, 12 * scale)
         .background(
             UnevenRoundedRectangle(
@@ -153,6 +153,7 @@ struct DashboardView: View {
                 topTrailingRadius: 0
             )
                 .fill(Color("maincolor"))
+                .padding(.top, -topInset)
         )
         .frame(maxWidth: .infinity)
     }
@@ -163,6 +164,7 @@ struct DashboardView: View {
                 .font(.appTitle2(.bold))
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 4 * scale)
 
             NavigationLink {
                 GoldCalculatorView()
@@ -300,6 +302,7 @@ struct DashboardView: View {
                     .fill(Self.zakatBackground)
             )
         }
+        .padding(.top, 2 * scale)
     }
 
   
@@ -334,6 +337,25 @@ struct DashboardView: View {
                 .background(Capsule().fill(active ? Self.karatSelected : Self.karatUnselected))
         }
         .buttonStyle(.plain)
+    }
+
+    private var greetingText: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        if hour >= 5 && hour < 12 {
+            return "صباح الخير ☀️"
+        } else if hour >= 12 && hour < 17 {
+            return "مساء الخير 🌤️"
+        } else {
+            return "مساء الخير 🌙"
+        }
+    }
+
+    private var displayedUserName: String {
+        let name = authManager.userName
+        if name.isEmpty {
+            return "مرحباً!"
+        }
+        return "\(name)!"
     }
 
     private var displayedPrice: String {
