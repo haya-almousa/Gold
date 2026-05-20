@@ -141,7 +141,7 @@ struct AddGoldFormView: View {
 
     @ViewBuilder
     private var nameSection: some View {
-        labeledField("اسم القطعة") {
+        labeledField("* اسم القطعة") {
             ThemedTextField(
                 "مثال: اسوارة، خاتم",
                 text: Binding(
@@ -192,7 +192,7 @@ struct AddGoldFormView: View {
                 .foregroundColor(Color("maincolor"))
 
             HStack(spacing: 8) {
-                ForEach(Karat.allCases) { k in
+                ForEach(Karat.allCases.reversed()) { k in
                     karatButton(k)
                 }
             }

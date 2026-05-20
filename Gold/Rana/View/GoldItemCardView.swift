@@ -66,6 +66,8 @@ struct GoldItemCardView: View {
                 withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
                     showActions = false
                 }
+            } else {
+                           onEdit()
             }
         }
     }
@@ -155,13 +157,7 @@ struct GoldItemCardView: View {
         .frame(width: 90)
         .frame(maxHeight: .infinity)
         .background(Color("Gold"))
-        .onTapGesture {
-            if showActions {
-                withAnimation { showActions = false }
-            } else {
-                onEdit()
-            }
-        }
+        
     }
 
     // MARK: - Content Area

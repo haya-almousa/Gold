@@ -143,7 +143,7 @@ struct ComparisonListView: View {
                     Text("فتح المقارنة بالكامل")
                         .font(.appSubheadline(.bold))
                         .foregroundColor(Color(.navy))
-                    Text("تجربة مجانية لمدة 7 ايام - احفظ \nوقارن قطع الذهب")
+                    Text("جرّب كل المميزات لمدة 7 أيام مجانًا\nثم 19.99 ر.س شهريًا فقط")
                         .font(.appCaption())
                         .foregroundColor(Color(.navy))
                         .lineLimit(3)
