@@ -2,7 +2,7 @@
 //  Goldcalculator.swift
 //  Gold
 //
-//  Created by Raghad Alamoudi on 09/11/1447 AH.
+//  Created by Haya Almousa on 2/12/1447 AH.
 //
 
 internal import SwiftUI
@@ -16,8 +16,6 @@ enum PriceState {
 
 // MARK: - Gold Calculator View
 struct GoldCalculatorView: View {
-    @Environment(\.dismiss) private var dismiss
-
     // MARK: - API
     let apiService: any GoldPriceProviding
     @State private var priceState: PriceState = .loading
@@ -29,7 +27,6 @@ struct GoldCalculatorView: View {
     @State private var selectedKarat: KaratOption = .k18
     @State private var manufacturingFeeText: String = ""
     @State private var manufacturingFee: Double = 0
-    @State private var isLocalManufacturing: Bool = true
     @FocusState private var focusedField: Field?
 
     enum Field { case weight, fee }
@@ -114,7 +111,7 @@ struct GoldCalculatorView: View {
                     topBar
                     karatSection
                     weightSection
-                    manufacturingSourceSection
+                    manufacturingFeeSection
                     totalSection
                     Spacer(minLength: 16)
                 }
@@ -145,24 +142,10 @@ struct GoldCalculatorView: View {
     // MARK: - Layout Sections
     private var topBar: some View {
         HStack {
-            Button {
-                dismiss()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(primaryTeal)
-                        .frame(width: 54, height: 54)
-                    Image(systemName: "chevron.left")
-                        .font(.appTitle3(.medium))
-                        .foregroundColor(.white)
-                }
-            }
-            .buttonStyle(.plain)
-
             Spacer()
 
             Text("حاسبة الذهب")
-                .font(.appTitle(.bold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.black)
                 .minimumScaleFactor(0.6)
         }
@@ -172,7 +155,7 @@ struct GoldCalculatorView: View {
     private var karatSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("العيار")
-                .font(.appTitle2(.bold))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundColor(primaryTeal)
 
             HStack(spacing: 10) {
@@ -187,7 +170,7 @@ struct GoldCalculatorView: View {
     private var weightSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("الوزن (جرام)*")
-                .font(.appTitle2(.bold))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
@@ -197,7 +180,7 @@ struct GoldCalculatorView: View {
 
                 if weightText.isEmpty {
                     Text("مثال:5.5")
-                        .font(.appTitle3(.semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -206,7 +189,7 @@ struct GoldCalculatorView: View {
                 TextField("", text: $weightText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .font(.appTitle3(.semibold))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
                     .focused($focusedField, equals: .weight)
@@ -220,32 +203,38 @@ struct GoldCalculatorView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    private var manufacturingSourceSection: some View {
+    private var manufacturingFeeSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            HStack(spacing: 6) {
-                Text("منشأ المصنعية")
-                    .font(.appTitle2(.bold))
-                    .foregroundColor(primaryTeal)
+            Text("المصنعية*")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(primaryTeal)
 
-                Image(systemName: "questionmark.circle")
-                    .font(.appTitle3(.regular))
-                    .foregroundColor(primaryTeal)
-            }
+            ZStack(alignment: .trailing) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(softTeal)
+                    .frame(height: 48)
 
-            HStack(spacing: 0) {
-                Button {
-                    isLocalManufacturing = false
-                } label: {
-                    sourceSegmentTitle("مستور", isSelected: !isLocalManufacturing)
+                if manufacturingFeeText.isEmpty {
+                    Text("مثال:10")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(secondaryTeal.opacity(0.75))
+                        .padding(.horizontal, 18)
+                        .allowsHitTesting(false)
                 }
 
-                Button {
-                    isLocalManufacturing = true
-                } label: {
-                    sourceSegmentTitle("محلي", isSelected: isLocalManufacturing)
-                }
+                TextField("", text: $manufacturingFeeText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(primaryTeal)
+                    .padding(.horizontal, 18)
+                    .focused($focusedField, equals: .fee)
+                    .onChange(of: manufacturingFeeText) {
+                        let filtered = manufacturingFeeText.filter { $0.isNumber || $0 == "." }
+                        if filtered != manufacturingFeeText { manufacturingFeeText = filtered }
+                        manufacturingFee = Double(filtered) ?? 0
+                    }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -253,11 +242,11 @@ struct GoldCalculatorView: View {
     private var totalSection: some View {
         VStack(spacing: 8) {
             Text("إجمالي السعر التقديري")
-                .font(.appTitle2(.bold))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundColor(mutedGold)
 
             Text("SAR \(fmtCurrency(totalValueSAR))")
-                .font(.appDisplay(.heavy))
+                .font(.system(size: 34, weight: .heavy))
                 .foregroundColor(primaryTeal)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
@@ -274,7 +263,7 @@ struct GoldCalculatorView: View {
             selectedKarat = option
         } label: {
             Text(title)
-                .font(.appTitle3(.bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundColor(isSelected ? .white : primaryTeal)
                 .frame(maxWidth: .infinity)
                 .frame(height: 40)
@@ -282,15 +271,6 @@ struct GoldCalculatorView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-    }
-
-    private func sourceSegmentTitle(_ title: String, isSelected: Bool) -> some View {
-        Text(title)
-            .font(.appTitle3(.bold))
-            .foregroundColor(isSelected ? .white : primaryTeal)
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(isSelected ? primaryTeal : softTeal)
     }
 
     // MARK: - Helpers
@@ -306,13 +286,13 @@ struct GoldCalculatorView: View {
         VStack(spacing: 0) {
             Button(action: increment) {
                 Image(systemName: "chevron.up")
-                    .font(.appCaption(.semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
             Button(action: decrement) {
                 Image(systemName: "chevron.down")
-                    .font(.appCaption(.semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
