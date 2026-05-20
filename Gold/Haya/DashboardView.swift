@@ -7,13 +7,41 @@
 
 internal import SwiftUI
 
-struct DashboardView: View {
-    private enum KaratOption: String {
-        case k24 = "24k"
-        case k21 = "21k"
-        case k18 = "18k"
-    }
+// MARK: - KaratOption
 
+private enum KaratOption: String {
+    case k24 = "24k"
+    case k21 = "21k"
+    case k18 = "18k"
+}
+
+// MARK: - Dashboard Colors
+
+private enum DashboardColors {
+    static let goldMain = Color(red: 0.96, green: 0.82, blue: 0.38)
+    static let warmLight = Color(red: 0.93, green: 0.85, blue: 0.65)
+    static let mutedTealText = Color(red: 0.41, green: 0.51, blue: 0.52)
+    static let quickActionBackground = Color(red: 0.76, green: 0.84, blue: 0.85)
+    static let goldValue = Color(red: 0.88, green: 0.74, blue: 0.30)
+    static let progressTrack = Color(red: 0.79, green: 0.79, blue: 0.81)
+    static let progressFill = Color(red: 0.04, green: 0.48, blue: 0.52)
+    static let secondaryGray = Color(red: 0.69, green: 0.69, blue: 0.70)
+    static let cardLightBackground = Color(red: 0.95, green: 0.95, blue: 0.96)
+    static let cardBorder = Color(red: 0.89, green: 0.89, blue: 0.91)
+    static let nisabBadge = Color(red: 0.85, green: 0.64, blue: 0.00)
+    static let zakatBackground = Color(red: 0.93, green: 0.90, blue: 0.66)
+    static let activeTab = Color(red: 0.22, green: 0.58, blue: 0.61)
+    static let inactiveTab = Color(red: 0.60, green: 0.60, blue: 0.62)
+    static let liveDot = Color(red: 0.35, green: 0.95, blue: 0.75)
+    static let liveText = Color(red: 0.43, green: 0.94, blue: 0.78)
+    static let liveBackground = Color(red: 0.06, green: 0.56, blue: 0.53)
+    static let karatSelected = Color(red: 0.79, green: 0.66, blue: 0.30)
+    static let karatUnselected = Color(red: 0.30, green: 0.63, blue: 0.65)
+}
+
+// MARK: - DashboardView
+
+struct DashboardView: View {
     @StateObject private var viewModel: DashboardViewModel
     @ObservedObject private var authManager = AuthenticationManager.shared
     @State private var selectedKarat: KaratOption = .k24
@@ -35,29 +63,47 @@ struct DashboardView: View {
                         .ignoresSafeArea()
 
                     VStack(spacing: 14 * scale) {
-                        topPriceCard(scale: scale, topInset: geo.safeAreaInsets.top)
-                            .padding(.horizontal, 0)
-                            .padding(.top, 0)
+                        DashboardTopPriceCard(
+                            scale: scale,
+                            topInset: geo.safeAreaInsets.top,
+                            greetingText: greetingText,
+                            userName: displayedUserName,
+                            price: displayedPrice,
+                            chartValues: displayedChartValues,
+                            lastUpdatedText: viewModel.lastUpdatedText,
+                            selectedKarat: $selectedKarat
+                        )
+                        .padding(.horizontal, 0)
+                        .padding(.top, 0)
 
-                        quickActionsSection(scale: scale)
+                        DashboardQuickActionsCard(scale: scale)
                             .padding(.horizontal, 16 * scale)
 
-                        portfolioAndZakatCard(scale: scale)
-                            .padding(.horizontal, 16 * scale)
+                        DashboardPortfolioZakatCard(
+                            scale: scale,
+                            portfolioValue: viewModel.formattedPortfolioValueToday,
+                            weeklyChange: viewModel.formattedWeeklyPortfolioChange,
+                            weeklyChangeIsPositive: viewModel.weeklyPortfolioChangeIsPositive,
+                            gramsProgress: viewModel.totalGramsProgressToNisab,
+                            totalGrams: viewModel.formattedTotalTojoryGrams,
+                            zakatDueText: viewModel.formattedZakatDueText,
+                            nisabStatusText: viewModel.nisabStatusText,
+                            meetsNisab: viewModel.meetsNisab
+                        )
+                        .padding(.horizontal, 16 * scale)
 
                         Spacer(minLength: 0)
                     }
                     .padding(.top, 0)
                     .padding(.bottom, 92 * scale)
-
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .refreshable {
             await viewModel.refreshManually()
         }
-        .navigationBarTitleDisplayMode(.inline)
         .preferredColorScheme(.light)
         .task { viewModel.start() }
         .onDisappear { viewModel.stop() }
@@ -69,274 +115,6 @@ struct DashboardView: View {
                 viewModel.stop()
             }
         }
-    }
-
-    private func topPriceCard(scale: CGFloat, topInset: CGFloat) -> some View {
-        VStack(spacing: 11 * scale) {
-            HStack(alignment: .center) {
-                VStack(alignment: .trailing, spacing: 4 * scale) {
-                    Text(greetingText)
-                        .font(.appSubheadline(.medium))
-                        .foregroundStyle(Self.warmLight)
-
-                    Text(displayedUserName)
-                        .font(.appTitle(.bold))
-                        .foregroundStyle(Self.goldMain)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                }
-
-                Spacer()
-
-                liveBadge(scale: scale)
-            }
-
-            HStack(alignment: .firstTextBaseline, spacing: 8 * scale) {
-                Text(displayedPrice)
-                    .font(.appDisplay(.heavy))
-                    .foregroundStyle(Self.goldMain)
-                    .contentTransition(.numericText())
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-
-                Text("ر.س/ج")
-                    .font(.appTitle2(.bold))
-                    .foregroundStyle(Self.warmLight)
-
-                Spacer()
-
-                Text("سعر الذهب اليوم")
-                    .font(.appSubheadline(.semibold))
-                    .foregroundStyle(Self.warmLight)
-            }
-
-            ZStack(alignment: .bottomLeading) {
-                GoldLineChartFillShape(values: displayedChartValues)
-                    .fill(
-                        LinearGradient(
-                            colors: [Self.goldMain.opacity(0.30), Self.goldMain.opacity(0.03)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(height: 108 * scale)
-
-                GoldLineChartShape(values: displayedChartValues)
-                    .stroke(Self.goldMain, style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
-                    .frame(height: 108 * scale)
-            }
-
-            HStack {
-                HStack(spacing: 8 * scale) {
-                    karatPill(.k24, scale: scale)
-                    karatPill(.k21, scale: scale)
-                    karatPill(.k18, scale: scale)
-                }
-
-                Spacer()
-
-                Text(viewModel.lastUpdatedText)
-                    .font(.appFootnote(.semibold))
-                    .foregroundStyle(Self.warmLight)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            }
-        }
-        .padding(.horizontal, 16 * scale)
-        .padding(.top, 12 * scale)
-        .padding(.bottom, 12 * scale)
-        .background(
-            UnevenRoundedRectangle(
-                topLeadingRadius: 0,
-                bottomLeadingRadius: 34 * scale,
-                bottomTrailingRadius: 34 * scale,
-                topTrailingRadius: 0
-            )
-                .fill(Color("maincolor"))
-                .padding(.top, -topInset)
-        )
-        .frame(maxWidth: .infinity)
-    }
-
-    private func quickActionsSection(scale: CGFloat) -> some View {
-        VStack(alignment: .trailing, spacing: 13 * scale) {
-            Text("الاجراءات السريعة")
-                .font(.appTitle2(.bold))
-                .foregroundStyle(.black)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 4 * scale)
-
-            NavigationLink {
-                GoldCalculatorView()
-            } label: {
-                HStack(spacing: 12 * scale) {
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4 * scale) {
-                        Text("حاسبة الذهب")
-                            .font(.appTitle3(.bold))
-                            .foregroundStyle(Color("maincolor"))
-
-                        Text("احسب سعر الذهب فورياً مع الضريبة")
-                            .font(.appFootnote(.semibold))
-                            .foregroundStyle(Self.mutedTealText)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .multilineTextAlignment(.trailing)
-
-                    ZStack {
-                        Circle()
-                            .fill(Color("maincolor"))
-                            .frame(width: 66 * scale, height: 66 * scale)
-
-                        VStack(spacing: 4 * scale) {
-                            Image(systemName: "plus")
-                            Image(systemName: "minus")
-                        }
-                        .font(.appTitle3(.bold))
-                        .foregroundStyle(Color.white.opacity(0.95))
-                    }
-                }
-                .environment(\.layoutDirection, .leftToRight)
-                .padding(.horizontal, 16 * scale)
-                .padding(.vertical, 15 * scale)
-                .background(
-                    RoundedRectangle(cornerRadius: 20 * scale, style: .continuous)
-                        .fill(Self.quickActionBackground)
-                )
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func portfolioAndZakatCard(scale: CGFloat) -> some View {
-        VStack(spacing: 0) {
-            VStack(alignment: .trailing, spacing: 12 * scale) {
-                ZStack(alignment: .topTrailing) {
-                    VStack(alignment: .trailing, spacing: 2 * scale) {
-                        Text("قيمة ذهبك اليوم")
-                            .font(.appTitle3(.bold))
-                            .foregroundStyle(Color("maincolor"))
-
-                        Text(viewModel.formattedPortfolioValueToday)
-                            .font(.appDisplay(.heavy))
-                            .foregroundStyle(Self.goldValue)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text("التجوري")
-                        .font(.appFootnote(.bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12 * scale)
-                        .padding(.vertical, 7 * scale)
-                        .background(Capsule().fill(Color("maincolor")))
-                }
-
-                Text("\(viewModel.formattedWeeklyPortfolioChange) \(viewModel.weeklyPortfolioChangeIsPositive ? "▲" : "▼")")
-                    .font(.appFootnote(.bold))
-                    .foregroundStyle(viewModel.weeklyPortfolioChangeIsPositive ? Self.activeTab : .red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                GeometryReader { pGeo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Self.progressTrack)
-                        Capsule()
-                            .fill(Self.progressFill)
-                            .frame(width: pGeo.size.width * viewModel.totalGramsProgressToNisab)
-                    }
-                }
-                .frame(height: 11 * scale)
-
-                Text(viewModel.formattedTotalTojoryGrams)
-                    .font(.appFootnote(.bold))
-                    .foregroundStyle(Self.secondaryGray)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(17 * scale)
-            .background(
-                RoundedRectangle(cornerRadius: 18 * scale, style: .continuous)
-                    .fill(Self.cardLightBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18 * scale, style: .continuous)
-                            .stroke(Self.cardBorder, lineWidth: 1)
-                    )
-            )
-
-            HStack {
-                HStack(spacing: 8 * scale) {
-                    Image(systemName: "moon.fill")
-                        .font(.appTitle2(.semibold))
-                        .foregroundStyle(Color("maincolor"))
-
-                    VStack(alignment: .trailing, spacing: 2 * scale) {
-                        Text("الزكاة مستحقة")
-                            .font(.appTitle2(.bold))
-                            .foregroundStyle(Color("maincolor"))
-
-                        Text(viewModel.formattedZakatDueText)
-                            .font(.appTitle3(.bold))
-                            .foregroundStyle(Color("maincolor"))
-                    }
-                }
-                .environment(\.layoutDirection, .leftToRight)
-
-                Spacer()
-
-                Text(viewModel.nisabStatusText)
-                    .font(.appCallout(.bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12 * scale)
-                    .padding(.vertical, 7 * scale)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10 * scale, style: .continuous)
-                            .fill(viewModel.meetsNisab ? Self.nisabBadge : Self.inactiveTab)
-                    )
-            }
-            .environment(\.layoutDirection, .leftToRight)
-            .padding(.horizontal, 16 * scale)
-            .padding(.vertical, 14 * scale)
-            .background(
-                UnevenRoundedRectangle(bottomLeadingRadius: 18 * scale, bottomTrailingRadius: 18 * scale)
-                    .fill(Self.zakatBackground)
-            )
-        }
-        .padding(.top, 2 * scale)
-    }
-
-  
-
-    
-
-    private func liveBadge(scale: CGFloat) -> some View {
-        HStack(spacing: 7 * scale) {
-            Circle()
-                .fill(Self.liveDot)
-                .frame(width: 8 * scale, height: 8 * scale)
-
-            Text("مباشر")
-                .font(.appSubheadline(.bold))
-                .foregroundStyle(Self.liveText)
-        }
-        .padding(.horizontal, 12 * scale)
-        .padding(.vertical, 6 * scale)
-        .background(Capsule().fill(Self.liveBackground))
-    }
-
-    private func karatPill(_ option: KaratOption, scale: CGFloat) -> some View {
-        let active = selectedKarat == option
-        return Button {
-            selectedKarat = option
-        } label: {
-            Text(option.rawValue)
-                .font(.appCaption(.bold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 12 * scale)
-                .padding(.vertical, 7 * scale)
-                .background(Capsule().fill(active ? Self.karatSelected : Self.karatUnselected))
-        }
-        .buttonStyle(.plain)
     }
 
     private var greetingText: String {
@@ -382,27 +160,314 @@ struct DashboardView: View {
     }
 }
 
-private extension DashboardView {
-    static let goldMain = Color(red: 0.96, green: 0.82, blue: 0.38)
-    static let warmLight = Color(red: 0.93, green: 0.85, blue: 0.65)
-    static let mutedTealText = Color(red: 0.41, green: 0.51, blue: 0.52)
-    static let quickActionBackground = Color(red: 0.76, green: 0.84, blue: 0.85)
-    static let goldValue = Color(red: 0.88, green: 0.74, blue: 0.30)
-    static let progressTrack = Color(red: 0.79, green: 0.79, blue: 0.81)
-    static let progressFill = Color(red: 0.04, green: 0.48, blue: 0.52)
-    static let secondaryGray = Color(red: 0.69, green: 0.69, blue: 0.70)
-    static let cardLightBackground = Color(red: 0.95, green: 0.95, blue: 0.96)
-    static let cardBorder = Color(red: 0.89, green: 0.89, blue: 0.91)
-    static let nisabBadge = Color(red: 0.85, green: 0.64, blue: 0.00)
-    static let zakatBackground = Color(red: 0.93, green: 0.90, blue: 0.66)
-    static let activeTab = Color(red: 0.22, green: 0.58, blue: 0.61)
-    static let inactiveTab = Color(red: 0.60, green: 0.60, blue: 0.62)
-    static let liveDot = Color(red: 0.35, green: 0.95, blue: 0.75)
-    static let liveText = Color(red: 0.43, green: 0.94, blue: 0.78)
-    static let liveBackground = Color(red: 0.06, green: 0.56, blue: 0.53)
-    static let karatSelected = Color(red: 0.79, green: 0.66, blue: 0.30)
-    static let karatUnselected = Color(red: 0.30, green: 0.63, blue: 0.65)
+// MARK: - Top Price Card
+
+private struct DashboardTopPriceCard: View {
+    let scale: CGFloat
+    let topInset: CGFloat
+    let greetingText: String
+    let userName: String
+    let price: String
+    let chartValues: [Double]
+    let lastUpdatedText: String
+    @Binding var selectedKarat: KaratOption
+
+    var body: some View {
+        VStack(spacing: 11 * scale) {
+            HStack(alignment: .center) {
+                VStack(alignment: .trailing, spacing: 4 * scale) {
+                    Text(greetingText)
+                        .font(.appSubheadline(.medium))
+                        .foregroundStyle(DashboardColors.warmLight)
+
+                    Text(userName)
+                        .font(.appTitle(.bold))
+                        .foregroundStyle(DashboardColors.goldMain)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+
+                Spacer()
+
+                liveBadge
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 8 * scale) {
+                Text(price)
+                    .font(.appDisplay(.heavy))
+                    .foregroundStyle(DashboardColors.goldMain)
+                    .contentTransition(.numericText())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+
+                Text("ر.س/ج")
+                    .font(.appTitle2(.bold))
+                    .foregroundStyle(DashboardColors.warmLight)
+
+                Spacer()
+
+                Text("سعر الذهب اليوم")
+                    .font(.appSubheadline(.semibold))
+                    .foregroundStyle(DashboardColors.warmLight)
+            }
+
+            ZStack(alignment: .bottomLeading) {
+                GoldLineChartFillShape(values: chartValues)
+                    .fill(
+                        LinearGradient(
+                            colors: [DashboardColors.goldMain.opacity(0.30), DashboardColors.goldMain.opacity(0.03)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(height: 108 * scale)
+
+                GoldLineChartShape(values: chartValues)
+                    .stroke(DashboardColors.goldMain, style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
+                    .frame(height: 108 * scale)
+            }
+
+            HStack {
+                HStack(spacing: 8 * scale) {
+                    karatPill(.k24)
+                    karatPill(.k21)
+                    karatPill(.k18)
+                }
+
+                Spacer()
+
+                Text(lastUpdatedText)
+                    .font(.appFootnote(.semibold))
+                    .foregroundStyle(DashboardColors.warmLight)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+            }
+        }
+        .padding(.horizontal, 16 * scale)
+        .padding(.top, 12 * scale)
+        .padding(.bottom, 12 * scale)
+        .background(
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 34 * scale,
+                bottomTrailingRadius: 34 * scale,
+                topTrailingRadius: 0
+            )
+                .fill(Color("maincolor"))
+                .padding(.top, -(topInset + 50))
+        )
+        .frame(maxWidth: .infinity)
+    }
+
+    private var liveBadge: some View {
+        HStack(spacing: 7 * scale) {
+            Circle()
+                .fill(DashboardColors.liveDot)
+                .frame(width: 8 * scale, height: 8 * scale)
+
+            Text("مباشر")
+                .font(.appSubheadline(.bold))
+                .foregroundStyle(DashboardColors.liveText)
+        }
+        .padding(.horizontal, 12 * scale)
+        .padding(.vertical, 6 * scale)
+        .background(Capsule().fill(DashboardColors.liveBackground))
+    }
+
+    private func karatPill(_ option: KaratOption) -> some View {
+        let active = selectedKarat == option
+        return Button {
+            selectedKarat = option
+        } label: {
+            Text(option.rawValue)
+                .font(.appCaption(.bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12 * scale)
+                .padding(.vertical, 7 * scale)
+                .background(Capsule().fill(active ? DashboardColors.karatSelected : DashboardColors.karatUnselected))
+        }
+        .buttonStyle(.plain)
+    }
 }
+
+// MARK: - Quick Actions Card
+
+private struct DashboardQuickActionsCard: View {
+    let scale: CGFloat
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 10 * scale) {
+            Text("الاجراءات السريعة")
+                .font(.appTitle3(.bold))
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, 2 * scale)
+
+            NavigationLink {
+                GoldCalculatorView()
+            } label: {
+                HStack(spacing: 10 * scale) {
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 3 * scale) {
+                        Text("حاسبة الذهب")
+                            .font(.appBody(.bold))
+                            .foregroundStyle(Color("maincolor"))
+
+                        Text("احسب سعر الذهب فورياً مع الضريبة")
+                            .font(.appCaption(.semibold))
+                            .foregroundStyle(DashboardColors.mutedTealText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .multilineTextAlignment(.trailing)
+
+                    ZStack {
+                        Circle()
+                            .fill(Color("maincolor"))
+                            .frame(width: 48 * scale, height: 48 * scale)
+
+                        VStack(spacing: 3 * scale) {
+                            Image(systemName: "plus")
+                            Image(systemName: "minus")
+                        }
+                        .font(.appBody(.bold))
+                        .foregroundStyle(Color.white.opacity(0.95))
+                    }
+                }
+                .environment(\.layoutDirection, .leftToRight)
+                .padding(.horizontal, 14 * scale)
+                .padding(.vertical, 12 * scale)
+                .background(
+                    RoundedRectangle(cornerRadius: 18 * scale, style: .continuous)
+                        .fill(DashboardColors.quickActionBackground)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+// MARK: - Portfolio & Zakat Card
+
+private struct DashboardPortfolioZakatCard: View {
+    let scale: CGFloat
+    let portfolioValue: String
+    let weeklyChange: String
+    let weeklyChangeIsPositive: Bool
+    let gramsProgress: CGFloat
+    let totalGrams: String
+    let zakatDueText: String
+    let nisabStatusText: String
+    let meetsNisab: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            portfolioSection
+                .zIndex(1)
+
+            zakatSection
+                .padding(.top, -14 * scale)
+        }
+        .padding(.top, 2 * scale)
+    }
+
+    private var portfolioSection: some View {
+        VStack(alignment: .trailing, spacing: 8 * scale) {
+            ZStack(alignment: .topTrailing) {
+                VStack(alignment: .trailing, spacing: 2 * scale) {
+                    Text("قيمة ذهبك اليوم")
+                        .font(.appSubheadline(.bold))
+                        .foregroundStyle(Color("maincolor"))
+
+                    Text(portfolioValue)
+                        .font(.appTitle(.heavy))
+                        .foregroundStyle(DashboardColors.goldValue)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("التجوري")
+                    .font(.appCaption(.bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10 * scale)
+                    .padding(.vertical, 5 * scale)
+                    .background(Capsule().fill(Color("maincolor")))
+            }
+
+            Text("\(weeklyChange) \(weeklyChangeIsPositive ? "▲" : "▼")")
+                .font(.appCaption(.bold))
+                .foregroundStyle(weeklyChangeIsPositive ? DashboardColors.activeTab : .red)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            GeometryReader { pGeo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(DashboardColors.progressTrack)
+                    Capsule()
+                        .fill(DashboardColors.progressFill)
+                        .frame(width: pGeo.size.width * gramsProgress)
+                }
+            }
+            .frame(height: 8 * scale)
+
+            Text(totalGrams)
+                .font(.appCaption(.bold))
+                .foregroundStyle(DashboardColors.secondaryGray)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(14 * scale)
+        .background(
+            RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
+                .fill(Color("Yellow"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
+                        .stroke(DashboardColors.cardBorder, lineWidth: 1)
+                )
+        )
+    }
+
+    private var zakatSection: some View {
+        HStack {
+            Text(nisabStatusText)
+                .font(.appFootnote(.bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10 * scale)
+                .padding(.vertical, 5 * scale)
+                .background(
+                    RoundedRectangle(cornerRadius: 8 * scale, style: .continuous)
+                        .fill(meetsNisab ? DashboardColors.nisabBadge : DashboardColors.inactiveTab)
+                )
+
+            Spacer()
+
+            HStack(spacing: 6 * scale) {
+                VStack(alignment: .leading, spacing: 1 * scale) {
+                    Text("الزكاة مستحقة")
+                        .font(.appSubheadline(.bold))
+                        .foregroundStyle(Color("maincolor"))
+
+                    Text(zakatDueText)
+                        .font(.appFootnote(.bold))
+                        .foregroundStyle(Color("maincolor"))
+                }
+
+                Image(systemName: "moon.fill")
+                    .font(.appBody(.semibold))
+                    .foregroundStyle(Color("maincolor"))
+                    .scaleEffect(x: -1, y: 1)
+            }
+        }
+        .environment(\.layoutDirection, .leftToRight)
+        .padding(.horizontal, 12 * scale)
+        .padding(.vertical, 18 * scale)
+        .background(
+            RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
+                .fill(Color("ye"))
+        )
+    }
+}
+
+// MARK: - Chart Shapes
 
 private struct GoldLineChartShape: Shape {
     let values: [Double]
@@ -466,6 +531,8 @@ private struct GoldLineChartFillShape: Shape {
         return line
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     DashboardView(viewModel: .preview)
