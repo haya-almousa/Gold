@@ -13,6 +13,7 @@ struct EducationArticle: Identifiable {
     let summary: String
     let detail: String
     let source: String
+    let sourceURL: URL
 }
 
 private let articles: [EducationArticle] = [
@@ -32,7 +33,8 @@ private let articles: [EducationArticle] = [
 
         كلما ارتفع العيار زادت نسبة الذهب الخالص وارتفع السعر، بينما يوفر العيار الأقل متانة أكبر وسعراً أقل.
         """,
-        source: "سعوديبيديا - الموسوعة السعودية"
+        source: "سعوديبيديا - الموسوعة السعودية",
+        sourceURL: URL(string: "https://saudipedia.com/article/14924/%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D9%88%D8%B3%D9%8A%D8%A7%D8%B3%D8%A9/%D8%A3%D9%86%D8%B8%D9%85%D8%A9/%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF%D9%86-%D8%A7%D9%84%D8%AB%D9%85%D9%8A%D9%86%D8%A9-%D9%88%D8%A7%D9%84%D8%A3%D8%AD%D8%AC%D8%A7%D8%B1-%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
     ),
     EducationArticle(
         title: "كيف تعمل زكاة الذهب",
@@ -52,7 +54,8 @@ private let articles: [EducationArticle] = [
 
         مثال: إذا كنتِ تملكين 100 غرام ذهب عيار 21، فإن ما يعادله من الذهب الخالص = 87.5 غرام (أكثر من النصاب)، وتُحسب الزكاة على قيمته السوقية.
         """,
-        source: "سعوديبيديا - الموسوعة السعودية"
+        source: "سعوديبيديا - الموسوعة السعودية",
+        sourceURL: URL(string: "https://saudipedia.com/article/16430/%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE/%D8%A7%D9%84%D8%AF%D9%88%D9%84%D8%A9-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89/%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D8%A9-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89")!
     ),
     EducationArticle(
         title: "الذهب كاستثمار",
@@ -72,7 +75,8 @@ private let articles: [EducationArticle] = [
 
         الذهب ليس مجرد معدن ثمين، بل أداة مالية استراتيجية لحماية الثروة على المدى الطويل.
         """,
-        source: "سعوديبيديا - الموسوعة السعودية"
+        source: "سعوديبيديا - الموسوعة السعودية",
+        sourceURL: URL(string: "https://saudipedia.com/article/14463/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%88%D8%A3%D8%B9%D9%85%D8%A7%D9%84/%D8%B7%D8%A7%D9%82%D8%A9-%D9%88%D9%85%D9%88%D8%A7%D8%B1%D8%AF-%D8%B7%D8%A8%D9%8A%D8%B9%D9%8A%D8%A9/%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
     ),
     EducationArticle(
         title: "شراء مجوهرات الذهب بذكاء",
@@ -92,7 +96,8 @@ private let articles: [EducationArticle] = [
 
         • التوقيت: تميل أسعار الذهب للانخفاض في فترات الاستقرار الاقتصادي وبعد المواسم والأعياد.
         """,
-        source: "سعوديبيديا - الموسوعة السعودية"
+        source: "سعوديبيديا - الموسوعة السعودية",
+        sourceURL: URL(string: "https://saudipedia.com/article/10581/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%88%D8%A3%D8%B9%D9%85%D8%A7%D9%84/%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9/%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
     )
 ]
 
@@ -186,10 +191,16 @@ struct EducationView: View {
                         Divider()
                             .padding(.vertical, 8)
 
-                        Text("المصدر: \(article.source)")
-                            .font(.appFootnote(.regular))
-                            .foregroundColor(Color("Grey"))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Link(destination: article.sourceURL) {
+                            HStack(spacing: 4) {
+                                Text("المصدر: \(article.source)")
+                                    .font(.appFootnote(.regular))
+                                Image(systemName: "arrow.up.left.square")
+                                    .font(.appFootnote(.regular))
+                            }
+                            .foregroundColor(Color("maincolor"))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(20)
                 }
