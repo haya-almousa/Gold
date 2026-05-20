@@ -143,7 +143,7 @@ struct ComparisonListView: View {
                     Text("فتح المقارنة بالكامل")
                         .font(.appSubheadline(.bold))
                         .foregroundColor(Color(.navy))
-                    Text("تجربة مجانية لمدة 7 ايام - احفظ \nوقارن قطع الذهب")
+                    Text("جرّب كل المميزات لمدة 7 أيام مجانًا\nثم 19.99 ر.س شهريًا فقط")
                         .font(.appCaption())
                         .foregroundColor(Color(.navy))
                         .lineLimit(3)
@@ -222,17 +222,19 @@ struct ComparisonListView: View {
 
     private var searchBar: some View {
         HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.appSubheadline())
-                .foregroundColor(Color(.navy).opacity(0.5))
             TextField("ابحث عن قطعة أو محل...", text: $searchText)
                 .font(.appSubheadline())
                 .foregroundColor(Color(.navy))
+                .multilineTextAlignment(.trailing)
+            Image(systemName: "magnifyingglass")
+                .font(.appSubheadline())
+                .foregroundColor(Color(.navy).opacity(0.5))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color(.beige))
+        .background(Color(.lightestBlue))
         .cornerRadius(12)
+        .environment(\.layoutDirection, .leftToRight)
     }
 
     // MARK: - Filter Chips
@@ -257,7 +259,7 @@ struct ComparisonListView: View {
                 .foregroundColor(active ? Color("background") : Color(.navy))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(active ? Color("maincolor") : Color(.beige))
+                .background(active ? Color("maincolor") : Color("Lightest blue"))
                 .cornerRadius(20)
         }
         .buttonStyle(.plain)
@@ -279,3 +281,4 @@ struct ComparisonListView: View {
 #Preview {
     ComparisonListView()
 }
+
