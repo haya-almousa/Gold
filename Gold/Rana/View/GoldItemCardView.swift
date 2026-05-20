@@ -41,7 +41,7 @@ struct GoldItemCardView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isBest ? Color("maincolor") : Color("Gold"),
+                        isBest ? Color("Navy") : Color("Dark gold"),
                         lineWidth: 0.3
                     )
             )
@@ -74,6 +74,20 @@ struct GoldItemCardView: View {
             Button("الغاء", role: .cancel) { }
         } message: {
             Text("\t\tهل أنت متأكد من حذف \(piece.name)؟")
+        }
+    }
+
+    // MARK: - Price View
+
+    private var priceView: some View {
+        HStack(alignment: .center, spacing: 4) {
+            Image("SaudiRiyalSymbol")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 16)
+            Text(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))
+                .font(.appSubheadline(.heavy))
+                .foregroundColor(Color("maincolor"))
         }
     }
 
@@ -116,8 +130,8 @@ struct GoldItemCardView: View {
     private var contentArea: some View {
         VStack(alignment: .trailing, spacing: 0) {
 
-            // Badge | spacer | name
-            HStack(alignment: .center, spacing: 4) {
+            // Top row: badge | spacer | name
+            HStack(alignment: .center, spacing: 8) {
                 if isBest { bestBadge }
                 Spacer()
                 Text(piece.name)
@@ -125,38 +139,26 @@ struct GoldItemCardView: View {
                     .foregroundColor(Color("Dark gold"))
             }
 
+            // Price + details on the same row
             HStack(alignment: .center, spacing: 0) {
-                // Price on the left
-                HStack(alignment: .center, spacing: 4) {
-                    Image("SaudiRiyalSymbol")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 18)
-                        .foregroundColor(Color("maincolor"))
-                    Text(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))
-                        .font(.appTitle3(.heavy))
-                        .foregroundColor(Color("maincolor"))
-                }
-
+                priceView
                 Spacer()
-
-                // Details + tags on the right
-                VStack(alignment: .trailing, spacing: 6) {
-                    if piece.shopPrice > 0 {
-                        Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
-                            .font(.appCaption())
-                            .foregroundColor(Color("Grey"))
-                    }
-                    HStack(spacing: 6) {
-                        if !piece.store.isEmpty {
-                            tagPill(piece.store)
-                        }
-                        tagPill("\(piece.karat.rawValue)K")
-                        tagPill("\(piece.grams.clean)g")
-                    }
+                if piece.shopPrice > 0 {
+                    Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
+                        .font(.appCaption())
+                        .foregroundColor(Color("Grey"))
                 }
             }
-            .padding(.top, 8)
+            .padding(.top, 6)
+
+            // Tags row
+            HStack(spacing: 6) {
+                Spacer()
+                if !piece.store.isEmpty { tagPill(piece.store) }
+                tagPill("\(piece.karat.rawValue)K")
+                tagPill("\(piece.grams.clean)g")
+            }
+            .padding(.top, 6)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
