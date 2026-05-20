@@ -149,7 +149,7 @@ struct GoldCalculatorView: View {
                 .foregroundColor(.black)
                 .minimumScaleFactor(0.6)
         }
-        .padding(.top, 8)
+        .padding(.top, 40)
     }
 
     private var karatSection: some View {

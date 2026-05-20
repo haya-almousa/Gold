@@ -7,10 +7,20 @@
 
 
 internal import SwiftUI
-import _PhotosUI_SwiftUI
+
+private enum ImageSource: Identifiable {
+    case photoLibrary, camera
+    var id: Self { self }
+    var pickerSourceType: UIImagePickerController.SourceType {
+        self == .camera ? .camera : .photoLibrary
+    }
+}
 
 struct AddGoldFormView: View {
     @ObservedObject var vm: ComparisonListViewModel
+
+    @State private var showSourceSheet = false
+    @State private var imageSource: ImageSource? = nil
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,12 +41,22 @@ struct AddGoldFormView: View {
                     karatSection
                     shopPriceTaxRow
                     storeSection
-                    
+
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 40)
             }
+        }
+        .confirmationDialog("اضافة صورة", isPresented: $showSourceSheet, titleVisibility: .visible) {
+            Button("اختر من الصور") { imageSource = .photoLibrary }
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("التقاط صورة") { imageSource = .camera }
+            }
+            Button("الغاء", role: .cancel) {}
+        }
+        .sheet(item: $imageSource) { source in
+            ImagePickerView(selectedImage: $vm.selectedImage, sourceType: source.pickerSourceType)
         }
     }
 
@@ -87,7 +107,7 @@ struct AddGoldFormView: View {
 
     @ViewBuilder
     private var photoPickerSection: some View {
-        PhotosPicker(selection: $vm.pickerItem, matching: .images) {
+        Button { showSourceSheet = true } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
@@ -114,9 +134,7 @@ struct AddGoldFormView: View {
                 }
             }
         }
-        .onChange(of: vm.pickerItem) { _ in
-            Task { await vm.loadSelectedImage() }
-        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Piece Name

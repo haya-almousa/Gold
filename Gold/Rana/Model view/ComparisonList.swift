@@ -11,7 +11,6 @@ import Combine
 import UIKit
 import CloudKit
 internal import SwiftUI
-import PhotosUI
 
 extension Notification.Name {
     static let tojoryPiecesDidChange = Notification.Name("tojoryPiecesDidChange")
@@ -138,7 +137,6 @@ final class ComparisonListViewModel: ObservableObject {
     @Published var            showForm:               Bool              = false
     @Published var            form:                   AddGoldFormState  = .empty()
     @Published var            selectedImage:          UIImage?          = nil
-    @Published var            pickerItem:             PhotosPickerItem? = nil
     @Published private(set) var nameError:            String?           = nil
     @Published private(set) var gramsError:           String?           = nil
     @Published private(set) var priceError:           String?           = nil
@@ -192,13 +190,6 @@ final class ComparisonListViewModel: ObservableObject {
     func updateField<T>(_ keyPath: WritableKeyPath<AddGoldFormState, T>, value: T) {
         form[keyPath: keyPath] = value
         nameError = nil; gramsError = nil; priceError = nil
-    }
-
-    func loadSelectedImage() async {
-        guard let item = pickerItem,
-              let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data) else { return }
-        selectedImage = image
     }
 
     func beginEdit(piece: GoldPiece) {
@@ -339,7 +330,7 @@ final class ComparisonListViewModel: ObservableObject {
     // MARK: - Private
 
     private func resetForm() {
-        form = .empty(); selectedImage = nil; pickerItem = nil
+        form = .empty(); selectedImage = nil
         nameError = nil; gramsError = nil; priceError = nil; editingID = nil
     }
     
