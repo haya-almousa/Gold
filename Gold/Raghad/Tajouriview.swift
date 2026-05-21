@@ -223,6 +223,7 @@ struct TajouriView: View {
                 Text("قطع الذهب")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(Color("Dark grey"))
+                    
             }
 
             if vm.pieces.isEmpty {

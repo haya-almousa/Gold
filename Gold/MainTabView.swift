@@ -2,11 +2,13 @@ internal import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
+    @StateObject private var dashboardVM = DashboardViewModel()
 
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                DashboardView()
+                DashboardView(viewModel: dashboardVM)
                     .tag(AppTab.home)
                     .toolbar(.hidden, for: .tabBar)
                 ComparisonListView(selectedTab: $selectedTab)
@@ -15,7 +17,7 @@ struct MainTabView: View {
                 EducationView(selectedTab: $selectedTab)
                     .tag(AppTab.education)
                     .toolbar(.hidden, for: .tabBar)
-                TojoryView(selectedTab: $selectedTab)
+                TajouriView(dashboardVM: dashboardVM)
                     .tag(AppTab.tojory)
                     .toolbar(.hidden, for: .tabBar)
             }
