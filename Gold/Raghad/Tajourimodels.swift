@@ -21,7 +21,7 @@ enum GoldKarat: Int, CaseIterable, Identifiable {
 // MARK: - GoldCondition
 
 enum GoldCondition: String, CaseIterable, Identifiable {
-    case worn   = "مبلوسة"
+    case worn   = "ملبوسة"
     case unworn = "غير ملبوسة"
     var id: String { rawValue }
 }

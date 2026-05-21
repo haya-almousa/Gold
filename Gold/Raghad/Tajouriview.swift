@@ -129,12 +129,15 @@ struct TajouriView: View {
                     .clipShape(Capsule())
                 Spacer()
                 HStack(spacing: 8) {
+
                     Text("حالة الزكاة")
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color("Dark grey"))
+
                     Image(systemName: "moon.fill")
                         .foregroundColor(Color("Dark green"))
                         .font(.system(size: 18))
+                        .scaleEffect(x: -1, y: 1) // يعكس اتجاه القمر
                 }
             }
 
@@ -147,7 +150,7 @@ struct TajouriView: View {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(Color("Dark green"))
                             .frame(
-                                width: geo.size.width * min(vm.totalGrams / GoldConstants.nisabGrams, 1.0),
+                                width: geo.size.width * min(vm.zakatableGrams / GoldConstants.nisabGrams, 1.0),
                                 height: 10
                             )
                             .animation(.spring(response: 0.5, dampingFraction: 0.8), value: vm.totalGrams)
@@ -160,8 +163,7 @@ struct TajouriView: View {
                         .font(.system(size: 12))
                         .foregroundColor(Color("Grey"))
                     Spacer()
-                    Text("ذهبك: \(String(format: "%.1f", vm.totalGrams)) ج")
-                        .font(.system(size: 12))
+                    Text("ذهبك الخاضع للزكاة: \(String(format: "%.1f", vm.zakatableGrams))ج")                        .font(.system(size: 12))
                         .foregroundColor(Color("Grey"))
                 }
             }
@@ -208,24 +210,26 @@ struct TajouriView: View {
     private var piecesSection: some View {
         VStack(alignment: .trailing, spacing: 12) {
             HStack {
+
+                Text("قطع الذهب")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(Color("Dark grey"))
+
+                Spacer()
+
                 Button { showAddForm = true } label: {
                     ZStack {
                         Circle()
                             .fill(Color("Gold"))
                             .frame(width: 44, height: 44)
+
                         Image(systemName: "plus")
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Color("background"))
                     }
                 }
                 .buttonStyle(.plain)
-                Spacer()
-                Text("قطع الذهب")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color("Dark grey"))
-                    
             }
-
             if vm.pieces.isEmpty {
                 Text("أضغط + لإضافة قطع الذهب")
                     .font(.system(size: 15))
@@ -336,13 +340,14 @@ private struct TajouriPieceCard: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
 
                 HStack {
-                    HStack(spacing: 3) {
-                        Image(systemName: isGain ? "arrowtriangle.up.fill" : "arrowtriangle.down.fill")
-                            .font(.system(size: 8))
+                    HStack(spacing: 4) {
+                        Image(systemName: isGain ? "arrow.up" : "arrow.down")
+                            .font(.system(size: 10, weight: .bold))
+
                         Text("\(isGain ? "+" : "")\(formatNumber(gainLoss))")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                     }
-                    .foregroundColor(isGain ? Color("Dark green") : .red)
+                    .foregroundColor(isGain ? .green : .red)
                     Spacer()
                     Text("شراء: \(formatNumber(piece.purchasePrice)) SAR")
                         .font(.system(size: 11))
