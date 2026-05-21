@@ -20,22 +20,39 @@ struct ThemedTextField: View {
     }
 
     var body: some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .trailing) {
             if text.isEmpty {
                 Text(placeholder)
                     .font(.system(size: 14))
                     .foregroundColor(Color("Light grey"))
                     .allowsHitTesting(false)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.horizontal, 16)
             }
             TextField("", text: $text)
                 .keyboardType(keyboardType)
+                .multilineTextAlignment(.trailing)
                 .font(.system(size: 14).bold())
                 .foregroundColor(Color("maincolor"))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .onChange(of: text) {
+                    guard keyboardType == .decimalPad else { return }
+                    let filtered = text
+                        .replacingOccurrences(of: ",", with: ".")
+                        .filter { $0.isNumber || $0 == "." }
+                    // allow only one decimal point
+                    let parts = filtered.components(separatedBy: ".")
+                    let clean = parts.count > 2
+                        ? parts[0] + "." + parts[1...].joined()
+                        : filtered
+                    if clean != text { text = clean }
+                }
         }
-        .padding(.horizontal, 16).padding(.vertical, 12)
+        .environment(\.layoutDirection, .leftToRight)
         .background(Color("Lightest gold"))
-        .cornerRadius(10)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(.navy).opacity(0.08), lineWidth: 1))
+        .cornerRadius(20)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.darkGold), lineWidth: 0.4))
     }
 }
 

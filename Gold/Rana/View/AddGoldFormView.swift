@@ -19,8 +19,9 @@ private enum ImageSource: Identifiable {
 struct AddGoldFormView: View {
     @ObservedObject var vm: ComparisonListViewModel
 
-    @State private var showSourceSheet = false
+    @State private var showSourceSheet  = false
     @State private var imageSource: ImageSource? = nil
+    @State private var showCalculator   = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,6 +58,13 @@ struct AddGoldFormView: View {
         }
         .sheet(item: $imageSource) { source in
             ImagePickerView(selectedImage: $vm.selectedImage, sourceType: source.pickerSourceType)
+        }
+        .sheet(isPresented: $showCalculator) {
+            GoldCalculatorView(
+                initialKarat:  karatOption,
+                initialWeight: Double(vm.form.gramsText) ?? 0,
+                onBack:        { showCalculator = false }
+            )
         }
     }
 
@@ -141,7 +149,7 @@ struct AddGoldFormView: View {
 
     @ViewBuilder
     private var nameSection: some View {
-        labeledField("* اسم القطعة") {
+        labeledField("اسم القطعة*") {
             ThemedTextField(
                 "مثال: اسوارة، خاتم",
                 text: Binding(
@@ -149,8 +157,9 @@ struct AddGoldFormView: View {
                     set: { vm.updateField(\.name, value: $0) }
                 )
             )
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(vm.nameError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
             )
             if let error = vm.nameError {
@@ -172,8 +181,9 @@ struct AddGoldFormView: View {
                 ),
                 keyboardType: .decimalPad
             )
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(vm.gramsError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
             )
             if let error = vm.gramsError {
@@ -191,7 +201,7 @@ struct AddGoldFormView: View {
                 .font(.appFootnote(.bold))
                 .foregroundColor(Color("maincolor"))
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(Karat.allCases.reversed()) { k in
                     karatButton(k)
                 }
@@ -208,9 +218,23 @@ struct AddGoldFormView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
                 .background(selected ? Color("maincolor") : Color("Lightest gold"))
-                .cornerRadius(10)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(.darkGold).opacity(0.6), lineWidth: 0.4)
+                )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Calculator Sheet Helper
+
+    private var karatOption: GoldCalculatorView.KaratOption {
+        switch vm.form.karat {
+        case .k24: return .k24
+        case .k21: return .k21
+        case .k18: return .k18
+        }
     }
 
     // MARK: - Shop Price + Tax Badge
@@ -221,18 +245,56 @@ struct AddGoldFormView: View {
                 Text("سعر المحل بدون الضريبة*")
                     .font(.appFootnote(.bold))
                     .foregroundColor(Color("maincolor"))
-                ThemedTextField(
-                    "مثال: 1500",
-                    text: Binding(
-                        get: { vm.form.shopPriceText },
-                        set: { vm.updateField(\.shopPriceText, value: $0) }
-                    ),
-                    keyboardType: .decimalPad
-                )
+
+                HStack(spacing: 0) {
+                    // Price text input
+                    ZStack(alignment: .trailing) {
+                        if vm.form.shopPriceText.isEmpty {
+                            Text("مثال: 1500")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color("Light grey"))
+                                .allowsHitTesting(false)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.horizontal, 16)
+                        }
+                        TextField("", text: Binding(
+                            get: { vm.form.shopPriceText },
+                            set: { vm.updateField(\.shopPriceText, value: $0) }
+                        ))
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .font(.system(size: 14).bold())
+                        .foregroundColor(Color("maincolor"))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .environment(\.layoutDirection, .leftToRight)
+                    .frame(maxWidth: .infinity)
+
+                    // تأكد button on the right
+                    Button(action: { showCalculator = true }) {
+                        HStack(spacing: 2) {
+                            Text("تأكد")
+                                .font(.system(size: 11, weight: .semibold))
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 9, weight: .semibold))
+                        }
+                        .foregroundColor(Color("background"))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(Color("maincolor"))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 8)
+                }
+                .background(Color("Lightest gold"))
+                .cornerRadius(20)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(vm.priceError != nil ? Color("Red") : Color.clear, lineWidth: 1.5)
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(vm.priceError != nil ? Color("Red") : Color(.darkGold).opacity(0.6), lineWidth: vm.priceError != nil ? 1.5 : 0.4)
                 )
+
                 if let error = vm.priceError {
                     inlineError(error)
                 }
@@ -263,10 +325,10 @@ struct AddGoldFormView: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 12)
         .background(Color("Lightest grey"))
-        .cornerRadius(10)
+        .cornerRadius(20)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color(.navy).opacity(0.12), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color(.grey), lineWidth: 0.4)
         )
     }
 
@@ -282,6 +344,7 @@ struct AddGoldFormView: View {
                     set: { vm.updateField(\.store, value: $0) }
                 )
             )
+            .cornerRadius(20)
         }
     }
 

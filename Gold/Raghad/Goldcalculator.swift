@@ -18,6 +18,7 @@ enum PriceState {
 struct GoldCalculatorView: View {
     // MARK: - API
     let apiService: any GoldPriceProviding
+    let onBack: (() -> Void)?
     @State private var priceState: PriceState = .loading
     @State private var lastRefreshed: Date? = nil
 
@@ -32,8 +33,19 @@ struct GoldCalculatorView: View {
     enum Field { case weight, fee }
 
     // MARK: - Init
-    init(apiService: any GoldPriceProviding = GoldAPIService()) {
+    init(apiService: any GoldPriceProviding = GoldAPIService(),
+         initialKarat: KaratOption? = nil,
+         initialWeight: Double? = nil,
+         onBack: (() -> Void)? = nil) {
         self.apiService = apiService
+        self.onBack = onBack
+        if let k = initialKarat { _selectedKarat = State(initialValue: k) }
+        if let w = initialWeight, w > 0 {
+            _weight = State(initialValue: w)
+            _weightText = State(initialValue: w.truncatingRemainder(dividingBy: 1) == 0
+                ? String(format: "%.0f", w)
+                : String(format: "%.2g", w))
+        }
     }
 
     // MARK: - Karat Options
@@ -142,6 +154,18 @@ struct GoldCalculatorView: View {
     // MARK: - Layout Sections
     private var topBar: some View {
         HStack {
+            if let back = onBack {
+                Button(action: back) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("رجوع")
+                    }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(primaryTeal)
+                }
+                .buttonStyle(.plain)
+            }
+
             Spacer()
 
             Text("حاسبة الذهب")

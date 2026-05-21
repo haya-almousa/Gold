@@ -18,8 +18,13 @@ struct AddGoldFormState {
 
     static func empty() -> AddGoldFormState { AddGoldFormState() }
 
-    var grams:     Double? { Double(gramsText) }
-    var shopPrice: Double? { Double(shopPriceText) }
+    var grams:     Double? { Self.parseDouble(gramsText) }
+    var shopPrice: Double? { Self.parseDouble(shopPriceText) }
+
+    private static func parseDouble(_ text: String) -> Double? {
+        let normalized = text.replacingOccurrences(of: ",", with: ".")
+        return Double(normalized)
+    }
 }
 
 enum FormValidationError: LocalizedError {

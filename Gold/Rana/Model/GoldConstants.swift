@@ -74,6 +74,13 @@ struct GoldPiece: Identifiable, Equatable {
         return totalValueSAR / grams
     }
 
+    func liveValueSAR(price24KSAR: Double) -> Double {
+        let goldValueSAR = grams * karat.multiplier * price24KSAR
+        let mfgChargeSAR = goldValueSAR * (mfgFeePercent / 100)
+        let preTax       = goldValueSAR + mfgChargeSAR
+        return preTax + preTax * GoldConstants.vatRate
+    }
+
     static func == (lhs: GoldPiece, rhs: GoldPiece) -> Bool { lhs.id == rhs.id }
 }
 

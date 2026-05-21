@@ -9,10 +9,11 @@
 internal import SwiftUI
 
 struct GoldItemCardView: View {
-    let piece:    GoldPiece
-    let isBest:   Bool
-    let onEdit:   () -> Void
-    let onDelete: () -> Void
+    let piece:           GoldPiece
+    let isBest:          Bool
+    let livePrice24KSAR: Double?
+    let onEdit:          () -> Void
+    let onDelete:        () -> Void
 
     @State private var dragOffset: CGFloat = 0
     @State private var showDeleteAlert = false
@@ -21,7 +22,7 @@ struct GoldItemCardView: View {
     var body: some View {
         ZStack(alignment: .leading) {
             // Delete background revealed on swipe
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(Color("Light red"))
                 .overlay(
                     Image(systemName: "trash")
@@ -37,9 +38,9 @@ struct GoldItemCardView: View {
                 cameraBox
             }
             .background(Color("Lightest gold"))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(
                         isBest ? Color("Navy") : Color("Dark gold"),
                         lineWidth: 0.3
@@ -79,15 +80,40 @@ struct GoldItemCardView: View {
 
     // MARK: - Price View
 
+    private var displayedPrice: Double {
+        if let live = livePrice24KSAR {
+            return piece.liveValueSAR(price24KSAR: live)
+        }
+        return piece.shopTotalWithVAT
+    }
+
+    private var priceDiff: Double? {
+        guard let live = livePrice24KSAR, piece.shopPrice > 0 else { return nil }
+        return piece.liveValueSAR(price24KSAR: live) - piece.shopTotalWithVAT
+    }
+
     private var priceView: some View {
-        HStack(alignment: .center, spacing: 4) {
-            Image("SaudiRiyalSymbol")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 16)
-            Text(piece.shopTotalWithVAT.formatted(.number.precision(.fractionLength(2))))
-                .font(.appSubheadline(.heavy))
-                .foregroundColor(Color("maincolor"))
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .center, spacing: 4) {
+                Image("SaudiRiyalSymbol")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 16)
+                Text(displayedPrice.formatted(.number.precision(.fractionLength(2))))
+                    .font(.appSubheadline(.heavy))
+                    .foregroundColor(Color("maincolor"))
+            }
+
+            if let diff = priceDiff, abs(diff) >= 0.01 {
+                let isUp = diff > 0
+                HStack(spacing: 3) {
+                    Image(systemName: isUp ? "arrow.up" : "arrow.down")
+                        .font(.system(size: 9, weight: .bold))
+                    Text("\(isUp ? "+" : "")\(diff.formatted(.number.precision(.fractionLength(2))))")
+                        .font(.appCaption(.semibold))
+                }
+                .foregroundColor(isUp ? Color.green : Color.red)
+            }
         }
     }
 
@@ -144,7 +170,7 @@ struct GoldItemCardView: View {
                 priceView
                 Spacer()
                 if piece.shopPrice > 0 {
-                    Text("\(piece.shopPrice.clean) sar - \(piece.grams.clean)g - \(piece.karat.rawValue)k")
+                    Text("\(piece.shopPrice.clean) SAR")
                         .font(.appCaption())
                         .foregroundColor(Color("Grey"))
                 }
@@ -208,8 +234,12 @@ struct ComparisonEmptyStateView: View {
 
 extension Double {
     var clean: String {
-        truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", self)
-            : String(format: "%.2g", self)
+        if truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", self)
+        }
+        var s = String(format: "%.2f", self)
+        while s.hasSuffix("0") { s = String(s.dropLast()) }
+        if s.hasSuffix(".") { s = String(s.dropLast()) }
+        return s
     }
 }

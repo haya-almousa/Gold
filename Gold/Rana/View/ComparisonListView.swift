@@ -71,10 +71,11 @@ struct ComparisonListView: View {
 
                         ForEach(filteredPieces) { piece in
                             GoldItemCardView(
-                                piece:    piece,
-                                isBest:   piece.id == vm.bestPiece?.id && vm.pieces.count > 1,
-                                onEdit:   { withAnimation { vm.beginEdit(piece: piece) } },
-                                onDelete: { withAnimation { vm.deletePiece(id: piece.id) } }
+                                piece:           piece,
+                                isBest:          piece.id == vm.bestPiece?.id && vm.pieces.count > 1,
+                                livePrice24KSAR: vm.liveGoldPrice24KSAR,
+                                onEdit:          { withAnimation { vm.beginEdit(piece: piece) } },
+                                onDelete:        { withAnimation { vm.deletePiece(id: piece.id) } }
                             )
                             .transition(.opacity.combined(with: .scale(scale: 0.97)))
                         }
@@ -111,6 +112,8 @@ struct ComparisonListView: View {
                         .font(.appTitle3(.bold))
                         .foregroundColor(Color("background"))
                 }
+                        .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
+
             }
             Spacer()
             Text("قائمة المقارنة")
@@ -154,10 +157,10 @@ struct ComparisonListView: View {
                 VStack(spacing: 2) {
                     Image(systemName: "sparkle")
                         .font(.appTitle2(.bold))
-                        .foregroundColor(Color(.yellow))
+                        .foregroundColor(Color(.lightGold))
                     Image(systemName: "sparkle")
                         .font(.appSubheadline(.bold))
-                        .foregroundColor(Color(.yellow))
+                        .foregroundColor(Color(.lightGold))
                 }
             }
         }
@@ -165,6 +168,8 @@ struct ComparisonListView: View {
         .padding(.vertical, 14)
         .background(Color("Lightest blue"))
         .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.navy).opacity(0.7), lineWidth: 0.2))
+
     }
 
     // MARK: - Draft Warning
@@ -199,6 +204,8 @@ struct ComparisonListView: View {
                     .frame(width: 44, height: 44)
                     .background(showFilter ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
+                    .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
+
             }
             .buttonStyle(.plain)
 
@@ -213,6 +220,7 @@ struct ComparisonListView: View {
                     .frame(width: 44, height: 44)
                     .background(showSearch ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
+                    .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
             }
             .buttonStyle(.plain)
         }
@@ -235,6 +243,9 @@ struct ComparisonListView: View {
         .background(Color(.lightestBlue))
         .cornerRadius(12)
         .environment(\.layoutDirection, .leftToRight)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
+
+        
     }
 
     // MARK: - Filter Chips
@@ -261,6 +272,8 @@ struct ComparisonListView: View {
                 .padding(.vertical, 8)
                 .background(active ? Color("maincolor") : Color("Lightest blue"))
                 .cornerRadius(20)
+                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.maincolor), lineWidth: 0.2))
+
         }
         .buttonStyle(.plain)
     }

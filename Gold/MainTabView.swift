@@ -46,8 +46,8 @@ struct MainTabView: View {
                 )
                 .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 6)
         )
-        .padding(.horizontal, 16)
-        .padding(.bottom, 20)
+        .padding(.horizontal, 15)
+        .padding(.bottom, 5)
     }
 
     private func tabItem(tab: AppTab, symbol: String, title: String) -> some View {
@@ -71,4 +71,8 @@ struct MainTabView: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+#Preview {
+    MainTabView()
 }

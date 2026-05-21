@@ -164,12 +164,14 @@ final class ComparisonListViewModel: ObservableObject {
 
     var bestPiece: GoldPiece? {
         guard pieces.count >= 2 else { return nil }
+        if let livePrice = liveGoldPrice24KSAR {
+            return pieces.min(by: { $0.liveValueSAR(price24KSAR: livePrice) < $1.liveValueSAR(price24KSAR: livePrice) })
+        }
         let withPrice = pieces.filter { $0.shopPrice > 0 }
         if !withPrice.isEmpty {
             return withPrice.min(by: { $0.shopTotalWithVAT < $1.shopTotalWithVAT })
         }
-        guard let livePrice = liveGoldPrice24KSAR else { return pieces.bestValue }
-        return pieces.min(by: { $0.liveValueSAR(price24KSAR: livePrice) < $1.liveValueSAR(price24KSAR: livePrice) })
+        return pieces.bestValue
     }
 
     var totalValueSAR: Double {
@@ -340,13 +342,3 @@ final class ComparisonListViewModel: ObservableObject {
     }
 }
 
-// MARK: - Live value helper
-
-private extension GoldPiece {
-    func liveValueSAR(price24KSAR: Double) -> Double {
-        let goldValueSAR = grams * karat.multiplier * price24KSAR
-        let mfgChargeSAR = goldValueSAR * (mfgFeePercent / 100)
-        let preTax       = goldValueSAR + mfgChargeSAR
-        return preTax + preTax * GoldConstants.vatRate
-    }
-}
