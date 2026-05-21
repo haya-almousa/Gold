@@ -16,6 +16,9 @@ struct TajouriView: View {
     @State private var showAddForm  = false
     @State private var pieceToEdit: GoldPieceItem? = nil
 
+    @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
+    @ScaledMetric(relativeTo: .title)      private var zakatFontSize: CGFloat = 34
+
     init(dashboardVM: DashboardViewModel) {
         _vm = StateObject(wrappedValue: TajouriViewModel(dashboardVM: dashboardVM))
     }
@@ -67,11 +70,11 @@ struct TajouriView: View {
                         .frame(width: 46, height: 46)
                     Image(systemName: "person.fill")
                         .foregroundColor(Color("background"))
-                        .font(.system(size: 20))
+                        .font(.appTitle3())
                 }
                 Spacer()
                 Text("التجوري")
-                    .font(.system(size: 22, weight: .bold))
+                    .font(.appTitle2(.bold))
                     .foregroundColor(Color("Dark green"))
             }
             .padding(.top, 60)
@@ -79,11 +82,11 @@ struct TajouriView: View {
             Group {
                 if vm.isLoading {
                     Text("جاري التحديث...")
-                        .font(.system(size: 28, weight: .heavy))
+                        .font(.appTitle(.heavy))
                         .foregroundColor(Color("Dark green").opacity(0.6))
                 } else {
                     Text("SAR \(formatNumber(vm.totalPortfolioValueSAR))")
-                        .font(.system(size: 44, weight: .heavy))
+                        .font(.system(size: portfolioFontSize, weight: .heavy))
                         .foregroundColor(Color("Dark green"))
                         .contentTransition(.numericText())
                 }
@@ -93,7 +96,7 @@ struct TajouriView: View {
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: vm.totalPortfolioValueSAR)
 
             Text("\(vm.pieces.count) قطع ذهب - \(String(format: "%.0f", vm.totalGrams))ج")
-                .font(.system(size: 15, weight: .medium))
+                .font(.appBody(.medium))
                 .foregroundColor(Color("Dark green"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.top, 4)
@@ -121,7 +124,7 @@ struct TajouriView: View {
         VStack(alignment: .trailing, spacing: 14) {
             HStack {
                 Text(vm.meetsNisab ? "بلغ النصاب" : "لم يبلغ النصاب")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
@@ -131,12 +134,12 @@ struct TajouriView: View {
                 HStack(spacing: 8) {
 
                     Text("حالة الزكاة")
-                        .font(.system(size: 17, weight: .bold))
+                        .font(.appBody(.bold))
                         .foregroundColor(Color("Dark grey"))
 
                     Image(systemName: "moon.fill")
                         .foregroundColor(Color("Dark green"))
-                        .font(.system(size: 18))
+                        .font(.appBody())
                         .scaleEffect(x: -1, y: 1) // يعكس اتجاه القمر
                 }
             }
@@ -160,10 +163,10 @@ struct TajouriView: View {
 
                 HStack {
                     Text("النصاب: \(Int(GoldConstants.nisabGrams)) ج (24K)")
-                        .font(.system(size: 12))
+                        .font(.appCaption())
                         .foregroundColor(Color("Grey"))
                     Spacer()
-                    Text("ذهبك الخاضع للزكاة: \(String(format: "%.1f", vm.zakatableGrams))ج")                        .font(.system(size: 12))
+                    Text("ذهبك الخاضع للزكاة: \(String(format: "%.1f", vm.zakatableGrams))ج")                        .font(.appCaption())
                         .foregroundColor(Color("Grey"))
                 }
             }
@@ -180,21 +183,21 @@ struct TajouriView: View {
 
             VStack(alignment: .center, spacing: 4) {
                 Text("الزكاة السنوية المستحقة:")
-                    .font(.system(size: 13))
+                    .font(.appFootnote())
                     .foregroundColor(Color("Dark grey"))
                 if vm.meetsNisab {
                     Text("SAR \(formatNumber(vm.zakatDueSAR))")
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.system(size: zakatFontSize, weight: .bold))
                         .foregroundColor(Color("Dark green"))
                         .contentTransition(.numericText())
                         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: vm.zakatDueSAR)
                 } else {
                     Text("لا توجد زكاة مستحقة")
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.appTitle3(.bold))
                         .foregroundColor(Color("Grey"))
                 }
                 Text("2.5% من قيمة ذهبك بسعر اليوم")
-                    .font(.system(size: 12))
+                    .font(.appCaption())
                     .foregroundColor(Color("Grey"))
             }
             .frame(maxWidth: .infinity)
@@ -203,6 +206,8 @@ struct TajouriView: View {
         .background(Color("Lightest blue"))
         .cornerRadius(16)
         .environment(\.layoutDirection, .leftToRight)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.1))
+
     }
 
     // MARK: - Pieces Section
@@ -212,7 +217,7 @@ struct TajouriView: View {
             HStack {
 
                 Text("قطع الذهب")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.appTitle3(.bold))
                     .foregroundColor(Color("Dark grey"))
 
                 Spacer()
@@ -224,15 +229,17 @@ struct TajouriView: View {
                             .frame(width: 44, height: 44)
 
                         Image(systemName: "plus")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.appBody(.bold))
                             .foregroundColor(Color("background"))
                     }
+                    .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
+
                 }
                 .buttonStyle(.plain)
             }
             if vm.pieces.isEmpty {
                 Text("أضغط + لإضافة قطع الذهب")
-                    .font(.system(size: 15))
+                    .font(.appBody())
                     .foregroundColor(Color("Grey").opacity(0.6))
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
@@ -276,15 +283,17 @@ private struct TajouriPieceCard: View {
     let onEdit:   () -> Void
     let onDelete: () -> Void
 
-    
-    @State private var showActions = false
+    @State private var dragOffset:       CGFloat = 0
+    @State private var showDeleteAlert:  Bool    = false
+    private let deleteThreshold: CGFloat = 80
 
-    private func formatNumber(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 0
-        formatter.locale = Locale(identifier: "en_US")
-        return formatter.string(from: NSNumber(value: value.rounded())) ?? "0"
+    private func fmt(_ value: Double) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.minimumFractionDigits = 2
+        f.maximumFractionDigits = 2
+        f.locale = Locale(identifier: "en_US")
+        return f.string(from: NSNumber(value: value)) ?? String(format: "%.2f", value)
     }
 
     var body: some View {
@@ -292,183 +301,129 @@ private struct TajouriPieceCard: View {
         let gainLoss   = vm.gainLoss(of: piece)
         let isGain     = gainLoss >= 0
 
-        return HStack(spacing: 0) {
-
-            // ── يسار: صورة ──
-            ZStack {
-                Color("Gold").opacity(0.5)
-                if let data = piece.imageData, let img = UIImage(data: data) {
-                    Image(uiImage: img)
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 26))
-                        .foregroundColor(Color("Dark gold").opacity(0.85))
-                }
-            }
-            .frame(width: 95)
-            .frame(maxHeight: .infinity)
-            .clipped()
-            .clipShape(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 14,
-                    bottomLeadingRadius: 14,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 0
+        ZStack(alignment: .leading) {
+            // Delete background
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color("Light red"))
+                .overlay(
+                    Image(systemName: "trash")
+                        .font(.appTitle3(.bold))
+                        .foregroundColor(Color("Red"))
+                        .padding(.leading, 24),
+                    alignment: .leading
                 )
+
+            // Card content
+            HStack(spacing: 0) {
+                // Info area
+                VStack(alignment: .trailing, spacing: 0) {
+                    HStack(alignment: .center, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 3) {
+                                Image(systemName: isGain ? "arrow.up" : "arrow.down")
+                                    .font(.appCaption(.bold))
+                                Text("\(isGain ? "+" : "")\(fmt(gainLoss))")
+                                    .font(.appCaption(.semibold))
+                            }
+                            .foregroundColor(isGain ? .green : .red)
+                        }
+                        Spacer()
+                        Text(piece.name)
+                            .font(.appBody(.bold))
+                            .foregroundColor(Color("Dark gold"))
+                            .lineLimit(1)
+                    }
+
+                    HStack(alignment: .center, spacing: 0) {
+                        HStack(spacing: 4) {
+                            Image("SaudiRiyalSymbol")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 16)
+                            Text(fmt(currentVal))
+                                .font(.appSubheadline(.heavy))
+                                .foregroundColor(Color("maincolor"))
+                        }
+                        Spacer()
+                        Text("شراء: \(fmt(piece.purchasePrice)) ر.س")
+                            .font(.appCaption())
+                            .foregroundColor(Color("Grey"))
+                    }
+                    .padding(.top, 6)
+
+                    HStack(spacing: 6) {
+                        Spacer()
+                        tagPill("\(piece.karat.rawValue)K")
+                        tagPill("\(piece.weightGrams.clean)g")
+                    }
+                    .padding(.top, 6)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity)
+
+                // Image box
+                ZStack {
+                    if let data = piece.imageData, let img = UIImage(data: data) {
+                        Image(uiImage: img)
+                            .resizable()
+                            .scaledToFill()
+                            .clipped()
+                    } else {
+                        Color("Gold")
+                        Image(systemName: "camera.fill")
+                            .font(.appTitle2())
+                            .foregroundColor(Color("Dark gold"))
+                    }
+                }
+                .frame(width: 90)
+                .frame(maxHeight: .infinity)
+                .background(Color("Gold"))
+                .clipped()
+            }
+            .background(Color("Lightest gold"))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color("Dark gold"), lineWidth: 0.3)
             )
-
-            // ── يمين: المعلومات (ثابتة دائماً) ──
-            VStack(alignment: .trailing, spacing: 5) {
-                Spacer().frame(height: 24)
-
-                Text(piece.name)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color("Dark grey"))
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                Text("SAR \(formatNumber(currentVal))")
-                    .font(.system(size: 18, weight: .heavy))
-                    .foregroundColor(Color("Dark green"))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                Text("\(String(format: "%.1f", piece.weightGrams))ج - \(piece.karat.rawValue)K")
-                    .font(.system(size: 12))
-                    .foregroundColor(Color("Grey"))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                HStack {
-                    HStack(spacing: 4) {
-                        Image(systemName: isGain ? "arrow.up" : "arrow.down")
-                            .font(.system(size: 10, weight: .bold))
-
-                        Text("\(isGain ? "+" : "")\(formatNumber(gainLoss))")
-                            .font(.system(size: 11, weight: .semibold))
+            .offset(x: dragOffset)
+            .onTapGesture { onEdit() }
+            .gesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    .onChanged { value in
+                        guard abs(value.translation.width) > abs(value.translation.height),
+                              value.translation.width > 0 else { return }
+                        dragOffset = min(value.translation.width, 120)
                     }
-                    .foregroundColor(isGain ? .green : .red)
-                    Spacer()
-                    Text("شراء: \(formatNumber(piece.purchasePrice)) SAR")
-                        .font(.system(size: 11))
-                        .foregroundColor(Color("Grey").opacity(0.8))
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
+                    .onEnded { _ in
+                        if dragOffset > deleteThreshold {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragOffset = 0 }
+                            showDeleteAlert = true
+                        } else {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragOffset = 0 }
+                        }
+                    }
+            )
         }
-        .frame(height: 130)
-        .background(Color("Lightest gold"))
-        .border(Color("Gold").opacity(0.3), width: 1)
-        .cornerRadius(14)
+        .clipped()
+        .alert("حذف القطعة", isPresented: $showDeleteAlert) {
+            Button("حذف", role: .destructive) { onDelete() }
+            Button("الغاء", role: .cancel) {}
+        } message: {
+            Text("هل أنت متأكد من حذف \(piece.name)؟")
+        }
         .environment(\.layoutDirection, .leftToRight)
-        // ── إغلاق المنيو عند الضغط على الكارد ──
-        .onTapGesture {
-            if showActions {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                    showActions = false
-                }
-            }
-        }
-        // ── زر النقاط + dropdown — overlay فوق اسم القطعة مباشرة ──
-        .overlay(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 2) {
-
-                // زر النقاط العمودية
-                Button {
-                    withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                        showActions.toggle()
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .rotationEffect(.degrees(90))
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(showActions ? Color("Dark green") : Color("Grey"))
-                        .frame(width: 36, height: 32)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                // الـ dropdown يطلع أسفل الزر مباشرة
-                if showActions {
-                    actionMenu
-                        .transition(
-                            .scale(scale: 0.85, anchor: .topLeading)
-                            .combined(with: .opacity)
-                        )
-                }
-            }
-            // 95 (عرض الصورة) + 12 (padding النص) = 107 — فوق الاسم تماماً
-            .padding(.leading, 1)
-            .padding(.top, 6)
-            .zIndex(100)
-        }
     }
 
-    // MARK: - Action Menu (نفس أسلوب GoldItemCardView)
-
-    private var actionMenu: some View {
-        VStack(spacing: 0) {
-
-            // تعديل
-            Button {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                    showActions = false
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    onEdit()
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 13))
-                    Text("تعديل")
-                        .font(.system(size: 15, weight: .semibold))
-                    Spacer()
-                }
-                .foregroundColor(Color("Dark green"))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-
-            Rectangle()
-                .fill(Color("Grey").opacity(0.15))
-                .frame(height: 1)
-
-            // حذف
-            Button {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.75)) {
-                    showActions = false
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                    onDelete()
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 13))
-                    Text("حذف")
-                        .font(.system(size: 15, weight: .semibold))
-                    Spacer()
-                }
-                .foregroundColor(.red)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        }
-        .frame(width: 130)
-        .background(Color("background"))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.13), radius: 12, x: 0, y: 4)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color("Lightest gold"), lineWidth: 1.5)
-        )
-        .environment(\.layoutDirection, .rightToLeft)
+    private func tagPill(_ text: String) -> some View {
+        Text(text)
+            .font(.appCaption(.medium))
+            .foregroundColor(Color("maincolor"))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color("Lightest blue"))
+            .cornerRadius(6)
     }
 }
 

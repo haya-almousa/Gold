@@ -160,7 +160,7 @@ struct GoldCalculatorView: View {
                         Image(systemName: "chevron.left")
                         Text("رجوع")
                     }
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.appCallout(.semibold))
                     .foregroundColor(primaryTeal)
                 }
                 .buttonStyle(.plain)
@@ -169,7 +169,7 @@ struct GoldCalculatorView: View {
             Spacer()
 
             Text("حاسبة الذهب")
-                .font(.system(size: 28, weight: .bold))
+                .font(.appTitle(.bold))
                 .foregroundColor(.black)
                 .minimumScaleFactor(0.6)
         }
@@ -179,10 +179,10 @@ struct GoldCalculatorView: View {
     private var karatSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("العيار")
-                .font(.system(size: 24, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(primaryTeal)
 
-            HStack(spacing: 10) {
+            HStack(spacing: 7) {
                 karatChip(.k24, title: "24k")
                 karatChip(.k21, title: "21k")
                 karatChip(.k18, title: "18k")
@@ -194,7 +194,7 @@ struct GoldCalculatorView: View {
     private var weightSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("الوزن (جرام)*")
-                .font(.system(size: 22, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
@@ -204,7 +204,7 @@ struct GoldCalculatorView: View {
 
                 if weightText.isEmpty {
                     Text("مثال:5.5")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.appTitle3(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -213,7 +213,7 @@ struct GoldCalculatorView: View {
                 TextField("", text: $weightText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.appTitle3(.semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
                     .focused($focusedField, equals: .weight)
@@ -223,6 +223,7 @@ struct GoldCalculatorView: View {
                         weight = Double(filtered) ?? 0
                     }
             }
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -230,7 +231,7 @@ struct GoldCalculatorView: View {
     private var manufacturingFeeSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("المصنعية*")
-                .font(.system(size: 22, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
@@ -240,7 +241,7 @@ struct GoldCalculatorView: View {
 
                 if manufacturingFeeText.isEmpty {
                     Text("مثال:10")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.appTitle3(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -249,7 +250,7 @@ struct GoldCalculatorView: View {
                 TextField("", text: $manufacturingFeeText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.appTitle3(.semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
                     .focused($focusedField, equals: .fee)
@@ -259,6 +260,7 @@ struct GoldCalculatorView: View {
                         manufacturingFee = Double(filtered) ?? 0
                     }
             }
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -266,11 +268,11 @@ struct GoldCalculatorView: View {
     private var totalSection: some View {
         VStack(spacing: 8) {
             Text("إجمالي السعر التقديري")
-                .font(.system(size: 24, weight: .bold))
+                .font(.appTitle2(.bold))
                 .foregroundColor(mutedGold)
 
             Text("SAR \(fmtCurrency(totalValueSAR))")
-                .font(.system(size: 34, weight: .heavy))
+                .font(.appTitle(.heavy))
                 .foregroundColor(primaryTeal)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
@@ -287,12 +289,13 @@ struct GoldCalculatorView: View {
             selectedKarat = option
         } label: {
             Text(title)
-                .font(.system(size: 18, weight: .bold))
+                .font(.appBody(.bold))
                 .foregroundColor(isSelected ? .white : primaryTeal)
                 .frame(maxWidth: .infinity)
                 .frame(height: 40)
                 .background(isSelected ? primaryTeal : softTeal)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
         }
         .buttonStyle(.plain)
     }
@@ -310,13 +313,13 @@ struct GoldCalculatorView: View {
         VStack(spacing: 0) {
             Button(action: increment) {
                 Image(systemName: "chevron.up")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.appCaption(.semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }
             Button(action: decrement) {
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.appCaption(.semibold))
                     .foregroundColor(secondaryTeal)
                     .frame(width: 28, height: 18)
             }

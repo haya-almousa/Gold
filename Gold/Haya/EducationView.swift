@@ -167,6 +167,7 @@ struct EducationView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color("Lightest blue"))
         )
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
     }
 
     private func articleDetailView(_ article: EducationArticle) -> some View {

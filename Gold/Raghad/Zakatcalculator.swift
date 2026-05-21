@@ -186,7 +186,7 @@ struct ZakatCalculatorView: View {
                         }
                     }) {
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.appCaption(.semibold))
                             .foregroundColor(secondaryText)
                             .frame(width: 28, height: 20)
                     }

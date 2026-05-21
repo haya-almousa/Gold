@@ -55,10 +55,10 @@ struct MainTabView: View {
         return Button { selectedTab = tab } label: {
             VStack(spacing: 4) {
                 Image(systemName: symbol)
-                    .font(.system(size: 20, weight: active ? .semibold : .regular))
+                    .font(.appTitle3(active ? .semibold : .regular))
                     .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
                 Text(title)
-                    .font(.system(size: 11, weight: active ? .semibold : .regular))
+                    .font(.appCaption(active ? .semibold : .regular))
                     .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
             }
             .padding(.horizontal, active ? 14 : 0)

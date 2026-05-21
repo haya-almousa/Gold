@@ -175,7 +175,7 @@ private struct DashboardTopPriceCard: View {
     var body: some View {
         VStack(spacing: 11 * scale) {
             HStack(alignment: .center) {
-                VStack(alignment: .trailing, spacing: 4 * scale) {
+                VStack(alignment: .leading, spacing: 4 * scale) {
                     Text(greetingText)
                         .font(.appSubheadline(.medium))
                         .foregroundStyle(DashboardColors.warmLight)
@@ -185,6 +185,12 @@ private struct DashboardTopPriceCard: View {
                         .foregroundStyle(DashboardColors.goldMain)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
+                    
+
+                    Text("سعر الذهب اليوم")
+                        .font(.appSubheadline(.semibold))
+                        .foregroundStyle(DashboardColors.warmLight)
+
                 }
 
                 Spacer()
@@ -201,14 +207,10 @@ private struct DashboardTopPriceCard: View {
                     .minimumScaleFactor(0.75)
 
                 Text("ر.س/ج")
-                    .font(.appTitle2(.bold))
+                    .font(.appFootnote(.bold))
                     .foregroundStyle(DashboardColors.warmLight)
 
                 Spacer()
-
-                Text("سعر الذهب اليوم")
-                    .font(.appSubheadline(.semibold))
-                    .foregroundStyle(DashboardColors.warmLight)
             }
 
             ZStack(alignment: .bottomLeading) {
@@ -228,19 +230,20 @@ private struct DashboardTopPriceCard: View {
             }
 
             HStack {
-                HStack(spacing: 8 * scale) {
-                    karatPill(.k24)
-                    karatPill(.k21)
-                    karatPill(.k18)
-                }
+                Text(lastUpdatedText)
+                                   .font(.appFootnote(.semibold))
+                                   .foregroundStyle(DashboardColors.warmLight)
+                                   .lineLimit(1)
+                                   .minimumScaleFactor(0.85)
+
 
                 Spacer()
 
-                Text(lastUpdatedText)
-                    .font(.appFootnote(.semibold))
-                    .foregroundStyle(DashboardColors.warmLight)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
+                HStack(spacing: 8 * scale) {
+                    karatPill(.k18)
+                    karatPill(.k21)
+                    karatPill(.k24)
+                }
             }
         }
         .padding(.horizontal, 16 * scale)
@@ -285,6 +288,7 @@ private struct DashboardTopPriceCard: View {
                 .padding(.horizontal, 12 * scale)
                 .padding(.vertical, 7 * scale)
                 .background(Capsule().fill(active ? DashboardColors.karatSelected : DashboardColors.karatUnselected))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.darkGreen), lineWidth: 0.7))
         }
         .buttonStyle(.plain)
     }
@@ -341,6 +345,8 @@ private struct DashboardQuickActionsCard: View {
                     RoundedRectangle(cornerRadius: 18 * scale, style: .continuous)
                         .fill(DashboardColors.quickActionBackground)
                 )
+                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(.maincolor), lineWidth: 0.2))
+
             }
             .buttonStyle(.plain)
         }
@@ -361,12 +367,18 @@ private struct DashboardPortfolioZakatCard: View {
     let meetsNisab: Bool
 
     var body: some View {
-        VStack(spacing: 0) {
-            portfolioSection
-                .zIndex(1)
+        ZStack(alignment: .top) {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color("ye"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color(.darkGold), lineWidth: 0.2)
+                )
 
-            zakatSection
-                .padding(.top, -14 * scale)
+            VStack(spacing: 0) {
+                portfolioSection
+                zakatSection
+            }
         }
         .padding(.top, 2 * scale)
     }
@@ -374,7 +386,7 @@ private struct DashboardPortfolioZakatCard: View {
     private var portfolioSection: some View {
         VStack(alignment: .trailing, spacing: 8 * scale) {
             ZStack(alignment: .topTrailing) {
-                VStack(alignment: .trailing, spacing: 2 * scale) {
+                VStack(alignment: .leading, spacing: 2 * scale) {
                     Text("قيمة ذهبك اليوم")
                         .font(.appSubheadline(.bold))
                         .foregroundStyle(Color("maincolor"))
@@ -393,6 +405,7 @@ private struct DashboardPortfolioZakatCard: View {
                     .padding(.horizontal, 10 * scale)
                     .padding(.vertical, 5 * scale)
                     .background(Capsule().fill(Color("maincolor")))
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color("Dark green"), lineWidth: 0.2))
             }
 
             Text("\(weeklyChange) \(weeklyChangeIsPositive ? "▲" : "▼")")
@@ -413,16 +426,12 @@ private struct DashboardPortfolioZakatCard: View {
             Text(totalGrams)
                 .font(.appCaption(.bold))
                 .foregroundStyle(DashboardColors.secondaryGray)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(14 * scale)
         .background(
-            RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color("Yellow"))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
-                        .stroke(DashboardColors.cardBorder, lineWidth: 1)
-                )
         )
     }
 
@@ -434,14 +443,15 @@ private struct DashboardPortfolioZakatCard: View {
                 .padding(.horizontal, 10 * scale)
                 .padding(.vertical, 5 * scale)
                 .background(
-                    RoundedRectangle(cornerRadius: 8 * scale, style: .continuous)
+                    RoundedRectangle(cornerRadius: 20 * scale, style: .continuous)
                         .fill(meetsNisab ? DashboardColors.nisabBadge : DashboardColors.inactiveTab)
                 )
+                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.darkGold), lineWidth: 0.2))
 
             Spacer()
 
             HStack(spacing: 6 * scale) {
-                VStack(alignment: .leading, spacing: 1 * scale) {
+                VStack(alignment: .trailing, spacing: 1 * scale) {
                     Text("الزكاة مستحقة")
                         .font(.appSubheadline(.bold))
                         .foregroundStyle(Color("maincolor"))
@@ -460,10 +470,6 @@ private struct DashboardPortfolioZakatCard: View {
         .environment(\.layoutDirection, .leftToRight)
         .padding(.horizontal, 12 * scale)
         .padding(.vertical, 18 * scale)
-        .background(
-            RoundedRectangle(cornerRadius: 16 * scale, style: .continuous)
-                .fill(Color("ye"))
-        )
     }
 }
 

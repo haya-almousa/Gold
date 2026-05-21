@@ -23,7 +23,7 @@ struct ThemedTextField: View {
         ZStack(alignment: .trailing) {
             if text.isEmpty {
                 Text(placeholder)
-                    .font(.system(size: 14))
+                    .font(.appSubheadline())
                     .foregroundColor(Color("Light grey"))
                     .allowsHitTesting(false)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -32,7 +32,7 @@ struct ThemedTextField: View {
             TextField("", text: $text)
                 .keyboardType(keyboardType)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 14).bold())
+                .font(.appSubheadline(.bold))
                 .foregroundColor(Color("maincolor"))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -69,9 +69,9 @@ struct KaratPicker: View {
                 Text(selection.label)
                 Spacer()
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 11)).foregroundColor(Color("maincolor"))
+                    .font(.appCaption()).foregroundColor(Color("maincolor"))
             }
-            .font(.system(size: 14)).foregroundColor(Color(.navy))
+            .font(.appSubheadline()).foregroundColor(Color(.navy))
             .padding(.horizontal, 16).padding(.vertical, 12)
             .background(Color("Lightest gold")).cornerRadius(10)
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("maincolor").opacity(0.08), lineWidth: 1))

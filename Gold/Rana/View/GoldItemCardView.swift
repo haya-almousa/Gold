@@ -108,7 +108,7 @@ struct GoldItemCardView: View {
                 let isUp = diff > 0
                 HStack(spacing: 3) {
                     Image(systemName: isUp ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.appCaption(.bold))
                     Text("\(isUp ? "+" : "")\(diff.formatted(.number.precision(.fractionLength(2))))")
                         .font(.appCaption(.semibold))
                 }
@@ -175,7 +175,7 @@ struct GoldItemCardView: View {
                         .foregroundColor(Color("Grey"))
                 }
             }
-            .padding(.top, 6)
+            .padding(.top, 2)
 
             // Tags row
             HStack(spacing: 6) {
@@ -184,10 +184,10 @@ struct GoldItemCardView: View {
                 tagPill("\(piece.karat.rawValue)K")
                 tagPill("\(piece.grams.clean)g")
             }
-            .padding(.top, 6)
+            .padding(.top, 2)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 14)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
     }
 

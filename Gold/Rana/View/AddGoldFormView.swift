@@ -251,7 +251,7 @@ struct AddGoldFormView: View {
                     ZStack(alignment: .trailing) {
                         if vm.form.shopPriceText.isEmpty {
                             Text("مثال: 1500")
-                                .font(.system(size: 14))
+                                .font(.appSubheadline())
                                 .foregroundColor(Color("Light grey"))
                                 .allowsHitTesting(false)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -263,7 +263,7 @@ struct AddGoldFormView: View {
                         ))
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
-                        .font(.system(size: 14).bold())
+                        .font(.appSubheadline(.bold))
                         .foregroundColor(Color("maincolor"))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
@@ -275,9 +275,9 @@ struct AddGoldFormView: View {
                     Button(action: { showCalculator = true }) {
                         HStack(spacing: 2) {
                             Text("تأكد")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.appCaption(.semibold))
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 9, weight: .semibold))
+                                .font(.appCaption(.semibold))
                         }
                         .foregroundColor(Color("background"))
                         .padding(.horizontal, 8)
@@ -360,8 +360,9 @@ struct AddGoldFormView: View {
                 .font(.appCaption())
                 .foregroundColor(Color("Red"))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .padding(.horizontal, 4)
+        .environment(\.layoutDirection, .leftToRight)
     }
 
     // MARK: - Helper

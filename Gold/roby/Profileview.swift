@@ -186,7 +186,7 @@ struct ProfileView: View {
             }
 
             Text(title)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .font(.appCallout(.medium))
                 .foregroundColor(Color("beige"))
 
             Spacer()

@@ -9,6 +9,10 @@
 internal import SwiftUI
 import PhotosUI
 
+extension UIImagePickerController.SourceType: @retroactive Identifiable {
+    public var id: Int { rawValue }
+}
+
 // MARK: - AddGoldPieceSheet
 
 struct AddGoldPieceSheet: View {
@@ -24,11 +28,15 @@ struct AddGoldPieceSheet: View {
     @State private var condition:      GoldCondition     = .worn
     @State private var purchaseText:   String            = ""
     @State private var ownershipDate:  Date?             = nil
-    @State private var showCalendar:   Bool              = false
-    @State private var photoItem:      PhotosPickerItem? = nil
-    @State private var selectedImage:  UIImage?          = nil
-    @State private var showValidation: Bool              = false
-    @State private var showConditionTip: Bool            = false
+    @State private var showCalendar:     Bool              = false
+    @State private var photoItem:        PhotosPickerItem? = nil
+    @State private var selectedImage:    UIImage?          = nil
+    @State private var showConditionTip: Bool              = false
+    @State private var showImageSource:  Bool              = false
+    @State private var imageSourceType:  UIImagePickerController.SourceType? = nil
+    @State private var nameError:        String?           = nil
+    @State private var weightError:      String?           = nil
+    @State private var priceError:       String?           = nil
 
     private var sheetTitle: String {
         existingPiece == nil ? "اضافة قطعة ذهب" : "تعديل قطعة ذهب"
@@ -42,7 +50,7 @@ struct AddGoldPieceSheet: View {
             formScroll
         }
         .background(Color("background"))
-        .environment(\.layoutDirection, .rightToLeft)
+        .environment(\.layoutDirection, .leftToRight)
         .onTapGesture {
             if showConditionTip {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -50,25 +58,18 @@ struct AddGoldPieceSheet: View {
                 }
             }
         }
-        .photosPicker(
-            isPresented: Binding(
-                get: { photoItem != nil },
-                set: { if !$0 { photoItem = nil } }
-            ),
-            selection: $photoItem,
-            matching: .images
-        )
-        .onChange(of: photoItem) { _, item in
-            Task {
-                if let data = try? await item?.loadTransferable(type: Data.self) {
-                    selectedImage = UIImage(data: data)
-                }
+        .confirmationDialog("اضافة صورة", isPresented: $showImageSource, titleVisibility: .visible) {
+            Button("اختر من الصور") { imageSourceType = .photoLibrary }
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("التقاط صورة") { imageSourceType = .camera }
             }
+            Button("الغاء", role: .cancel) {}
         }
-        .alert("تنبيه", isPresented: $showValidation) {
-            Button("حسناً") {}
-        } message: {
-            Text("الرجاء تعبئة الاسم والوزن وسعر الشراء")
+        .sheet(item: Binding(
+            get: { imageSourceType },
+            set: { imageSourceType = $0 }
+        )) { sourceType in
+            ImagePickerView(selectedImage: $selectedImage, sourceType: sourceType)
         }
         .onAppear { prefillIfEditing() }
     }
@@ -79,7 +80,7 @@ struct AddGoldPieceSheet: View {
         HStack {
             Button(action: attemptSave) {
                 Text("حفظ")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.appBody(.semibold))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 28)
                     .padding(.vertical, 10)
@@ -92,7 +93,7 @@ struct AddGoldPieceSheet: View {
 
             Button(action: { dismiss() }) {
                 Text("إلغاء")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.appBody(.semibold))
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
@@ -113,7 +114,7 @@ struct AddGoldPieceSheet: View {
 
     private var formTitle: some View {
         Text(sheetTitle)
-            .font(.system(size: 17, weight: .bold))
+            .font(.appBody(.bold))
             .foregroundColor(Color("Dark green"))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 12)
@@ -121,12 +122,12 @@ struct AddGoldPieceSheet: View {
 
     private var formScroll: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .trailing, spacing: 20) {
+            VStack(alignment: .leading, spacing: 20) {
                 imageArea
                 nameField
                 weightField
                 karatField
-                conditionField
+                conditionField.zIndex(showConditionTip ? 10 : 0)
                 purchaseField
                 // ── تاريخ الامتلاك: يظهر فقط عند اختيار "غير ملبوسة" ──
                 if condition == .unworn {
@@ -145,7 +146,7 @@ struct AddGoldPieceSheet: View {
 
     private var imageArea: some View {
         Button {
-            photoItem = PhotosPickerItem(itemIdentifier: UUID().uuidString)
+            showImageSource = true
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 14)
@@ -168,10 +169,10 @@ struct AddGoldPieceSheet: View {
                 } else {
                     VStack(spacing: 10) {
                         Image(systemName: "camera.fill")
-                            .font(.system(size: 26))
+                            .font(.appTitle2())
                             .foregroundColor(Color("Light grey"))
                         Text("اضغط لاضافة صورة")
-                            .font(.system(size: 14))
+                            .font(.appSubheadline())
                             .foregroundColor(Color("Light grey"))
                     }
                 }
@@ -183,24 +184,28 @@ struct AddGoldPieceSheet: View {
     // MARK: - Fields
 
     private var nameField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel("اسم القطعة")
             TextField("مثال: اسوارة، خاتم", text: $name)
-                .tajouriFieldStyle()
+                .tajouriFieldStyle(hasError: nameError != nil)
+                .onChange(of: name) { nameError = nil }
+            if let e = nameError { inlineError(e) }
         }
     }
 
     private var weightField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel("الوزن (جرام)*")
             TextField("مثال: 5.5", text: $weightText)
                 .keyboardType(.decimalPad)
-                .tajouriFieldStyle()
+                .tajouriFieldStyle(hasError: weightError != nil)
+                .onChange(of: weightText) { weightError = nil }
+            if let e = weightError { inlineError(e) }
         }
     }
 
     private var karatField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel("العيار*")
             HStack(spacing: 8) {
                 ForEach(GoldKarat.allCases) { k in
@@ -211,8 +216,9 @@ struct AddGoldPieceSheet: View {
     }
 
     private var conditionField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
-            HStack {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Spacer()
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         showConditionTip.toggle()
@@ -220,26 +226,26 @@ struct AddGoldPieceSheet: View {
                 } label: {
                     Image(systemName: "questionmark.circle")
                         .foregroundColor(showConditionTip ? Color("Dark green") : Color("Grey"))
-                        .font(.system(size: 16))
+                        .font(.appCallout())
                 }
                 .buttonStyle(.plain)
-                .overlay(alignment: .topLeading) {
-                    if showConditionTip {
-                        tooltipBubble
-                            .offset(x: -10, y: -90)
-                            .transition(.scale(scale: 0.85, anchor: .bottomLeading).combined(with: .opacity))
-                            .zIndex(10)
-                    }
-                }
-
-                Spacer()
-                fieldLabel("حالة القطعة*")
+                Text("حالة القطعة*")
+                    .font(.appBody(.bold))
+                    .foregroundColor(Color("Dark green"))
             }
             HStack(spacing: 10) {
                 conditionButton(.unworn)
                 conditionButton(.worn)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if showConditionTip {
+                tooltipBubble
+                    .offset(y: 32)
+                    .transition(.scale(scale: 0.85, anchor: .topTrailing).combined(with: .opacity))
+            }
+        }
+        .zIndex(showConditionTip ? 10 : 0)
     }
 
     private var tooltipBubble: some View {
@@ -247,24 +253,24 @@ struct AddGoldPieceSheet: View {
 
             VStack(alignment: .trailing, spacing: 5) {
                 Label("ملبوسة", systemImage: "circle.fill")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(Color("Dark green"))
                     .labelStyle(ReversedLabelStyle())
 
                 Text("الذهب الملبوس لا تجب فيه الزكاة")
-                    .font(.system(size: 12))
+                    .font(.appCaption())
                     .foregroundColor(Color("Dark grey"))
                     .multilineTextAlignment(.trailing)
 
                 Divider().padding(.vertical, 2)
 
                 Label("غير ملبوسة", systemImage: "circle.fill")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.appFootnote(.bold))
                     .foregroundColor(Color("Dark green"))
                     .labelStyle(ReversedLabelStyle())
 
                 Text("الذهب غير الملبوس تجب فيه الزكاة إذا بلغ النصاب")
-                    .font(.system(size: 12))
+                    .font(.appCaption())
                     .foregroundColor(Color("Dark grey"))
                     .multilineTextAlignment(.trailing)
             }
@@ -275,7 +281,7 @@ struct AddGoldPieceSheet: View {
             .frame(width: 290) // عرض أكبر
 
             Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 10))
+                .font(.appCaption())
                 .foregroundColor(Color("background"))
                 .offset(x: 14, y: -2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -284,16 +290,18 @@ struct AddGoldPieceSheet: View {
     }
 
     private var purchaseField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel("سعر الشراء (ر.س)*")
             TextField("مثال: 1500", text: $purchaseText)
                 .keyboardType(.decimalPad)
-                .tajouriFieldStyle()
+                .tajouriFieldStyle(hasError: priceError != nil)
+                .onChange(of: purchaseText) { priceError = nil }
+            if let e = priceError { inlineError(e) }
         }
     }
 
     private var dateField: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel("تاريخ الامتلاك (لحساب الزكاة)")
             dateRow
         }
@@ -303,7 +311,7 @@ struct AddGoldPieceSheet: View {
 
     private func fieldLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 15, weight: .bold))
+            .font(.appBody(.bold))
             .foregroundColor(Color("Dark green"))
             .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -312,12 +320,16 @@ struct AddGoldPieceSheet: View {
         let selected = karat == k
         return Button(action: { karat = k }) {
             Text(k.label)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.appBody(.semibold))
                 .foregroundColor(selected ? Color("background") : Color("Dark green"))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
                 .background(selected ? Color("maincolor") : Color("Lightest gold"))
-                .cornerRadius(10)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(.darkGold), lineWidth: 0.2)
+                )
         }
         .buttonStyle(.plain)
     }
@@ -327,7 +339,6 @@ struct AddGoldPieceSheet: View {
         return Button(action: {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
                 condition = c
-                // إذا رجع لملبوسة نمسح التاريخ والتقويم
                 if c == .worn {
                     ownershipDate = nil
                     showCalendar  = false
@@ -335,12 +346,16 @@ struct AddGoldPieceSheet: View {
             }
         }) {
             Text(c.rawValue)
-                .font(.system(size: 15, weight: .bold))
+                .font(.appBody(.bold))
                 .foregroundColor(selected ? Color("background") : Color("Dark green"))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(selected ? Color("Dark green") : Color("Lightest gold"))
-                .cornerRadius(12)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(.darkGold), lineWidth: 0.2)
+                )
         }
         .buttonStyle(.plain)
     }
@@ -353,26 +368,27 @@ struct AddGoldPieceSheet: View {
             HStack {
                 Image(systemName: "calendar")
                     .foregroundColor(Color("Grey"))
-                    .font(.system(size: 16))
+                    .font(.appCallout())
                 Spacer()
                 Text(ownershipDate.map { formatDate($0) } ?? "يوم / شهر / سنة")
-                    .font(.system(size: 15))
+                    .font(.appBody())
                     .foregroundColor(ownershipDate == nil ? Color("Light grey") : Color("Dark grey"))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 13)
             .background(Color("Lightest gold"))
-            .cornerRadius(10)
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color("Gold").opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color(.darkGold), lineWidth: 0.2)
             )
         }
         .buttonStyle(.plain)
-        .fullScreenCover(isPresented: $showCalendar) {
-            iOSDatePickerPopup(selectedDate: $ownershipDate, isPresented: $showCalendar)
-                .background(Color("background").opacity(0.9))
-                .ignoresSafeArea()
+        .sheet(isPresented: $showCalendar) {
+            calendarPopup
+                .presentationDetents([.fraction(0.55)])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(24)
         }
     }
 
@@ -467,23 +483,32 @@ struct AddGoldPieceSheet: View {
     // MARK: - Save Logic
 
     private func attemptSave() {
-        guard
-            !name.isEmpty,
-            let weight   = Double(weightText), weight > 0,
-            let purchase = Double(purchaseText), purchase > 0
-        else {
-            showValidation = true
+        nameError   = nil
+        weightError = nil
+        priceError  = nil
+
+        if name.trimmingCharacters(in: .whitespaces).isEmpty {
+            nameError = "الرجاء إدخال اسم القطعة"
+            return
+        }
+        let weight = Double(weightText.replacingOccurrences(of: ",", with: "."))
+        if weight == nil || (weight ?? 0) <= 0 {
+            weightError = "الرجاء إدخال الوزن بالجرام"
+            return
+        }
+        let purchase = Double(purchaseText.replacingOccurrences(of: ",", with: "."))
+        if purchase == nil || (purchase ?? 0) <= 0 {
+            priceError = "الرجاء إدخال سعر الشراء"
             return
         }
 
         let piece = GoldPieceItem(
             id:            existingPiece?.id ?? UUID(),
-            name:          name,
-            weightGrams:   weight,
+            name:          name.trimmingCharacters(in: .whitespaces),
+            weightGrams:   weight!,
             karat:         karat,
             condition:     condition,
-            purchasePrice: purchase,
-            // التاريخ يُحفظ فقط إذا كانت غير ملبوسة
+            purchasePrice: purchase!,
             ownershipDate: condition == .unworn ? ownershipDate : nil,
             imageData:     selectedImage?.jpegData(compressionQuality: 0.75)
         )
@@ -503,15 +528,34 @@ struct AddGoldPieceSheet: View {
 // MARK: - TextField Style
 
 private extension View {
-    func tajouriFieldStyle() -> some View {
+    func tajouriFieldStyle(hasError: Bool = false) -> some View {
         self
             .padding(.horizontal, 14)
             .padding(.vertical, 13)
             .background(Color("Lightest gold"))
-            .cornerRadius(10)
-            .font(.system(size: 15))
+            .cornerRadius(20)
+            .font(.appBody())
             .multilineTextAlignment(.trailing)
+            .environment(\.layoutDirection, .leftToRight)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(hasError ? Color("Red") : Color(.darkGold), lineWidth: hasError ? 1.5 : 0.2)
+            )
     }
+}
+
+private func inlineError(_ message: String) -> some View {
+    HStack(spacing: 4) {
+        Image(systemName: "exclamationmark.circle.fill")
+            .font(.appCaption())
+            .foregroundColor(Color("Red"))
+        Text(message)
+            .font(.appCaption())
+            .foregroundColor(Color("Red"))
+    }
+    .frame(maxWidth: .infinity, alignment: .trailing)
+    .padding(.horizontal, 4)
+    .environment(\.layoutDirection, .leftToRight)
 }
 
 // MARK: - Reversed Label Style
@@ -521,7 +565,7 @@ struct ReversedLabelStyle: LabelStyle {
         HStack(spacing: 5) {
             configuration.title
             configuration.icon
-                .font(.system(size: 7))
+                .font(.appCaption())
                 .foregroundColor(Color("Gold"))
         }
     }

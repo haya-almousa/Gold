@@ -18,6 +18,7 @@ struct SignInView: View {
 
     // لما تكون Sheet نحتاج dismiss
     @Environment(\.dismiss) private var dismiss
+    @ScaledMetric(relativeTo: .largeTitle) private var logoIconSize: CGFloat = 68
 
     var body: some View {
         ZStack {
@@ -32,7 +33,7 @@ struct SignInView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.appCallout(.semibold))
                             .foregroundColor(Color("beige").opacity(0.7))
                             .padding(12)
                             .background(Color.white.opacity(0.08))
@@ -47,15 +48,15 @@ struct SignInView: View {
                 // ─── Logo ───
                 VStack(spacing: 14) {
                     Image(systemName: "circle.hexagonpath.fill")
-                        .font(.system(size: 68))
+                        .font(.system(size: logoIconSize))
                         .foregroundColor(Color("beige"))
 
                     Text("Gold")
-                        .font(.custom("Georgia", size: 38).weight(.bold))
+                        .font(.custom("Georgia", size: 38, relativeTo: .largeTitle).weight(.bold))
                         .foregroundColor(Color("beige"))
 
                     Text("محفظتك الذهبية")
-                        .font(.custom("Georgia", size: 17))
+                        .font(.custom("Georgia", size: 17, relativeTo: .body))
                         .foregroundColor(Color("emarald"))
                 }
 
@@ -64,11 +65,11 @@ struct SignInView: View {
                 // ─── نص توضيحي ───
                 VStack(spacing: 8) {
                     Text("سجّل دخولك لحفظ بياناتك")
-                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .font(.appBody(.semibold))
                         .foregroundColor(Color("beige"))
 
                     Text("محفظتك ومشترياتك محفوظة بأمان عبر iCloud\nوتزامن تلقائي على جميع أجهزتك")
-                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .font(.appFootnote())
                         .foregroundColor(Color("emarald"))
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
