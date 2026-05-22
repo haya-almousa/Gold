@@ -23,6 +23,10 @@ final class AuthenticationManager: ObservableObject {
     private init() {
         checkExistingSession()
     }
+    func skipSignIn() {
+        // المستخدم يدخل بدون حساب
+        self.isSignedIn = true
+    }
 
     // ─── تحقق إذا المستخدم سجل دخول قبل ───
     func checkExistingSession() {
