@@ -26,6 +26,7 @@ private struct StoredGoldPiece: Codable {
     let karatRawValue: Int
     let mfgFeePercent: Double
     let shopPrice:     Double?
+    let imageData:     Data?
 }
 
 private enum ComparisonStorage {
@@ -40,7 +41,8 @@ private enum ComparisonStorage {
                 grams:         $0.grams,
                 karatRawValue: $0.karat.rawValue,
                 mfgFeePercent: $0.mfgFeePercent,
-                shopPrice:     $0.shopPrice
+                shopPrice:     $0.shopPrice,
+                imageData:     $0.image?.jpegData(compressionQuality: 0.7)
             )
         }
         if let data = try? JSONEncoder().encode(stored) {
@@ -64,7 +66,7 @@ private enum ComparisonStorage {
                 karat:         karat,
                 mfgFeePercent: item.mfgFeePercent,
                 shopPrice:     item.shopPrice ?? 0.0,
-                image:         nil
+                image:         item.imageData.flatMap { UIImage(data: $0) }
             )
         }
     }
