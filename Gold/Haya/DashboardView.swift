@@ -87,6 +87,7 @@ struct DashboardView: View {
                             gramsProgress: viewModel.totalGramsProgressToNisab,
                             totalGrams: viewModel.formattedTotalTojoryGrams,
                             zakatDueText: viewModel.formattedZakatDueText,
+                            zakatStatusText: viewModel.zakatStatusText,
                             nisabStatusText: viewModel.nisabStatusText,
                             meetsNisab: viewModel.meetsNisab
                         )
@@ -175,22 +176,25 @@ private struct DashboardTopPriceCard: View {
     var body: some View {
         VStack(spacing: 11 * scale) {
             HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4 * scale) {
-                    Text(greetingText)
-                        .font(.appSubheadline(.medium))
-                        .foregroundStyle(DashboardColors.warmLight)
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2 * scale) {
+                        Text(greetingText)
+                            .font(.appSubheadline(.medium))
+                            .foregroundStyle(DashboardColors.warmLight)
 
-                    Text(userName)
-                        .font(.appTitle(.bold))
-                        .foregroundStyle(DashboardColors.goldMain)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                    
+                        Text(userName)
+                            .font(.system(size: 21 * scale, weight: .bold))
+                            .foregroundStyle(DashboardColors.goldMain)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
+
+                    Spacer().frame(height: 12 * scale)
 
                     Text("سعر الذهب اليوم")
                         .font(.appSubheadline(.semibold))
                         .foregroundStyle(DashboardColors.warmLight)
-
+                        .padding(.bottom, -12)
                 }
 
                 Spacer()
@@ -200,7 +204,7 @@ private struct DashboardTopPriceCard: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 8 * scale) {
                 Text(price)
-                    .font(.appDisplay(.heavy))
+                    .font(.system(size: 40 * scale, weight: .heavy))
                     .foregroundStyle(DashboardColors.goldMain)
                     .contentTransition(.numericText())
                     .lineLimit(1)
@@ -271,9 +275,10 @@ private struct DashboardTopPriceCard: View {
             Text("مباشر")
                 .font(.appSubheadline(.bold))
                 .foregroundStyle(DashboardColors.liveText)
+                
         }
         .padding(.horizontal, 12 * scale)
-        .padding(.vertical, 6 * scale)
+        .padding(.vertical, 3 * scale)
         .background(Capsule().fill(DashboardColors.liveBackground))
     }
 
@@ -306,6 +311,7 @@ private struct DashboardQuickActionsCard: View {
                 .foregroundStyle(.black)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 2 * scale)
+                .padding(.top, 9 * scale)
 
             NavigationLink {
                 GoldCalculatorView()
@@ -363,6 +369,7 @@ private struct DashboardPortfolioZakatCard: View {
     let gramsProgress: CGFloat
     let totalGrams: String
     let zakatDueText: String
+    let zakatStatusText: String
     let nisabStatusText: String
     let meetsNisab: Bool
 
@@ -401,11 +408,11 @@ private struct DashboardPortfolioZakatCard: View {
 
                 Text("التجوري")
                     .font(.appCaption(.bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color("maincolor"))
                     .padding(.horizontal, 10 * scale)
                     .padding(.vertical, 5 * scale)
-                    .background(Capsule().fill(Color("maincolor")))
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color("Dark green"), lineWidth: 0.2))
+                    .background(Capsule().fill(Color("maincolor").opacity(0.1)))
+                    .overlay(Capsule().stroke(Color("maincolor").opacity(0.4), lineWidth: 0.8))
             }
 
             Text("\(weeklyChange) \(weeklyChangeIsPositive ? "▲" : "▼")")
@@ -452,7 +459,7 @@ private struct DashboardPortfolioZakatCard: View {
 
             HStack(spacing: 6 * scale) {
                 VStack(alignment: .trailing, spacing: 1 * scale) {
-                    Text("الزكاة مستحقة")
+                    Text(zakatStatusText)
                         .font(.appSubheadline(.bold))
                         .foregroundStyle(Color("maincolor"))
 

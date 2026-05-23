@@ -29,6 +29,7 @@ struct GoldCalculatorView: View {
     @State private var manufacturingFeeText: String = ""
     @State private var manufacturingFee: Double = 0
     @FocusState private var focusedField: Field?
+    @Environment(\.dismiss) private var dismiss
 
     enum Field { case weight, fee }
 
@@ -128,13 +129,15 @@ struct GoldCalculatorView: View {
                     Spacer(minLength: 16)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 8)
+                .padding(.top, 0)
                 .padding(.bottom, 16)
+                .safeAreaInset(edge: .top) { Color.clear.frame(height: 8) }
             }
             .refreshable {
                 await fetchPrice()
             }
         }
+        .navigationBarBackButtonHidden(true)
         .onTapGesture { focusedField = nil }
         .task { await fetchPrice() }
     }
@@ -154,32 +157,41 @@ struct GoldCalculatorView: View {
     // MARK: - Layout Sections
     private var topBar: some View {
         HStack {
-            if let back = onBack {
-                Button(action: back) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("رجوع")
-                    }
-                    .font(.appCallout(.semibold))
-                    .foregroundColor(primaryTeal)
-                }
-                .buttonStyle(.plain)
-            }
+            Text("حاسبة الذهب")
+                .font(.appTitle2(.bold))
+                .foregroundColor(.black)
+                .minimumScaleFactor(0.6)
+                .offset(x: 115)
 
             Spacer()
 
-            Text("حاسبة الذهب")
-                .font(.appTitle(.bold))
-                .foregroundColor(.black)
-                .minimumScaleFactor(0.6)
+            NavigationLink(value: "back") { EmptyView() }
+
+            Button(action: {
+                if let back = onBack {
+                    back()
+                } else {
+                    dismiss()
+                }
+            }) {
+                ZStack {
+                    Circle()
+                        .fill(primaryTeal)
+                        .frame(width: 42, height: 42)
+                    Image(systemName: "chevron.right")
+                        .font(.appTitle3(.bold))
+                        .foregroundColor(.white)
+                }
+            }
+            .buttonStyle(.plain)
         }
-        .padding(.top, 40)
+        .padding(.top, 20)
     }
 
     private var karatSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("العيار")
-                .font(.appTitle2(.bold))
+                .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
             HStack(spacing: 7) {
@@ -194,17 +206,17 @@ struct GoldCalculatorView: View {
     private var weightSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("الوزن (جرام)*")
-                .font(.appTitle2(.bold))
+                .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(softTeal)
-                    .frame(height: 48)
+                    .frame(height: 40)
 
                 if weightText.isEmpty {
                     Text("مثال:5.5")
-                        .font(.appTitle3(.semibold))
+                        .font(.appBody(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -223,7 +235,7 @@ struct GoldCalculatorView: View {
                         weight = Double(filtered) ?? 0
                     }
             }
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -231,17 +243,17 @@ struct GoldCalculatorView: View {
     private var manufacturingFeeSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
             Text("المصنعية*")
-                .font(.appTitle2(.bold))
+                .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
             ZStack(alignment: .trailing) {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(softTeal)
-                    .frame(height: 48)
+                    .frame(height: 40)
 
                 if manufacturingFeeText.isEmpty {
                     Text("مثال:10")
-                        .font(.appTitle3(.semibold))
+                        .font(.appBody(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
@@ -260,7 +272,7 @@ struct GoldCalculatorView: View {
                         manufacturingFee = Double(filtered) ?? 0
                     }
             }
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
     }

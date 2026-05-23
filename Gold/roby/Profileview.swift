@@ -5,16 +5,15 @@
 //  Created by Raghad Alamoudi on 18/11/1447 AH.
 //
 
-
 internal import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var auth: AuthenticationManager
+    @ObservedObject private var auth: AuthenticationManager = .shared
     @State private var showSignIn = false
 
     var body: some View {
         ZStack {
-            Color("navy").ignoresSafeArea()
+            Color("background").ignoresSafeArea()
 
             if auth.isSignedIn {
                 signedInView
@@ -31,52 +30,54 @@ struct ProfileView: View {
     // ─── حالة مسجل الدخول ───
     private var signedInView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .trailing, spacing: 0) {
 
-                Text("Profile")
-                    .font(.custom("Georgia", size: 28, relativeTo: .title).weight(.bold))
-                    .foregroundColor(Color("beige"))
+                Text("الحساب")
+                    .font(.appTitle2(.bold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.horizontal, 20)
                     .padding(.top, 24)
                     .padding(.bottom, 20)
 
                 // ─── معلومات المستخدم ───
                 HStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(Color("beige").opacity(0.15))
-                            .frame(width: 52, height: 52)
-                        Image(systemName: "person.fill")
-                            .font(.appTitle2())
-                            .foregroundColor(Color("beige"))
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .trailing, spacing: 4) {
                         Text(auth.userName.isEmpty ? "مستخدم Gold" : auth.userName)
                             .font(.appBody(.bold))
-                            .foregroundColor(Color("beige"))
+                            .foregroundColor(.black)
 
                         if !auth.userEmail.isEmpty {
                             Text(auth.userEmail)
                                 .font(.appFootnote(.regular))
-                                .foregroundColor(Color("emarald"))
+                                .foregroundColor(Color("Grey"))
                         }
                     }
-                    Spacer()
+
+                    ZStack {
+                        Circle()
+                            .fill(Color("maincolor"))
+                            .frame(width: 52, height: 52)
+                        Image(systemName: "person.fill")
+                            .font(.appTitle2())
+                            .foregroundColor(Color("background"))
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
 
                 // ─── القائمة ───
                 VStack(spacing: 0) {
                     profileRow(icon: "bell", title: "تنبيهات الأسعار")
-                    Divider().background(Color("beige").opacity(0.1))
+                    Divider()
                     profileRow(icon: "gearshape", title: "التفضيلات")
-                    Divider().background(Color("beige").opacity(0.1))
+                    Divider()
                     profileRow(icon: "info.circle", title: "عن التطبيق")
                 }
-                .background(Color.white.opacity(0.05))
+                .background(Color("Lightest blue"))
                 .cornerRadius(16)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.1))
                 .padding(.horizontal, 20)
 
                 Spacer().frame(height: 32)
@@ -92,110 +93,118 @@ struct ProfileView: View {
                         .padding(.vertical, 16)
                         .background(Color.red.opacity(0.08))
                         .cornerRadius(14)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.red.opacity(0.2), lineWidth: 0.5))
                 }
                 .padding(.horizontal, 20)
 
-                Spacer().frame(height: 40)
+                Spacer().frame(height: 100)
             }
         }
+        .environment(\.layoutDirection, .rightToLeft)
     }
 
     // ─── حالة الزائر (غير مسجل) ───
     private var guestView: some View {
-        VStack(spacing: 0) {
-            Text("Profile")
-                .font(.custom("Georgia", size: 28, relativeTo: .title).weight(.bold))
-                .foregroundColor(Color("beige"))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.top, 24)
+        GeometryReader { geo in
+            VStack(spacing: 0) {
+                Text("الحساب")
+                    .font(.appTitle2(.bold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 24)
 
-            Spacer()
+                Spacer()
 
-            VStack(spacing: 20) {
-                ZStack {
-                    Circle()
-                        .fill(Color("beige").opacity(0.1))
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "person.fill")
-                        .font(.appTitle())
-                        .foregroundColor(Color("beige").opacity(0.6))
+                VStack(spacing: 20) {
+                    ZStack {
+                        Circle()
+                            .fill(Color("maincolor").opacity(0.1))
+                            .frame(width: 80, height: 80)
+                        Image(systemName: "person.fill")
+                            .font(.appTitle())
+                            .foregroundColor(Color("maincolor").opacity(0.6))
+                    }
+
+                    VStack(spacing: 8) {
+                        Text("سجّل دخولك")
+                            .font(.appTitle2(.bold))
+                            .foregroundColor(.black)
+
+                        Text("تزامن محفظتك وتاريخك وتفضيلاتك\nعلى جميع أجهزتك.")
+                            .font(.appSubheadline(.regular))
+                            .foregroundColor(Color("Grey"))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                    }
                 }
 
-                VStack(spacing: 8) {
-                    Text("Sign in to sync")
-                        .font(.custom("Georgia", size: 22, relativeTo: .title2).weight(.bold))
-                        .foregroundColor(Color("beige"))
+                Spacer()
 
-                    Text("Access your portfolio, history, and preferences\nfrom any device.")
-                        .font(.appSubheadline(.regular))
-                        .foregroundColor(Color("emarald"))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
+                VStack(spacing: 12) {
+                    Button {
+                        showSignIn = true
+                    } label: {
+                        Text("تسجيل الدخول")
+                            .font(.appCallout(.bold))
+                            .foregroundColor(Color("background"))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color("maincolor"))
+                            .cornerRadius(14)
+                    }
+
+                    Button {
+                        showSignIn = true
+                    } label: {
+                        Text("إنشاء حساب")
+                            .font(.appCallout(.semibold))
+                            .foregroundColor(Color("maincolor"))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color("Lightest blue"))
+                            .cornerRadius(14)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color(.maincolor), lineWidth: 0.5)
+                            )
+                    }
                 }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 60)
             }
-
-            Spacer().frame(height: 40)
-
-            // ─── أزرار ───
-            VStack(spacing: 12) {
-                Button {
-                    showSignIn = true
-                } label: {
-                    Text("Sign In")
-                        .font(.appCallout(.bold))
-                        .foregroundColor(Color("navy"))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color("beige"))
-                        .cornerRadius(14)
-                }
-
-                Button {
-                    showSignIn = true
-                } label: {
-                    Text("Create account")
-                        .font(.appCallout(.semibold))
-                        .foregroundColor(Color("beige"))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.white.opacity(0.07))
-                        .cornerRadius(14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color("beige").opacity(0.25), lineWidth: 1)
-                        )
-                }
-            }
-            .padding(.horizontal, 24)
-
-            Spacer().frame(height: 60)
+            .frame(width: geo.size.width, height: geo.size.height)
+            .environment(\.layoutDirection, .rightToLeft)
         }
     }
 
     // ─── صف في القائمة ───
     private func profileRow(icon: String, title: String) -> some View {
         HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color("beige").opacity(0.12))
-                    .frame(width: 34, height: 34)
-                Image(systemName: icon)
-                    .font(.appSubheadline(.medium))
-                    .foregroundColor(Color("beige"))
-            }
-
-            Text(title)
-                .font(.appCallout(.medium))
-                .foregroundColor(Color("beige"))
+            Image(systemName: "chevron.left")
+                .font(.appFootnote(.semibold))
+                .foregroundColor(Color("Grey"))
 
             Spacer()
 
-            Image(systemName: "arrow.right")
-                .font(.appFootnote(.semibold))
-                .foregroundColor(Color("emarald"))
+            Text(title)
+                .font(.appCallout(.medium))
+                .foregroundColor(.black)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color("maincolor").opacity(0.1))
+                    .frame(width: 34, height: 34)
+                Image(systemName: icon)
+                    .font(.appSubheadline(.medium))
+                    .foregroundColor(Color("maincolor"))
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
     }
+}
+
+#Preview {
+    ProfileView()
 }

@@ -20,6 +20,7 @@ struct MainTabView: View {
                 TajouriView(dashboardVM: dashboardVM)
                     .tag(AppTab.tojory)
                     .toolbar(.hidden, for: .tabBar)
+                    .environmentObject(AuthenticationManager.shared)
             }
 
             customTabBar

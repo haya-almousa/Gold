@@ -45,7 +45,7 @@ struct AddGoldPieceSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             topBar
-            divider
+           
             formTitle
             formScroll
         }
@@ -107,14 +107,11 @@ struct AddGoldPieceSheet: View {
         .padding(.bottom, 12)
     }
 
-    private var divider: some View {
-        Divider()
-            .overlay(Color(.navy).opacity(0.08))
-    }
+    
 
     private var formTitle: some View {
         Text(sheetTitle)
-            .font(.appBody(.bold))
+            .font(.appTitle3(.bold))
             .foregroundColor(Color("Dark green"))
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 12)

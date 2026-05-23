@@ -39,7 +39,7 @@ struct ComparisonListView: View {
             VStack(spacing: 0) {
                 headerBar
                     .padding(.horizontal, 20)
-                    .padding(.top, 40)
+                    .padding(.top, 30)
                     .padding(.bottom, 16)
 
                 ScrollView(showsIndicators: false) {
@@ -107,7 +107,7 @@ struct ComparisonListView: View {
                 ZStack {
                     Circle()
                         .fill(Color("Gold"))
-                        .frame(width: 46, height: 46)
+                        .frame(width: 42, height: 42)
                     Image(systemName: "plus")
                         .font(.appTitle3(.bold))
                         .foregroundColor(Color("background"))
@@ -118,7 +118,7 @@ struct ComparisonListView: View {
             Spacer()
             Text("قائمة المقارنة")
                 .font(.appTitle2(.bold))
-                .foregroundColor(Color(.navy))
+                .foregroundColor(Color(.black))
         }
     }
 
@@ -189,6 +189,7 @@ struct ComparisonListView: View {
                     )
                     .foregroundColor(Color("Gold"))
             )
+            .padding(.bottom, 12)
     }
 
     // MARK: - Filter / Search Row
@@ -201,7 +202,7 @@ struct ComparisonListView: View {
                 Image(systemName: showFilter ? "xmark" : "slider.horizontal.3")
                     .font(.appBody(.medium))
                     .foregroundColor(Color("background"))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 36, height: 36)
                     .background(showFilter ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
                     .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
@@ -217,7 +218,7 @@ struct ComparisonListView: View {
                 Image(systemName: showSearch ? "xmark" : "magnifyingglass")
                     .font(.appBody(.medium))
                     .foregroundColor(Color("background"))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 36, height: 36)
                     .background(showSearch ? Color("maincolor") : Color("Gold"))
                     .clipShape(Circle())
                     .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))

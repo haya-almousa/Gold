@@ -195,9 +195,13 @@ final class DashboardViewModel: ObservableObject {
     }
 
     var formattedZakatDueText: String {
-        guard meetsNisab else { return "لا توجد زكاة مستحقة" }
+        guard meetsNisab else { return "زكاتك الحالية: 0.00 ريال" }
         let zakat = currentPortfolioValueSAR * 0.025
         return "زكاتك \(formatWithGrouping(zakat)) ريال"
+    }
+    
+    var zakatStatusText: String {
+        meetsNisab ? "الزكاة مستحقة" : "الزكاة غير مستحقة"
     }
 
     var changeColor: Color {

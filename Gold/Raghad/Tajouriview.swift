@@ -18,6 +18,8 @@ struct TajouriView: View {
 
     @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
     @ScaledMetric(relativeTo: .title)      private var zakatFontSize: CGFloat = 34
+    @State private var showProfile = false
+    @EnvironmentObject var auth: AuthenticationManager
 
     init(dashboardVM: DashboardViewModel) {
         _vm = StateObject(wrappedValue: TajouriViewModel(dashboardVM: dashboardVM))
@@ -49,6 +51,11 @@ struct TajouriView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showProfile) {
+            ProfileView()
+        }
+        
+        
     }
 
     // MARK: - Header
@@ -64,14 +71,18 @@ struct TajouriView: View {
     private var headerContent: some View {
         VStack(spacing: 0) {
             HStack {
-                ZStack {
-                    Circle()
-                        .fill(Color("Dark green"))
-                        .frame(width: 46, height: 46)
-                    Image(systemName: "person.fill")
-                        .foregroundColor(Color("background"))
-                        .font(.appTitle3())
+                Button { showProfile = true } label: {
+                    ZStack {
+                        Circle()
+                            .fill(Color("Dark green"))
+                            .frame(width: 46, height: 46)
+                        Image(systemName: "person.fill")
+                            .foregroundColor(Color("background"))
+                            .font(.appTitle3())
+                    }
                 }
+                .buttonStyle(.plain)
+                
                 Spacer()
                 Text("التجوري")
                     .font(.appTitle2(.bold))
@@ -128,18 +139,18 @@ struct TajouriView: View {
                     .foregroundColor(Color("background"))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 6)
-                    .background(vm.meetsNisab ? Color("Gold") : Color("Grey"))
+                    .background(vm.meetsNisab ? Color("Nisab") : Color(.grey.opacity(0.55)))
                     .clipShape(Capsule())
                 Spacer()
                 HStack(spacing: 8) {
 
                     Text("حالة الزكاة")
-                        .font(.appBody(.bold))
-                        .foregroundColor(Color("Dark grey"))
+                        .font(.appTitle3(.bold))
+                        .foregroundColor(Color("Dark green"))
 
                     Image(systemName: "moon.fill")
                         .foregroundColor(Color("Dark green"))
-                        .font(.appBody())
+                        .font(.appTitle3(.bold))
                         .scaleEffect(x: -1, y: 1) // يعكس اتجاه القمر
                 }
             }
@@ -163,10 +174,10 @@ struct TajouriView: View {
 
                 HStack {
                     Text("النصاب: \(Int(GoldConstants.nisabGrams)) ج (24K)")
-                        .font(.appCaption())
+                        .font(.appCaption(.medium))
                         .foregroundColor(Color("Grey"))
                     Spacer()
-                    Text("ذهبك الخاضع للزكاة: \(String(format: "%.1f", vm.zakatableGrams))ج")                        .font(.appCaption())
+                    Text("ذهبك الخاضع للزكاة: \(String(format: "%.1f", vm.zakatableGrams))ج")                        .font(.appCaption(.medium))
                         .foregroundColor(Color("Grey"))
                 }
             }
@@ -183,7 +194,7 @@ struct TajouriView: View {
 
             VStack(alignment: .center, spacing: 4) {
                 Text("الزكاة السنوية المستحقة:")
-                    .font(.appFootnote())
+                    .font(.appCaption(.medium, ))
                     .foregroundColor(Color("Dark grey"))
                 if vm.meetsNisab {
                     Text("SAR \(formatNumber(vm.zakatDueSAR))")
@@ -194,11 +205,11 @@ struct TajouriView: View {
                 } else {
                     Text("لا توجد زكاة مستحقة")
                         .font(.appTitle3(.bold))
-                        .foregroundColor(Color("Grey"))
+                        .foregroundColor(Color("Dark green"))
                 }
                 Text("2.5% من قيمة ذهبك بسعر اليوم")
-                    .font(.appCaption())
-                    .foregroundColor(Color("Grey"))
+                    .font(.appCaption(.medium))
+                    .foregroundColor(Color("Dark grey"))
             }
             .frame(maxWidth: .infinity)
         }
@@ -218,7 +229,7 @@ struct TajouriView: View {
 
                 Text("قطع الذهب")
                     .font(.appTitle3(.bold))
-                    .foregroundColor(Color("Dark grey"))
+                    .foregroundColor(Color(.black))
 
                 Spacer()
 
@@ -226,7 +237,7 @@ struct TajouriView: View {
                     ZStack {
                         Circle()
                             .fill(Color("Gold"))
-                            .frame(width: 44, height: 44)
+                            .frame(width: 36, height: 36)
 
                         Image(systemName: "plus")
                             .font(.appBody(.bold))

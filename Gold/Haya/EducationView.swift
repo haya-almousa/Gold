@@ -113,10 +113,10 @@ struct EducationView: View {
                 VStack(spacing: 0) {
                     Text("تعلّم عن الذهب")
                         .font(.appTitle2(.bold))
-                        .foregroundColor(Color("Dark gold"))
+                        .foregroundColor(Color(.black))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
-                        .padding(.top, 24)
+                        .padding(.top, 35)
                         .padding(.bottom, 20)
 
                     VStack(spacing: 16) {
@@ -143,7 +143,7 @@ struct EducationView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(article.summary)
-                .font(.appSubheadline(.regular))
+                .font(.appSubheadline(.medium))
                 .foregroundColor(Color("Dark grey"))
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)

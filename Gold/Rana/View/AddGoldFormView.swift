@@ -30,8 +30,7 @@ struct AddGoldFormView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 12)
 
-            Divider()
-                .overlay(Color(.navy).opacity(0.08))
+            
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
@@ -106,7 +105,7 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var formTitle: some View {
         Text("مقارنة قطعة ذهب")
-            .font(.appBody(.bold))
+            .font(.appTitle3(.bold))
             .foregroundColor(Color("maincolor"))
             .frame(maxWidth: .infinity, alignment: .center)
     }
