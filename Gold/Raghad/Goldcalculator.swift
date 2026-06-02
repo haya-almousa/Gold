@@ -2,8 +2,9 @@
 //  Goldcalculator.swift
 //  Gold
 //
-//  Created by Haya Almousa on 2/12/1447 AH.
+//  Created by Raghad Alamoudi on 2/12/1447 AH.
 //
+
 
 internal import SwiftUI
 
@@ -21,6 +22,7 @@ struct GoldCalculatorView: View {
     let onBack: (() -> Void)?
     @State private var priceState: PriceState = .loading
     @State private var lastRefreshed: Date? = nil
+    @State private var lastKnownPrice: Double? = nil
 
     // MARK: - State
     @State private var weightText: String = ""
@@ -51,23 +53,18 @@ struct GoldCalculatorView: View {
 
     // MARK: - Karat Options
     enum KaratOption: String, CaseIterable, Identifiable {
-        case k24 = "24 قيراط (999)"
-        case k22 = "22 قيراط (916)"
-        case k21 = "21 قيراط (875)"
-        case k18 = "18 قيراط (750)"
-        case k14 = "14 قيراط (585)"
-        case k10 = "10 قيراط (417)"
+        case k24 = "24 قيراط"
+        case k21 = "21 قيراط"
+        case k18 = "18 قيراط"
 
         var id: String { rawValue }
 
+        /// Exact purity = karat ÷ 24
         var purity: Double {
             switch self {
-            case .k24: return 1.0
-            case .k22: return 0.916
-            case .k21: return 0.875
-            case .k18: return 0.750
-            case .k14: return 0.585
-            case .k10: return 0.417
+            case .k24: return 24.0 / 24.0  // = 1.0
+            case .k21: return 21.0 / 24.0  // = 0.875
+            case .k18: return 18.0 / 24.0  // = 0.75
             }
         }
     }
@@ -78,25 +75,31 @@ struct GoldCalculatorView: View {
         return nil
     }
 
-    var goldPrice24KSAR: Double {
-        currentQuote?.price24KPerGramSAR ?? 369.07
+    /// Returns nil only on very first load — uses lastKnownPrice during refresh
+    var goldPrice24KSAR: Double? {
+        currentQuote?.price24KPerGramSAR ?? lastKnownPrice
     }
 
-    var usdPerGram: Double {
-        currentQuote?.usdPerGram ?? 98.42
+    var usdPerGram: Double? {
+        currentQuote?.usdPerGram
     }
 
     // MARK: - Computed
+    /// Gold value = weight × karat purity × 24k price per gram
     var goldValueSAR: Double {
-        weight * selectedKarat.purity * goldPrice24KSAR
+        guard let price = goldPrice24KSAR else { return 0 }
+        return weight * selectedKarat.purity * price
     }
 
+    /// Manufacturing fee = SAR per gram × weight
     var manufacturingAmountSAR: Double {
-        goldValueSAR * (manufacturingFee / 100)
+        weight * manufacturingFee
     }
 
+    /// Total = 0 until the live price is fetched
     var totalValueSAR: Double {
-        goldValueSAR + manufacturingAmountSAR
+        guard goldPrice24KSAR != nil else { return 0 }
+        return goldValueSAR + manufacturingAmountSAR
     }
 
     var totalValueUSD: Double {
@@ -104,7 +107,8 @@ struct GoldCalculatorView: View {
     }
 
     var rateUsedUSD: Double {
-        usdPerGram * selectedKarat.purity
+        guard let usd = usdPerGram else { return 0 }
+        return usd * selectedKarat.purity
     }
 
     // MARK: - Colors
@@ -144,9 +148,13 @@ struct GoldCalculatorView: View {
 
     // MARK: - Fetch Price
     func fetchPrice() async {
-        priceState = .loading
+        // لا نرجع للـ loading إذا عندنا سعر سابق — يبقى الحساب شغّال أثناء الـ refresh
+        if lastKnownPrice == nil {
+            priceState = .loading
+        }
         do {
             let quote = try await apiService.fetchGoldQuote()
+            lastKnownPrice = quote.price24KPerGramSAR
             priceState = .loaded(quote)
             lastRefreshed = Date()
         } catch {
@@ -242,7 +250,7 @@ struct GoldCalculatorView: View {
 
     private var manufacturingFeeSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            Text("المصنعية*")
+            Text("المصنعية (ريال/جرام)*")
                 .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
