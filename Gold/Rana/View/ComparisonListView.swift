@@ -74,6 +74,7 @@ struct ComparisonListView: View {
                                 piece:           piece,
                                 isBest:          piece.id == vm.bestPiece?.id && vm.pieces.count > 1,
                                 livePrice24KSAR: vm.liveGoldPrice24KSAR,
+                                previousPrice24KSAR: vm.previousGoldPrice24KSAR,
                                 onEdit:          { withAnimation { vm.beginEdit(piece: piece) } },
                                 onDelete:        { withAnimation { vm.deletePiece(id: piece.id) } }
                             )
@@ -90,6 +91,7 @@ struct ComparisonListView: View {
 
             
         }
+        .onAppear { vm.refreshLivePrice() }
         .environment(\.layoutDirection, .leftToRight)
         .sheet(isPresented: $vm.showForm, onDismiss: { vm.cancelForm() }) {
             AddGoldFormView(vm: vm)

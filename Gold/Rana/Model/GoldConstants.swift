@@ -31,21 +31,35 @@ struct GoldPiece: Identifiable, Equatable {
     var karat:         Karat
     var mfgFeePercent: Double
     var shopPrice:     Double
+    var savedGoldPrice24KSAR: Double?
     var image:         UIImage?
 
     init(id: UUID = UUID(), name: String, store: String = "",
          grams: Double, karat: Karat = .k21,
          mfgFeePercent: Double = 0.0,
          shopPrice: Double = 0.0,
+         savedGoldPrice24KSAR: Double? = nil,
          image: UIImage? = nil) {
         self.id = id; self.name = name; self.store = store
         self.grams = grams; self.karat = karat
         self.mfgFeePercent = mfgFeePercent
         self.shopPrice = shopPrice
+        self.savedGoldPrice24KSAR = savedGoldPrice24KSAR
         self.image = image
     }
 
     var shopTotalWithVAT: Double { shopPrice * (1 + GoldConstants.vatRate) }
+
+    // Shop markup (making fee) locked in at the gold price when the piece was added.
+    // Total moves with live gold, but the fee stays fixed, so different shops differ.
+    func liveTotalWithVAT(price24KSAR: Double) -> Double {
+        guard let saved = savedGoldPrice24KSAR, saved > 0 else { return shopTotalWithVAT }
+        let goldValueAtSave  = grams * karat.multiplier * saved
+        let makingFee        = shopPrice - goldValueAtSave
+        let currentGoldValue = grams * karat.multiplier * price24KSAR
+        let preTax           = currentGoldValue + makingFee
+        return preTax * (1 + GoldConstants.vatRate)
+    }
 
     var shopPricePerGram: Double {
         guard grams > 0 else { return 0 }

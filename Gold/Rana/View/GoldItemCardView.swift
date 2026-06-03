@@ -12,6 +12,7 @@ struct GoldItemCardView: View {
     let piece:           GoldPiece
     let isBest:          Bool
     let livePrice24KSAR: Double?
+    let previousPrice24KSAR: Double?
     let onEdit:          () -> Void
     let onDelete:        () -> Void
 
@@ -82,14 +83,14 @@ struct GoldItemCardView: View {
 
     private var displayedPrice: Double {
         if let live = livePrice24KSAR {
-            return piece.liveValueSAR(price24KSAR: live)
+            return piece.liveTotalWithVAT(price24KSAR: live)
         }
         return piece.shopTotalWithVAT
     }
 
     private var priceDiff: Double? {
-        guard let live = livePrice24KSAR, piece.shopPrice > 0 else { return nil }
-        return piece.liveValueSAR(price24KSAR: live) - piece.shopTotalWithVAT
+        guard let live = livePrice24KSAR, let prev = previousPrice24KSAR else { return nil }
+        return piece.liveTotalWithVAT(price24KSAR: live) - piece.liveTotalWithVAT(price24KSAR: prev)
     }
 
     private var priceView: some View {
@@ -112,7 +113,7 @@ struct GoldItemCardView: View {
                     Text("\(isUp ? "+" : "")\(diff.formatted(.number.precision(.fractionLength(2))))")
                         .font(.appCaption(.semibold))
                 }
-                .foregroundColor(isUp ? Color.green : Color.red)
+                .foregroundColor(isUp ? Color.red : Color.green)
             }
         }
     }

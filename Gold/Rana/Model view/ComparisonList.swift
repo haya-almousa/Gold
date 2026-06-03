@@ -26,6 +26,7 @@ private struct StoredGoldPiece: Codable {
     let karatRawValue: Int
     let mfgFeePercent: Double
     let shopPrice:     Double?
+    let savedGoldPrice24KSAR: Double?
     let imageData:     Data?
 }
 
@@ -42,6 +43,7 @@ private enum ComparisonStorage {
                 karatRawValue: $0.karat.rawValue,
                 mfgFeePercent: $0.mfgFeePercent,
                 shopPrice:     $0.shopPrice,
+                savedGoldPrice24KSAR: $0.savedGoldPrice24KSAR,
                 imageData:     $0.image?.jpegData(compressionQuality: 0.7)
             )
         }
@@ -66,6 +68,7 @@ private enum ComparisonStorage {
                 karat:         karat,
                 mfgFeePercent: item.mfgFeePercent,
                 shopPrice:     item.shopPrice ?? 0.0,
+                savedGoldPrice24KSAR: item.savedGoldPrice24KSAR,
                 image:         item.imageData.flatMap { UIImage(data: $0) }
             )
         }
@@ -86,6 +89,7 @@ private enum GoldPieceRecord {
         record["karatRawValue"] = piece.karat.rawValue
         record["mfgFeePercent"] = piece.mfgFeePercent
         record["shopPrice"]     = piece.shopPrice
+        record["savedGoldPrice24KSAR"] = piece.savedGoldPrice24KSAR
 
         if let image = piece.image,
            let data  = image.jpegData(compressionQuality: 0.7) {
@@ -109,6 +113,7 @@ private enum GoldPieceRecord {
         let store         = record["store"]         as? String ?? ""
         let mfgFeePercent = record["mfgFeePercent"] as? Double ?? 0.0
         let shopPrice     = record["shopPrice"]     as? Double ?? 0.0
+        let savedGoldPrice = record["savedGoldPrice24KSAR"] as? Double
 
         var image: UIImage?
         if let asset = record["imageAsset"] as? CKAsset,
@@ -125,6 +130,7 @@ private enum GoldPieceRecord {
             karat:         karat,
             mfgFeePercent: mfgFeePercent,
             shopPrice:     shopPrice,
+            savedGoldPrice24KSAR: savedGoldPrice,
             image:         image
         )
     }
@@ -145,6 +151,7 @@ final class ComparisonListViewModel: ObservableObject {
     @Published private(set) var editingID:            UUID?             = nil
     @Published private(set) var isSyncing:            Bool              = false
     @Published private(set) var liveGoldPrice24KSAR:  Double?
+    @Published private(set) var previousGoldPrice24KSAR: Double?
 
     private let apiService        = GoldAPIService()
     private var priceRefreshTask: Task<Void, Never>?
@@ -167,7 +174,7 @@ final class ComparisonListViewModel: ObservableObject {
     var bestPiece: GoldPiece? {
         guard pieces.count >= 2 else { return nil }
         if let livePrice = liveGoldPrice24KSAR {
-            return pieces.min(by: { $0.liveValueSAR(price24KSAR: livePrice) < $1.liveValueSAR(price24KSAR: livePrice) })
+            return pieces.min(by: { $0.liveTotalWithVAT(price24KSAR: livePrice) < $1.liveTotalWithVAT(price24KSAR: livePrice) })
         }
         let withPrice = pieces.filter { $0.shopPrice > 0 }
         if !withPrice.isEmpty {
@@ -211,7 +218,8 @@ final class ComparisonListViewModel: ObservableObject {
 
     func saveAndCompare() {
         do {
-            let piece = try form.validated(image: selectedImage)
+            var piece = try form.validated(image: selectedImage)
+            piece.savedGoldPrice24KSAR = liveGoldPrice24KSAR
             pieces.append(piece)
             persistPieces()
             Task { await saveToCloudKit(piece) }
@@ -240,6 +248,7 @@ final class ComparisonListViewModel: ObservableObject {
                 karat:         updated.karat,
                 mfgFeePercent: updated.mfgFeePercent,
                 shopPrice:     updated.shopPrice,
+                savedGoldPrice24KSAR: liveGoldPrice24KSAR,
                 image:         updated.image
             )
             if let idx = pieces.firstIndex(where: { $0.id == id }) {
@@ -283,17 +292,41 @@ final class ComparisonListViewModel: ObservableObject {
         priceRefreshTask = Task {
             await fetchLivePrice()
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(60))
+                try? await Task.sleep(for: .seconds(15))
                 if Task.isCancelled { break }
                 await fetchLivePrice()
             }
         }
     }
 
+    func refreshLivePrice() {
+        Task { await fetchLivePrice() }
+    }
+
     private func fetchLivePrice() async {
         if let quote = try? await apiService.fetchGoldQuote() {
-            liveGoldPrice24KSAR = quote.price24KPerGramSAR
+            let newPrice = quote.price24KPerGramSAR
+            if let current = liveGoldPrice24KSAR {
+                if current != newPrice {
+                    previousGoldPrice24KSAR = current
+                    liveGoldPrice24KSAR = newPrice
+                }
+            } else {
+                liveGoldPrice24KSAR = newPrice
+            }
+            backfillBaselines(currentPrice: newPrice)
         }
+    }
+
+    // Existing pieces saved before live-pricing have no baseline; lock one in
+    // the first time we have a live price so their totals differ per shop.
+    private func backfillBaselines(currentPrice: Double) {
+        var changed = false
+        for i in pieces.indices where pieces[i].savedGoldPrice24KSAR == nil {
+            pieces[i].savedGoldPrice24KSAR = currentPrice
+            changed = true
+        }
+        if changed { ComparisonStorage.save(pieces) }
     }
 
     // MARK: - CloudKit
