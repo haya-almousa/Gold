@@ -10,6 +10,8 @@
 		54ADF1D22FD0533900322525 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54ADF1D12FD0533900322525 /* SubscriptionManager.swift */; };
 		54ADF1D42FD0533B00322525 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54ADF1D32FD0533B00322525 /* PaywallView.swift */; };
 		54ADF1D62FD2003300322525 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 54ADF1D52FD2003300322525 /* Products.storekit */; };
+		54ADF1D82FD204BE00322525 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 54ADF1D72FD204BE00322525 /* PrivacyInfo.xcprivacy */; };
+		54ADF1DB2FD2054600322525 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54ADF1DA2FD2054600322525 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +19,8 @@
 		54ADF1D12FD0533900322525 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		54ADF1D32FD0533B00322525 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		54ADF1D52FD2003300322525 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
+		54ADF1D72FD204BE00322525 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		54ADF1DA2FD2054600322525 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54ADF1DB2FD2054600322525 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +51,8 @@
 				54A887592F98E2AA0092A9DE /* Products */,
 				54ADF1D12FD0533900322525 /* SubscriptionManager.swift */,
 				54ADF1D32FD0533B00322525 /* PaywallView.swift */,
+				54ADF1D72FD204BE00322525 /* PrivacyInfo.xcprivacy */,
+				54ADF1D92FD2054600322525 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -55,6 +62,14 @@
 				54A887582F98E2AA0092A9DE /* Gold.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		54ADF1D92FD2054600322525 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				54ADF1DA2FD2054600322525 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -121,6 +136,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54ADF1D82FD204BE00322525 /* PrivacyInfo.xcprivacy in Resources */,
 				54ADF1D62FD2003300322525 /* Products.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
