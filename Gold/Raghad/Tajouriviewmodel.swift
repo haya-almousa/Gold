@@ -9,7 +9,7 @@
 
 import Combine
 import Foundation
-import CloudKit
+import SwiftData
 internal import SwiftUI
 
 @MainActor
@@ -25,17 +25,16 @@ final class TajouriViewModel: ObservableObject {
     // MARK: - Private
 
     private var cancellables = Set<AnyCancellable>()
-
-    // نفس الـ privateCloudDatabase في ComparisonListViewModel
-    private let db = CKContainer(identifier: "iCloud.HayaAlmousa.Gold")
-        .privateCloudDatabase
+    private var modelContext: ModelContext
 
     // MARK: - Init
 
-    init(dashboardVM: DashboardViewModel) {
+    init(dashboardVM: DashboardViewModel, modelContext: ModelContext? = nil) {
 
-        // 1) تحميل البيانات المحلية أولاً
-        pieces = TajouriLocalStorage.load()
+        self.modelContext = modelContext ?? DataStore.context
+
+        // 1) تحميل البيانات من SwiftData
+        pieces = Self.loadPieces(from: self.modelContext)
 
         // 2) سعر الذهب من DashboardVM
         if let quote = dashboardVM.quote {
@@ -52,23 +51,16 @@ final class TajouriViewModel: ObservableObject {
                 self.isLoading = false
             }
             .store(in: &cancellables)
-
-        // 3) مزامنة CloudKit بالخلفية
-        Task {
-            await loadFromCloudKit()
-        }
     }
 
     // MARK: - Zakat Eligible Pieces
 
-    /// فقط الذهب غير الملبوس يدخل في حساب الزكاة
     private var zakatablePieces: [GoldPieceItem] {
         pieces.filter { $0.condition == .unworn }
     }
 
     // MARK: - Portfolio (All Pieces)
 
-    /// إجمالي قيمة جميع قطع الذهب (ملبوس + غير ملبوس)
     var totalPortfolioValueSAR: Double {
         guard price24KPerGramSAR > 0 else { return 0 }
 
@@ -77,7 +69,6 @@ final class TajouriViewModel: ObservableObject {
         }
     }
 
-    /// إجمالي وزن جميع القطع
     var totalGrams: Double {
         pieces.reduce(0) { partialResult, piece in
             partialResult + piece.weightGrams
@@ -86,14 +77,12 @@ final class TajouriViewModel: ObservableObject {
 
     // MARK: - Zakat Calculations (Only Unworn Gold)
 
-    /// الوزن الخاضع للزكاة فقط
     var zakatableGrams: Double {
         zakatablePieces.reduce(0) { partialResult, piece in
             partialResult + piece.weightGrams
         }
     }
 
-    /// القيمة الحالية للذهب الخاضع للزكاة فقط
     var zakatableValueSAR: Double {
         guard price24KPerGramSAR > 0 else { return 0 }
 
@@ -102,12 +91,10 @@ final class TajouriViewModel: ObservableObject {
         }
     }
 
-    /// هل بلغ الذهب غير الملبوس النصاب؟
     var meetsNisab: Bool {
         zakatableGrams >= GoldConstants.nisabGrams
     }
 
-    /// الزكاة المستحقة على الذهب غير الملبوس فقط
     var zakatDueSAR: Double {
         guard meetsNisab else { return 0 }
 
@@ -138,21 +125,18 @@ final class TajouriViewModel: ObservableObject {
 
     func addPiece(_ piece: GoldPieceItem) {
         pieces.insert(piece, at: 0)
-
-        persistPieces()
-
-        Task {
-            await saveToCloudKit(piece)
-        }
+        let persisted = PersistedTajouriPiece(from: piece)
+        modelContext.insert(persisted)
+        try? modelContext.save()
     }
 
     func deletePiece(id: UUID) {
         pieces.removeAll { $0.id == id }
 
-        persistPieces()
-
-        Task {
-            await deleteFromCloudKit(id: id)
+        let predicate = #Predicate<PersistedTajouriPiece> { $0.pieceID == id }
+        if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            modelContext.delete(existing)
+            try? modelContext.save()
         }
     }
 
@@ -163,69 +147,21 @@ final class TajouriViewModel: ObservableObject {
 
         pieces[index] = updated
 
-        persistPieces()
-
-        Task {
-            await saveToCloudKit(updated)
+        let id = updated.id
+        let predicate = #Predicate<PersistedTajouriPiece> { $0.pieceID == id }
+        if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            existing.update(from: updated)
+            try? modelContext.save()
         }
     }
 
-    // MARK: - CloudKit Save
+    // MARK: - SwiftData Load
 
-    private func saveToCloudKit(_ piece: GoldPieceItem) async {
-        let record = TajouriCloudRecord.toRecord(piece)
-
-        try? await db.save(record)
-    }
-
-    // MARK: - CloudKit Delete
-
-    private func deleteFromCloudKit(id: UUID) async {
-        let recordID = CKRecord.ID(recordName: id.uuidString)
-
-        try? await db.deleteRecord(withID: recordID)
-    }
-
-    // MARK: - CloudKit Load
-
-    func loadFromCloudKit() async {
-
-        isSyncing = true
-
-        defer {
-            isSyncing = false
-        }
-
-        let query = CKQuery(
-            recordType: TajouriCloudRecord.recordType,
-            predicate: NSPredicate(value: true)
+    private static func loadPieces(from context: ModelContext) -> [GoldPieceItem] {
+        let descriptor = FetchDescriptor<PersistedTajouriPiece>(
+            sortBy: [SortDescriptor(\.name)]
         )
-
-        query.sortDescriptors = [
-            NSSortDescriptor(key: "creationDate", ascending: false)
-        ]
-
-        guard let results = try? await db.records(matching: query) else {
-            return
-        }
-
-        let fetched = results.matchResults
-            .compactMap { try? $1.get() }
-            .compactMap { TajouriCloudRecord.fromRecord($0) }
-
-        guard !fetched.isEmpty else {
-            return
-        }
-
-        // CloudKit هو المصدر الأساسي
-        pieces = fetched
-
-        TajouriLocalStorage.save(pieces)
-    }
-
-    // MARK: - Local Persistence
-
-    private func persistPieces() {
-        TajouriLocalStorage.save(pieces)
+        guard let results = try? context.fetch(descriptor) else { return [] }
+        return results.compactMap { $0.toDomain() }
     }
 }

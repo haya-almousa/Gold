@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import SwiftData
 internal import SwiftUI
 
 @MainActor
@@ -38,11 +39,11 @@ final class DashboardViewModel: ObservableObject {
         if let cachedQuote = self.quote, self.chart24KHistory.isEmpty {
             self.chart24KHistory = [cachedQuote.price24KPerGramSAR]
         }
-        self.tojoryPieces = TojoryStorage.load()
+        self.tojoryPieces = Self.loadComparisonPieces()
 
         tojoryObserver = NotificationCenter.default.publisher(for: .tojoryPiecesDidChange)
             .sink { [weak self] _ in
-                self?.tojoryPieces = TojoryStorage.load()
+                self?.tojoryPieces = Self.loadComparisonPieces()
             }
     }
 
@@ -343,38 +344,15 @@ private struct GoldChartSample: Codable {
     let price24KPerGramSAR: Double
 }
 
-private struct StoredGoldPiece: Codable {
-    let id: UUID
-    let name: String
-    let store: String
-    let grams: Double
-    let karatRawValue: Int
-    let mfgFeePercent: Double
-}
-
-private enum TojoryStorage {
-    static let piecesKey = "tojory.pieces.v1"
-
-    static func load(defaults: UserDefaults = .standard) -> [GoldPiece] {
-        guard
-            let data = defaults.data(forKey: piecesKey),
-            let stored = try? JSONDecoder().decode([StoredGoldPiece].self, from: data)
-        else {
-            return []
-        }
-
-        return stored.compactMap { item in
-            guard let karat = Karat(rawValue: item.karatRawValue) else { return nil }
-            return GoldPiece(
-                id: item.id,
-                name: item.name,
-                store: item.store,
-                grams: item.grams,
-                karat: karat,
-                mfgFeePercent: item.mfgFeePercent,
-                image: nil
-            )
-        }
+extension DashboardViewModel {
+    @MainActor
+    static func loadComparisonPieces() -> [GoldPiece] {
+        let context = DataStore.context
+        let descriptor = FetchDescriptor<PersistedComparisonPiece>(
+            sortBy: [SortDescriptor(\.name)]
+        )
+        guard let results = try? context.fetch(descriptor) else { return [] }
+        return results.compactMap { $0.toDomain() }
     }
 }
 

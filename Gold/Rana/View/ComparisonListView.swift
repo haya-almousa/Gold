@@ -15,6 +15,8 @@ struct ComparisonListView: View {
     @State private var showSearch:    Bool    = false
     @State private var showFilter:    Bool    = false
     @State private var filterKarat:   Karat?  = nil
+    @State private var showPaywall:   Bool    = false
+    @ObservedObject private var subscription = SubscriptionManager.shared
 
     @Binding var selectedTab: AppTab
     
@@ -44,7 +46,9 @@ struct ComparisonListView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        premiumBannerView
+                        if !subscription.isPremium {
+                            premiumBannerView
+                        }
 
                         if !vm.pieces.isEmpty {
                             draftWarningView
@@ -93,6 +97,9 @@ struct ComparisonListView: View {
         }
         .onAppear { vm.refreshLivePrice() }
         .environment(\.layoutDirection, .leftToRight)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
         .sheet(isPresented: $vm.showForm, onDismiss: { vm.cancelForm() }) {
             AddGoldFormView(vm: vm)
                 .environment(\.layoutDirection, .rightToLeft)
@@ -128,7 +135,7 @@ struct ComparisonListView: View {
 
     private var premiumBannerView: some View {
         HStack(spacing: 12) {
-            Button(action: {}) {
+            Button(action: { showPaywall = true }) {
                 Text("جرب مجانا")
                     .font(.appFootnote(.semibold))
                     .foregroundColor(Color(.navy))
@@ -171,7 +178,7 @@ struct ComparisonListView: View {
         .background(Color("Lightest blue"))
         .cornerRadius(16)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.navy).opacity(0.7), lineWidth: 0.2))
-
+        .onTapGesture { showPaywall = true }
     }
 
     // MARK: - Draft Warning

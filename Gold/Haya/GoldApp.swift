@@ -5,6 +5,7 @@
 //  Created by Haya almousa on 22/04/2026.
 //
 
+import SwiftData
 internal import SwiftUI
 
 @main
@@ -58,6 +59,7 @@ struct GoldApp: App {
                         .transition(.opacity)
                 }
             }
+            .modelContainer(DataStore.shared)
         }
     }
 }

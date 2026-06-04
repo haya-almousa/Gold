@@ -9,7 +9,9 @@ internal import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject private var auth: AuthenticationManager = .shared
+    @ObservedObject private var subscription = SubscriptionManager.shared
     @State private var showSignIn = false
+    @State private var showPaywall = false
 
     var body: some View {
         ZStack {
@@ -24,6 +26,9 @@ struct ProfileView: View {
         .sheet(isPresented: $showSignIn) {
             SignInView()
                 .environmentObject(auth)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 
@@ -66,6 +71,43 @@ struct ProfileView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
+
+                // ─── الاشتراك ───
+                Button { showPaywall = true } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "chevron.left")
+                            .font(.appFootnote(.semibold))
+                            .foregroundColor(Color("Grey"))
+
+                        Spacer()
+
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text(subscription.isPremium ? "تبرة بلس" : "اشترك في تبرة بلس")
+                                .font(.appCallout(.bold))
+                                .foregroundColor(Color("maincolor"))
+                            Text(subscription.isPremium ? "اشتراكك فعّال" : "فتح جميع المميزات")
+                                .font(.appCaption())
+                                .foregroundColor(Color("Grey"))
+                        }
+
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color("Gold").opacity(0.2))
+                                .frame(width: 34, height: 34)
+                            Image(systemName: "crown.fill")
+                                .font(.appSubheadline(.medium))
+                                .foregroundColor(Color("Dark gold"))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                }
+                .buttonStyle(.plain)
+                .background(Color("Lightest gold"))
+                .cornerRadius(16)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color("Gold"), lineWidth: 0.3))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
 
                 // ─── القائمة ───
                 VStack(spacing: 0) {

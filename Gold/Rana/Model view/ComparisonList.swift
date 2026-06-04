@@ -9,128 +9,67 @@
 import Foundation
 import Combine
 import UIKit
-import CloudKit
+import SwiftData
 internal import SwiftUI
 
 extension Notification.Name {
     static let tojoryPiecesDidChange = Notification.Name("tojoryPiecesDidChange")
 }
 
-// MARK: - Local Cache (UserDefaults)
+// MARK: - SwiftData Model
 
-private struct StoredGoldPiece: Codable {
-    let id:            UUID
-    let name:          String
-    let store:         String
-    let grams:         Double
-    let karatRawValue: Int
-    let mfgFeePercent: Double
-    let shopPrice:     Double?
-    let savedGoldPrice24KSAR: Double?
-    let imageData:     Data?
-}
+@Model
+final class PersistedComparisonPiece {
+    @Attribute(.unique) var pieceID: UUID
+    var name:          String
+    var store:         String
+    var grams:         Double
+    var karatRawValue: Int
+    var mfgFeePercent: Double
+    var shopPrice:     Double
+    var savedGoldPrice24KSAR: Double?
+    @Attribute(.externalStorage) var imageData: Data?
 
-private enum ComparisonStorage {
-    static let piecesKey = "tojory.pieces.v1"
-
-    static func save(_ pieces: [GoldPiece], defaults: UserDefaults = .standard) {
-        let stored = pieces.map {
-            StoredGoldPiece(
-                id:            $0.id,
-                name:          $0.name,
-                store:         $0.store,
-                grams:         $0.grams,
-                karatRawValue: $0.karat.rawValue,
-                mfgFeePercent: $0.mfgFeePercent,
-                shopPrice:     $0.shopPrice,
-                savedGoldPrice24KSAR: $0.savedGoldPrice24KSAR,
-                imageData:     $0.image?.jpegData(compressionQuality: 0.7)
-            )
-        }
-        if let data = try? JSONEncoder().encode(stored) {
-            defaults.set(data, forKey: piecesKey)
-        }
+    init(from piece: GoldPiece) {
+        self.pieceID       = piece.id
+        self.name          = piece.name
+        self.store         = piece.store
+        self.grams         = piece.grams
+        self.karatRawValue = piece.karat.rawValue
+        self.mfgFeePercent = piece.mfgFeePercent
+        self.shopPrice     = piece.shopPrice
+        self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
+        self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
 
-    static func load(defaults: UserDefaults = .standard) -> [GoldPiece] {
-        guard
-            let data   = defaults.data(forKey: piecesKey),
-            let stored = try? JSONDecoder().decode([StoredGoldPiece].self, from: data)
-        else { return [] }
-
-        return stored.compactMap { item in
-            guard let karat = Karat(rawValue: item.karatRawValue) else { return nil }
-            return GoldPiece(
-                id:            item.id,
-                name:          item.name,
-                store:         item.store,
-                grams:         item.grams,
-                karat:         karat,
-                mfgFeePercent: item.mfgFeePercent,
-                shopPrice:     item.shopPrice ?? 0.0,
-                savedGoldPrice24KSAR: item.savedGoldPrice24KSAR,
-                image:         item.imageData.flatMap { UIImage(data: $0) }
-            )
-        }
-    }
-}
-
-// MARK: - CloudKit Record Mapping
-
-private enum GoldPieceRecord {
-    static let recordType = "GoldPiece"
-
-    static func toRecord(_ piece: GoldPiece) -> CKRecord {
-        let recordID = CKRecord.ID(recordName: piece.id.uuidString)
-        let record   = CKRecord(recordType: recordType, recordID: recordID)
-        record["name"]          = piece.name
-        record["store"]         = piece.store
-        record["grams"]         = piece.grams
-        record["karatRawValue"] = piece.karat.rawValue
-        record["mfgFeePercent"] = piece.mfgFeePercent
-        record["shopPrice"]     = piece.shopPrice
-        record["savedGoldPrice24KSAR"] = piece.savedGoldPrice24KSAR
-
-        if let image = piece.image,
-           let data  = image.jpegData(compressionQuality: 0.7) {
-            let url = FileManager.default.temporaryDirectory
-                        .appendingPathComponent("\(piece.id.uuidString).jpg")
-            try? data.write(to: url)
-            record["imageAsset"] = CKAsset(fileURL: url)
-        }
-        return record
+    func update(from piece: GoldPiece) {
+        self.name          = piece.name
+        self.store         = piece.store
+        self.grams         = piece.grams
+        self.karatRawValue = piece.karat.rawValue
+        self.mfgFeePercent = piece.mfgFeePercent
+        self.shopPrice     = piece.shopPrice
+        self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
+        self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
 
-    static func fromRecord(_ record: CKRecord) -> GoldPiece? {
-        guard
-            let name     = record["name"]          as? String,
-            let grams    = record["grams"]         as? Double,
-            let karatRaw = record["karatRawValue"] as? Int,
-            let karat    = Karat(rawValue: karatRaw),
-            let id       = UUID(uuidString: record.recordID.recordName)
-        else { return nil }
-
-        let store         = record["store"]         as? String ?? ""
-        let mfgFeePercent = record["mfgFeePercent"] as? Double ?? 0.0
-        let shopPrice     = record["shopPrice"]     as? Double ?? 0.0
-        let savedGoldPrice = record["savedGoldPrice24KSAR"] as? Double
+    func toDomain() -> GoldPiece? {
+        guard let karat = Karat(rawValue: karatRawValue) else { return nil }
 
         var image: UIImage?
-        if let asset = record["imageAsset"] as? CKAsset,
-           let url   = asset.fileURL,
-           let data  = try? Data(contentsOf: url) {
+        if let data = imageData {
             image = UIImage(data: data)
         }
 
         return GoldPiece(
-            id:            id,
+            id:            pieceID,
             name:          name,
             store:         store,
             grams:         grams,
             karat:         karat,
             mfgFeePercent: mfgFeePercent,
             shopPrice:     shopPrice,
-            savedGoldPrice24KSAR: savedGoldPrice,
+            savedGoldPrice24KSAR: savedGoldPrice24KSAR,
             image:         image
         )
     }
@@ -155,15 +94,13 @@ final class ComparisonListViewModel: ObservableObject {
 
     private let apiService        = GoldAPIService()
     private var priceRefreshTask: Task<Void, Never>?
+    private let modelContext: ModelContext
 
     var isEditing: Bool { editingID != nil }
 
-    private let db = CKContainer(identifier: "iCloud.HayaAlmousa.Gold")
-                        .privateCloudDatabase
-
-    init() {
-        pieces = ComparisonStorage.load()
-        Task { await loadFromCloudKit() }
+    init(modelContext: ModelContext? = nil) {
+        self.modelContext = modelContext ?? DataStore.context
+        pieces = Self.loadPieces(from: self.modelContext)
         startLivePriceUpdates()
     }
 
@@ -221,8 +158,7 @@ final class ComparisonListViewModel: ObservableObject {
             var piece = try form.validated(image: selectedImage)
             piece.savedGoldPrice24KSAR = liveGoldPrice24KSAR
             pieces.append(piece)
-            persistPieces()
-            Task { await saveToCloudKit(piece) }
+            persistSave(piece)
             resetForm()
             showForm = false
         } catch let e as FormValidationError {
@@ -254,11 +190,10 @@ final class ComparisonListViewModel: ObservableObject {
             if let idx = pieces.firstIndex(where: { $0.id == id }) {
                 pieces[idx] = updated
             }
-            persistPieces()
-            Task { await saveToCloudKit(updated) }
+            persistUpdate(updated)
             resetForm()
             showForm = false
-            
+
         } catch let e as FormValidationError {
             switch e {
             case .emptyName:    nameError  = e.localizedDescription
@@ -272,18 +207,14 @@ final class ComparisonListViewModel: ObservableObject {
 
     func deletePiece(id: UUID) {
         pieces.removeAll { $0.id == id }
-        persistPieces()
-        Task { await deleteFromCloudKit(id: id) }
+        persistDelete(id: id)
         if editingID == id { resetForm(); showForm = false }
     }
 
     func deletePieces(at offsets: IndexSet) {
         let toDelete = offsets.map { pieces[$0].id }
         pieces.remove(atOffsets: offsets)
-        persistPieces()
-        Task {
-            for id in toDelete { await deleteFromCloudKit(id: id) }
-        }
+        for id in toDelete { persistDelete(id: id) }
     }
 
     // MARK: - Live Gold Price
@@ -318,50 +249,60 @@ final class ComparisonListViewModel: ObservableObject {
         }
     }
 
-    // Existing pieces saved before live-pricing have no baseline; lock one in
-    // the first time we have a live price so their totals differ per shop.
     private func backfillBaselines(currentPrice: Double) {
         var changed = false
         for i in pieces.indices where pieces[i].savedGoldPrice24KSAR == nil {
             pieces[i].savedGoldPrice24KSAR = currentPrice
             changed = true
         }
-        if changed { ComparisonStorage.save(pieces) }
+        if changed { persistAll() }
     }
 
-    // MARK: - CloudKit
+    // MARK: - SwiftData Persistence
 
-    private func saveToCloudKit(_ piece: GoldPiece) async {
-        let record = GoldPieceRecord.toRecord(piece)
-        try? await db.save(record)
-    }
-
-    private func deleteFromCloudKit(id: UUID) async {
-        let recordID = CKRecord.ID(recordName: id.uuidString)
-        try? await db.deleteRecord(withID: recordID)
-    }
-
-    func loadFromCloudKit() async {
-        isSyncing = true
-        defer { isSyncing = false }
-
-        let query = CKQuery(
-            recordType: GoldPieceRecord.recordType,
-            predicate: NSPredicate(value: true)
-        )
-        query.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
-
-        guard let results = try? await db.records(matching: query) else { return }
-
-        let fetched = results.matchResults
-            .compactMap { try? $1.get() }
-            .compactMap { GoldPieceRecord.fromRecord($0) }
-
-        guard !fetched.isEmpty else { return }
-
-        pieces = fetched
-        ComparisonStorage.save(pieces)
+    private func persistSave(_ piece: GoldPiece) {
+        let persisted = PersistedComparisonPiece(from: piece)
+        modelContext.insert(persisted)
+        try? modelContext.save()
         NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
+    }
+
+    private func persistUpdate(_ piece: GoldPiece) {
+        let id = piece.id
+        let predicate = #Predicate<PersistedComparisonPiece> { $0.pieceID == id }
+        if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            existing.update(from: piece)
+            try? modelContext.save()
+        }
+        NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
+    }
+
+    private func persistDelete(id: UUID) {
+        let predicate = #Predicate<PersistedComparisonPiece> { $0.pieceID == id }
+        if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            modelContext.delete(existing)
+            try? modelContext.save()
+        }
+        NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
+    }
+
+    private func persistAll() {
+        for piece in pieces {
+            let id = piece.id
+            let predicate = #Predicate<PersistedComparisonPiece> { $0.pieceID == id }
+            if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+                existing.update(from: piece)
+            }
+        }
+        try? modelContext.save()
+    }
+
+    private static func loadPieces(from context: ModelContext) -> [GoldPiece] {
+        let descriptor = FetchDescriptor<PersistedComparisonPiece>(
+            sortBy: [SortDescriptor(\.name)]
+        )
+        guard let results = try? context.fetch(descriptor) else { return [] }
+        return results.compactMap { $0.toDomain() }
     }
 
     // MARK: - Private
@@ -370,10 +311,4 @@ final class ComparisonListViewModel: ObservableObject {
         form = .empty(); selectedImage = nil
         nameError = nil; gramsError = nil; priceError = nil; editingID = nil
     }
-    
-    private func persistPieces() {
-        ComparisonStorage.save(pieces)
-        NotificationCenter.default.post(name: .tojoryPiecesDidChange, object: nil)
-    }
 }
-

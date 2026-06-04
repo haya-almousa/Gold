@@ -8,11 +8,18 @@
 import Foundation
 import SwiftData
 
-@Model
-final class Item {
-    var timestamp: Date
-    
-    init(timestamp: Date) {
-        self.timestamp = timestamp
+enum DataStore {
+    static let shared: ModelContainer = {
+        let schema = Schema([
+            PersistedTajouriPiece.self,
+            PersistedComparisonPiece.self
+        ])
+        let config = ModelConfiguration(isStoredInMemoryOnly: false)
+        return try! ModelContainer(for: schema, configurations: [config])
+    }()
+
+    @MainActor
+    static var context: ModelContext {
+        shared.mainContext
     }
 }
