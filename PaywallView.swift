@@ -16,29 +16,9 @@ struct PaywallView: View {
             Color("background").ignoresSafeArea()
 
             VStack(spacing: 0) {
-                closeButton
                 subscriptionContent
             }
         }
-    }
-
-    // MARK: - Close Button
-
-    private var closeButton: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.appBody(.semibold))
-                    .foregroundColor(Color("Grey"))
-                    .frame(width: 36, height: 36)
-                    .background(Color("Lightest blue"))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
     }
 
     // MARK: - Subscription Content
