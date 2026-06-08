@@ -6,6 +6,8 @@ struct ProfileView: View {
     @State private var showSignIn = false
     @State private var showPaywall = false
     @State private var showPrivacyPolicy = false
+    @State private var showNameEdit = false
+    @State private var editedName = ""
 
     var body: some View {
         ZStack {
@@ -28,6 +30,16 @@ struct ProfileView: View {
         }
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyView()
+        }
+        .alert("تعديل الاسم", isPresented: $showNameEdit) {
+            TextField("اكتب اسمك", text: $editedName)
+            Button("حفظ") {
+                let trimmed = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    auth.updateUserName(trimmed)
+                }
+            }
+            Button("إلغاء", role: .cancel) {}
         }
     }
 
@@ -56,9 +68,20 @@ struct ProfileView: View {
                     }
 
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(auth.userName.isEmpty ? "مستخدم Gold" : auth.userName)
-                            .font(.appBody(.bold))
-                            .foregroundColor(.black)
+                        HStack(spacing: 6) {
+                            Text(auth.userName.isEmpty ? "أضف اسمك" : auth.userName)
+                                .font(.appBody(.bold))
+                                .foregroundColor(auth.userName.isEmpty ? Color("Grey") : .black)
+
+                            Button {
+                                editedName = auth.userName
+                                showNameEdit = true
+                            } label: {
+                                Image(systemName: "pencil.circle.fill")
+                                    .font(.appBody())
+                                    .foregroundColor(Color("maincolor"))
+                            }
+                        }
 
                         if !auth.userEmail.isEmpty {
                             Text(auth.userEmail)
@@ -66,7 +89,7 @@ struct ProfileView: View {
                                 .foregroundColor(Color("Grey"))
                         }
                     }
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal, 20)

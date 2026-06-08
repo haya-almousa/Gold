@@ -14,7 +14,7 @@ internal import SwiftUI
 final class DashboardViewModel: ObservableObject {
     @Published private(set) var quote: GoldQuote?
     @Published private(set) var chart24KHistory: [Double]
-    @Published private(set) var tojoryPieces: [GoldPiece] = []
+    @Published private(set) var tojoryPieces: [GoldPieceItem] = []
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
 
@@ -39,11 +39,11 @@ final class DashboardViewModel: ObservableObject {
         if let cachedQuote = self.quote, self.chart24KHistory.isEmpty {
             self.chart24KHistory = [cachedQuote.price24KPerGramSAR]
         }
-        self.tojoryPieces = Self.loadComparisonPieces()
+        self.tojoryPieces = Self.loadTajouriPieces()
 
-        tojoryObserver = NotificationCenter.default.publisher(for: .tojoryPiecesDidChange)
+        tojoryObserver = NotificationCenter.default.publisher(for: .tajouriPiecesDidChange)
             .sink { [weak self] _ in
-                self?.tojoryPieces = Self.loadComparisonPieces()
+                self?.tojoryPieces = Self.loadTajouriPieces()
             }
     }
 
@@ -177,18 +177,25 @@ final class DashboardViewModel: ObservableObject {
     }
 
     var formattedTotalTojoryGrams: String {
-        let total = tojoryPieces.reduce(0) { $0 + $1.grams }
+        let total = tojoryPieces.reduce(0) { $0 + $1.weightGrams }
         return "إجمالي \(String(format: "%.0f", total)) جرام"
     }
 
+    private var zakatablePieces: [GoldPieceItem] {
+        tojoryPieces.filter { $0.condition == .unworn }
+    }
+
+    private var zakatableGrams: Double {
+        zakatablePieces.reduce(0) { $0 + $1.weightGrams }
+    }
+
     var totalGramsProgressToNisab: Double {
-        let total = tojoryPieces.reduce(0) { $0 + $1.grams }
         guard GoldConstants.nisabGrams > 0 else { return 0 }
-        return min(max(total / GoldConstants.nisabGrams, 0), 1)
+        return min(max(zakatableGrams / GoldConstants.nisabGrams, 0), 1)
     }
 
     var meetsNisab: Bool {
-        tojoryPieces.reduce(0) { $0 + $1.grams } >= GoldConstants.nisabGrams
+        zakatableGrams >= GoldConstants.nisabGrams
     }
 
     var nisabStatusText: String {
@@ -196,11 +203,15 @@ final class DashboardViewModel: ObservableObject {
     }
 
     var formattedZakatDueText: String {
-        guard meetsNisab else { return "زكاتك الحالية: 0.00 ريال" }
-        let zakat = currentPortfolioValueSAR * 0.025
+        guard meetsNisab, let quote else { return "زكاتك الحالية: 0.00 ريال" }
+        let zakatableValue = zakatablePieces.reduce(0) { partial, piece in
+            let multiplier = Double(piece.karat.rawValue) / 24.0
+            return partial + piece.weightGrams * multiplier * quote.price24KPerGramSAR
+        }
+        let zakat = zakatableValue * 0.025
         return "زكاتك \(formatWithGrouping(zakat)) ريال"
     }
-    
+
     var zakatStatusText: String {
         meetsNisab ? "الزكاة مستحقة" : "الزكاة غير مستحقة"
     }
@@ -241,7 +252,8 @@ final class DashboardViewModel: ObservableObject {
     private var currentPortfolioValueSAR: Double {
         guard let quote else { return 0 }
         return tojoryPieces.reduce(0) { partial, piece in
-            partial + piece.currentTotalValueSAR(price24KPerGramSAR: quote.price24KPerGramSAR)
+            let multiplier = Double(piece.karat.rawValue) / 24.0
+            return partial + piece.weightGrams * multiplier * quote.price24KPerGramSAR
         }
     }
 
@@ -250,8 +262,14 @@ final class DashboardViewModel: ObservableObject {
         let sevenDaysAgo = Date().addingTimeInterval(-7 * 24 * 60 * 60)
 
         let baseline24K = historicalPrice(closestTo: sevenDaysAgo) ?? quote.price24KPerGramSAR
-        let current = tojoryPieces.reduce(0) { $0 + $1.currentTotalValueSAR(price24KPerGramSAR: quote.price24KPerGramSAR) }
-        let previous = tojoryPieces.reduce(0) { $0 + $1.currentTotalValueSAR(price24KPerGramSAR: baseline24K) }
+        let current = tojoryPieces.reduce(0) { partial, piece in
+            let multiplier = Double(piece.karat.rawValue) / 24.0
+            return partial + piece.weightGrams * multiplier * quote.price24KPerGramSAR
+        }
+        let previous = tojoryPieces.reduce(0) { partial, piece in
+            let multiplier = Double(piece.karat.rawValue) / 24.0
+            return partial + piece.weightGrams * multiplier * baseline24K
+        }
         return current - previous
     }
 
@@ -330,25 +348,20 @@ private struct GoldQuoteCache {
     }
 }
 
-private extension GoldPiece {
-    func currentTotalValueSAR(price24KPerGramSAR: Double) -> Double {
-        let goldValueSAR = grams * karat.multiplier * price24KPerGramSAR
-        let mfgChargeSAR = goldValueSAR * (mfgFeePercent / 100)
-        let preTax = goldValueSAR + mfgChargeSAR
-        return preTax + preTax * GoldConstants.vatRate
-    }
-}
-
 private struct GoldChartSample: Codable {
     let timestamp: Date
     let price24KPerGramSAR: Double
 }
 
+extension Notification.Name {
+    static let tajouriPiecesDidChange = Notification.Name("tajouriPiecesDidChange")
+}
+
 extension DashboardViewModel {
     @MainActor
-    static func loadComparisonPieces() -> [GoldPiece] {
+    static func loadTajouriPieces() -> [GoldPieceItem] {
         let context = DataStore.context
-        let descriptor = FetchDescriptor<PersistedComparisonPiece>(
+        let descriptor = FetchDescriptor<PersistedTajouriPiece>(
             sortBy: [SortDescriptor(\.name)]
         )
         guard let results = try? context.fetch(descriptor) else { return [] }

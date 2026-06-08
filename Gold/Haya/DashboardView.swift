@@ -130,7 +130,7 @@ struct DashboardView: View {
 
     private var displayedUserName: String {
         let name = authManager.userName
-        return name.isEmpty ? "مرحباً!" : "\(name)!"
+        return name.isEmpty ? "مرحباً!" : "مرحباً \(name)!"
     }
 
     private var displayedPrice: String {

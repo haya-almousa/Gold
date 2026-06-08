@@ -128,6 +128,7 @@ final class TajouriViewModel: ObservableObject {
         let persisted = PersistedTajouriPiece(from: piece)
         modelContext.insert(persisted)
         try? modelContext.save()
+        NotificationCenter.default.post(name: .tajouriPiecesDidChange, object: nil)
     }
 
     func deletePiece(id: UUID) {
@@ -138,6 +139,7 @@ final class TajouriViewModel: ObservableObject {
             modelContext.delete(existing)
             try? modelContext.save()
         }
+        NotificationCenter.default.post(name: .tajouriPiecesDidChange, object: nil)
     }
 
     func updatePiece(_ updated: GoldPieceItem) {
@@ -153,6 +155,7 @@ final class TajouriViewModel: ObservableObject {
             existing.update(from: updated)
             try? modelContext.save()
         }
+        NotificationCenter.default.post(name: .tajouriPiecesDidChange, object: nil)
     }
 
     // MARK: - SwiftData Load
