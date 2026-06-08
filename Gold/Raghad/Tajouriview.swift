@@ -29,10 +29,15 @@ struct TajouriView: View {
         ZStack {
             Color("background").ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    headerCard
+            VStack(spacing: 0) {
+
+                // MARK: - ثابت مثل صفحة المقارنة
+                headerCard
+
+                // MARK: - المحتوى المتحرك فقط
+                ScrollView(showsIndicators: false) {
                     contentArea
+                        .padding(.top, 20)
                 }
             }
         }
@@ -54,9 +59,8 @@ struct TajouriView: View {
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
-        
-        
     }
+
 
     // MARK: - Header
 

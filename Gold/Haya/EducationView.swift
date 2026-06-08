@@ -34,7 +34,7 @@ private let articles: [EducationArticle] = [
         كلما ارتفع العيار زادت نسبة الذهب الخالص وارتفع السعر، بينما يوفر العيار الأقل متانة أكبر وسعراً أقل.
         """,
         source: "سعوديبيديا - الموسوعة السعودية",
-        sourceURL: URL(string: "https://saudipedia.com/article/14924/%D8%AD%D9%83%D9%88%D9%85%D8%A9-%D9%88%D8%B3%D9%8A%D8%A7%D8%B3%D8%A9/%D8%A3%D9%86%D8%B8%D9%85%D8%A9/%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF%D9%86-%D8%A7%D9%84%D8%AB%D9%85%D9%8A%D9%86%D8%A9-%D9%88%D8%A7%D9%84%D8%A3%D8%AD%D8%AC%D8%A7%D8%B1-%D8%A7%D9%84%D9%83%D8%B1%D9%8A%D9%85%D8%A9-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
+        sourceURL: URL(string: "https://saudipedia.com/article/14924")!
     ),
     EducationArticle(
         title: "كيف تعمل زكاة الذهب",
@@ -51,11 +51,9 @@ private let articles: [EducationArticle] = [
         • ذهب الزينة: اختلف العلماء في زكاة الحُلي المُعَدّ للاستعمال الشخصي، والأحوط إخراج زكاته.
 
         • طريقة الحساب: قيمة الذهب بسعر السوق الحالي × 2.5%.
-
-        مثال: إذا كنتِ تملكين 100 غرام ذهب عيار 21، فإن ما يعادله من الذهب الخالص = 87.5 غرام (أكثر من النصاب)، وتُحسب الزكاة على قيمته السوقية.
         """,
         source: "سعوديبيديا - الموسوعة السعودية",
-        sourceURL: URL(string: "https://saudipedia.com/article/16430/%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE/%D8%A7%D9%84%D8%AF%D9%88%D9%84%D8%A9-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89/%D8%A7%D9%84%D9%86%D8%B8%D8%A7%D9%85-%D8%A7%D9%84%D9%85%D8%A7%D9%84%D9%8A-%D9%81%D9%8A-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D8%A9-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%A7%D9%84%D8%A3%D9%88%D9%84%D9%89")!
+        sourceURL: URL(string: "https://saudipedia.com/article/16430")!
     ),
     EducationArticle(
         title: "الذهب كاستثمار",
@@ -63,20 +61,16 @@ private let articles: [EducationArticle] = [
         detail: """
         يُعتبر الذهب من أقدم وسائل حفظ الثروة وأكثرها موثوقية عبر التاريخ:
 
-        • ملاذ آمن: يلجأ المستثمرون إلى الذهب في أوقات عدم الاستقرار الاقتصادي والتضخم، حيث يحافظ على قيمته مقارنة بالعملات الورقية.
+        • ملاذ آمن: يلجأ المستثمرون إلى الذهب في أوقات عدم الاستقرار الاقتصادي والتضخم.
 
         • التنويع: يُنصح بتخصيص 10-15% من المحفظة الاستثمارية للذهب لتقليل المخاطر.
 
-        • أشكال الاستثمار: سبائك ذهبية، عملات ذهبية، صناديق المؤشرات المتداولة (ETFs)، أو حتى المجوهرات الذهبية.
-
-        • السوق السعودي: تتوفر في المملكة العربية السعودية خيارات متعددة للاستثمار في الذهب عبر البنوك المحلية والأسواق المالية.
-
-        • نصائح للمستثمرين: الشراء التدريجي على فترات مختلفة لتقليل تأثير تقلبات الأسعار، والاحتفاظ لفترات طويلة للاستفادة من ارتفاع القيمة.
+        • أشكال الاستثمار: سبائك، عملات، صناديق مؤشرات، مجوهرات.
 
         الذهب ليس مجرد معدن ثمين، بل أداة مالية استراتيجية لحماية الثروة على المدى الطويل.
         """,
         source: "سعوديبيديا - الموسوعة السعودية",
-        sourceURL: URL(string: "https://saudipedia.com/article/14463/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%88%D8%A3%D8%B9%D9%85%D8%A7%D9%84/%D8%B7%D8%A7%D9%82%D8%A9-%D9%88%D9%85%D9%88%D8%A7%D8%B1%D8%AF-%D8%B7%D8%A8%D9%8A%D8%B9%D9%8A%D8%A9/%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
+        sourceURL: URL(string: "https://saudipedia.com/article/14463")!
     ),
     EducationArticle(
         title: "شراء مجوهرات الذهب بذكاء",
@@ -84,20 +78,15 @@ private let articles: [EducationArticle] = [
         detail: """
         عند شراء المجوهرات الذهبية، هناك عدة عوامل يجب مراعاتها للحصول على أفضل قيمة:
 
-        • المصنعية: هي تكلفة تصنيع القطعة وتختلف حسب تعقيد التصميم والصائغ. قارن أسعار المصنعية بين عدة محلات قبل الشراء.
-
-        • الدمغة: تأكد من وجود دمغة رسمية على كل قطعة تُبيّن العيار والمصدر. في السعودية، تُشرف الهيئة السعودية للمواصفات والمقاييس على دمغ الذهب.
-
-        • وزن القطعة: اطلب وزن القطعة أمامك بميزان دقيق واحسب سعر الغرام حسب سعر السوق اليومي.
-
-        • الفاتورة: احرص على الحصول على فاتورة تفصيلية تتضمن العيار، الوزن، سعر الغرام، والمصنعية.
-
-        • سياسة الاستبدال: اسأل عن سياسة الاستبدال والاسترجاع قبل الشراء، فبعض المحلات تخصم المصنعية عند الاستبدال.
-
-        • التوقيت: تميل أسعار الذهب للانخفاض في فترات الاستقرار الاقتصادي وبعد المواسم والأعياد.
+        • المصنعية  
+        • الدمغة  
+        • وزن القطعة  
+        • الفاتورة  
+        • سياسة الاستبدال  
+        • التوقيت  
         """,
         source: "سعوديبيديا - الموسوعة السعودية",
-        sourceURL: URL(string: "https://saudipedia.com/article/10581/%D8%A7%D9%82%D8%AA%D8%B5%D8%A7%D8%AF-%D9%88%D8%A3%D8%B9%D9%85%D8%A7%D9%84/%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9/%D8%AA%D8%AC%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%B0%D9%87%D8%A8-%D9%81%D9%8A-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9")!
+        sourceURL: URL(string: "https://saudipedia.com/article/10581")!
     )
 ]
 
@@ -106,25 +95,23 @@ struct EducationView: View {
     @State private var selectedArticle: EducationArticle?
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Color("background").ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    Text("تعلّم عن الذهب")
-                        .font(.appTitle2(.bold))
-                        .foregroundColor(Color(.black))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 35)
-                        .padding(.bottom, 20)
+            VStack(spacing: 0) {
 
+                // MARK: - العنوان ثابت مثل صفحة المقارنة
+                headerBar
+
+                // MARK: - المحتوى المتحرك فقط
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
                         ForEach(articles) { article in
                             articleCard(article)
                         }
                     }
                     .padding(.horizontal, 20)
+                    .padding(.top, 20)
                     .padding(.bottom, 120)
                 }
             }
@@ -135,18 +122,31 @@ struct EducationView: View {
         }
     }
 
+    // MARK: - Header ثابت
+    private var headerBar: some View {
+        VStack(spacing: 0) {
+            Text("تعلّم عن الذهب")
+                .font(.appTitle2(.bold))
+                .foregroundColor(Color(.black))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 35)
+                .padding(.bottom, 20)
+                .background(Color("background"))
+        }
+    }
+
+    // MARK: - Article Card
     private func articleCard(_ article: EducationArticle) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(article.title)
                 .font(.appTitle3(.bold))
                 .foregroundColor(Color("Gold"))
-                .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(article.summary)
                 .font(.appSubheadline(.medium))
                 .foregroundColor(Color("Dark grey"))
                 .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
 
             Button {
                 selectedArticle = article
@@ -164,12 +164,16 @@ struct EducationView: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color("Lightest blue"))
         )
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.maincolor), lineWidth: 0.2))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(.maincolor), lineWidth: 0.2)
+        )
     }
 
+    // MARK: - Detail Sheet
     private func articleDetailView(_ article: EducationArticle) -> some View {
         NavigationStack {
             ZStack {
@@ -180,28 +184,22 @@ struct EducationView: View {
                         Text(article.title)
                             .font(.appTitle2(.bold))
                             .foregroundColor(Color("Dark gold"))
-                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         Text(article.detail)
                             .font(.appBody(.regular))
                             .foregroundColor(Color("Dark grey"))
-                            .multilineTextAlignment(.leading)
                             .lineSpacing(6)
-                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Divider()
-                            .padding(.vertical, 8)
+                        Divider().padding(.vertical, 8)
 
                         Link(destination: article.sourceURL) {
                             HStack(spacing: 4) {
                                 Text("المصدر: \(article.source)")
-                                    .font(.appFootnote(.regular))
                                 Image(systemName: "arrow.up.left.square")
-                                    .font(.appFootnote(.regular))
                             }
+                            .font(.appFootnote(.regular))
                             .foregroundColor(Color("maincolor"))
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(20)
                 }
@@ -209,9 +207,7 @@ struct EducationView: View {
             .environment(\.layoutDirection, .rightToLeft)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        selectedArticle = nil
-                    } label: {
+                    Button { selectedArticle = nil } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title3)
                             .foregroundColor(Color("Grey"))
@@ -221,7 +217,7 @@ struct EducationView: View {
         }
     }
 }
+
 #Preview {
     EducationView(selectedTab: .constant(.education))
 }
-
