@@ -16,7 +16,10 @@ struct ComparisonListView: View {
     @State private var showFilter:    Bool    = false
     @State private var filterKarat:   Karat?  = nil
     @State private var showPaywall:   Bool    = false
+    @State private var showSignInPrompt: Bool = false
+    @State private var showSignIn:       Bool = false
     @ObservedObject private var subscription = SubscriptionManager.shared
+    @ObservedObject private var auth = AuthenticationManager.shared
 
     @Binding var selectedTab: AppTab
     
@@ -106,13 +109,29 @@ struct ComparisonListView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
+        .alert("تسجيل الدخول مطلوب", isPresented: $showSignInPrompt) {
+            Button("تسجيل الدخول") { showSignIn = true }
+            Button("إلغاء", role: .cancel) {}
+        } message: {
+            Text("سجّل دخولك لإضافة قطع ذهب للمقارنة")
+        }
+        .sheet(isPresented: $showSignIn) {
+            SignInView()
+                .environmentObject(auth)
+        }
     }
 
     // MARK: - Header
 
     private var headerBar: some View {
         HStack(alignment: .center) {
-            Button(action: { withAnimation { vm.toggleForm() } }) {
+            Button {
+                if auth.userID.isEmpty {
+                    showSignInPrompt = true
+                } else {
+                    withAnimation { vm.toggleForm() }
+                }
+            } label: {
                 ZStack {
                     Circle()
                         .fill(Color("Gold"))
@@ -121,8 +140,7 @@ struct ComparisonListView: View {
                         .font(.appTitle3(.bold))
                         .foregroundColor(Color("background"))
                 }
-                        .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
-
+                .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
             }
             Spacer()
             Text("قائمة المقارنة")

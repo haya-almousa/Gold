@@ -5,6 +5,7 @@ struct ProfileView: View {
     @ObservedObject private var subscription = SubscriptionManager.shared
     @State private var showSignIn = false
     @State private var showPaywall = false
+    @State private var showPrivacyPolicy = false
 
     var body: some View {
         ZStack {
@@ -25,17 +26,20 @@ struct ProfileView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyView()
+        }
     }
 
     // ─── حالة مسجل الدخول ───
     private var signedInView: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .trailing, spacing: 0) {
-                
+            VStack(alignment: .leading, spacing: 0) {
+
                 Text("الحساب")
                     .font(.appTitle2(.bold))
                     .foregroundColor(.black)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
                     .padding(.top, 24)
                     .padding(.bottom, 20)
@@ -107,7 +111,10 @@ struct ProfileView: View {
 
                 // القائمة
                 VStack(spacing: 0) {
-                    profileRow(icon: "bell", title: "سياسة الخصوصية ")
+                    Button { showPrivacyPolicy = true } label: {
+                        profileRow(icon: "lock.shield", title: "سياسة الخصوصية")
+                    }
+                    .buttonStyle(.plain)
                     Divider()
                     profileRow(icon: "info.circle", title: "عن التطبيق")
                 }
@@ -147,7 +154,7 @@ struct ProfileView: View {
                     Text("الحساب")
                         .font(.appTitle2(.bold))
                         .foregroundColor(.black)
-                        .frame(width: geo.size.width - 40, alignment: .trailing)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         .padding(.top, 24)
 
@@ -215,7 +222,19 @@ struct ProfileView: View {
                         }
                     }
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 20)
+
+                    Button { showPrivacyPolicy = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "lock.shield")
+                                .font(.appCaption(.medium))
+                            Text("سياسة الخصوصية")
+                                .font(.appCaption(.medium))
+                                .underline()
+                        }
+                        .foregroundColor(Color("Grey"))
+                    }
+                    .padding(.bottom, 40)
                 }
                 .frame(width: geo.size.width, height: geo.size.height)
             }

@@ -19,6 +19,7 @@ struct TajouriView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
     @ScaledMetric(relativeTo: .title)      private var zakatFontSize: CGFloat = 34
     @State private var showProfile = false
+    @State private var showSignInPrompt = false
     @EnvironmentObject var auth: AuthenticationManager
 
     init(dashboardVM: DashboardViewModel) {
@@ -58,6 +59,12 @@ struct TajouriView: View {
         }
         .sheet(isPresented: $showProfile) {
             ProfileView()
+        }
+        .alert("تسجيل الدخول مطلوب", isPresented: $showSignInPrompt) {
+            Button("تسجيل الدخول") { showProfile = true }
+            Button("إلغاء", role: .cancel) {}
+        } message: {
+            Text("سجّل دخولك لحفظ قطع الذهب في تجوريك")
         }
     }
 
@@ -237,7 +244,13 @@ struct TajouriView: View {
 
                 Spacer()
 
-                Button { showAddForm = true } label: {
+                Button {
+                    if auth.userID.isEmpty {
+                        showSignInPrompt = true
+                    } else {
+                        showAddForm = true
+                    }
+                } label: {
                     ZStack {
                         Circle()
                             .fill(Color("Gold"))
