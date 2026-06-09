@@ -2,9 +2,7 @@ internal import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject private var auth: AuthenticationManager = .shared
-    @ObservedObject private var subscription = SubscriptionManager.shared
     @State private var showSignIn = false
-    @State private var showPaywall = false
     @State private var showPrivacyPolicy = false
     @State private var showNameEdit = false
     @State private var editedName = ""
@@ -24,9 +22,6 @@ struct ProfileView: View {
         .sheet(isPresented: $showSignIn) {
             SignInView()
                 .environmentObject(auth)
-        }
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
         }
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyView()
@@ -94,43 +89,6 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
-
-                // بطاقة الاشتراك
-                Button { showPaywall = true } label: {
-                    HStack(spacing: 12) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color("Gold").opacity(0.2))
-                                .frame(width: 34, height: 34)
-                            Image(systemName: "crown.fill")
-                                .font(.appSubheadline(.medium))
-                                .foregroundColor(Color("Dark gold"))
-                        }
-
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text(subscription.isPremium ? "تبرة بلس" : "اشترك في تبرة بلس")
-                                .font(.appCallout(.bold))
-                                .foregroundColor(Color("maincolor"))
-                            Text(subscription.isPremium ? "اشتراكك فعّال" : "فتح جميع المميزات")
-                                .font(.appCaption())
-                                .foregroundColor(Color("Grey"))
-                        }
-
-                        Spacer()
-
-                        Image(systemName: "chevron.left")
-                            .font(.appFootnote(.semibold))
-                            .foregroundColor(Color("Grey"))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                }
-                .buttonStyle(.plain)
-                .background(Color("Lightest gold"))
-                .cornerRadius(16)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color("Gold"), lineWidth: 0.3))
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
 
                 // القائمة
                 VStack(spacing: 0) {
