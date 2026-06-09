@@ -15,11 +15,13 @@ struct TajouriView: View {
 
     @State private var showAddForm  = false
     @State private var pieceToEdit: GoldPieceItem? = nil
+    @State private var showPaywall = false
 
     @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
     @ScaledMetric(relativeTo: .title)      private var zakatFontSize: CGFloat = 34
     @State private var showProfile = false
     @State private var showSignInPrompt = false
+    @ObservedObject private var subscription = SubscriptionManager.shared
     @EnvironmentObject var auth: AuthenticationManager
 
     init(dashboardVM: DashboardViewModel) {
@@ -43,6 +45,9 @@ struct TajouriView: View {
             }
         }
         .ignoresSafeArea(edges: .top)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
         .sheet(isPresented: $showAddForm) {
             AddGoldPieceSheet { newPiece in
                 withAnimation { vm.addPiece(newPiece) }
@@ -132,12 +137,66 @@ struct TajouriView: View {
 
     private var contentArea: some View {
         VStack(spacing: 16) {
+            if !subscription.isPremium {
+                premiumBannerView
+            }
             zakatCard.padding(.top, 20)
             piecesSection
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 100)
         .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    // MARK: - Premium Banner
+
+    private var premiumBannerView: some View {
+        HStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 6) {
+                VStack(spacing: 9) {
+                    Image(systemName: "sparkle")
+                        .font(.appTitle2(.bold))
+                        .foregroundColor(Color("Dark gold"))
+                    Image(systemName: "sparkle")
+                        .font(.appSubheadline(.bold))
+                        .foregroundColor(Color("Dark gold"))
+                }
+
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("فتح التجوري بالكامل")
+                        .font(.appSubheadline(.bold))
+                        .foregroundColor(Color("Dark green"))
+                    Text("جرّب كل المميزات لمدة 7 أيام مجانًا\nثم 19.99 ر.س شهريًا فقط")
+                        .font(.appCaption())
+                        .foregroundColor(Color("Dark green"))
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Button(action: { showPaywall = true }) {
+                Text("جرب مجانا")
+                    .font(.appFootnote(.semibold))
+                    .foregroundColor(Color("Dark green"))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color("Lightest gold"))
+                    .cornerRadius(22)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22)
+                            .stroke(Color("Dark green").opacity(0.2), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Color("Lightest gold"))
+        .cornerRadius(16)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color("Dark gold").opacity(0.3), lineWidth: 0.2))
+        .onTapGesture { showPaywall = true }
     }
 
     // MARK: - Zakat Card

@@ -40,7 +40,7 @@ struct PaywallView: View {
                     .foregroundColor(Color("Grey"))
 
                 VStack(alignment: .trailing, spacing: 12) {
-                    featureRow(icon: "bookmark.fill", text: "مقارنة غير محدودة لقطع الذهب")
+                    featureRow(icon: "briefcase.fill", text: "تجوري غير محدود لحفظ قطع الذهب")
                     featureRow(icon: "bell.fill", text: "تنبيهات أسعار الذهب")
                     featureRow(icon: "chart.line.uptrend.xyaxis", text: "تقارير وإحصائيات متقدمة")
                     featureRow(icon: "moon.fill", text: "حاسبة زكاة متقدمة")
