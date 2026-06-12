@@ -96,10 +96,18 @@ struct GoldCalculatorView: View {
         weight * manufacturingFee
     }
 
-    /// Total = 0 until the live price is fetched
+    /// VAT = 15% on (gold value + manufacturing fee)
+    private let vatRate: Double = 0.15
+
+    var vatAmountSAR: Double {
+        guard goldPrice24KSAR != nil else { return 0 }
+        return (goldValueSAR + manufacturingAmountSAR) * vatRate
+    }
+
+    /// Total = gold value + manufacturing fee + VAT
     var totalValueSAR: Double {
         guard goldPrice24KSAR != nil else { return 0 }
-        return goldValueSAR + manufacturingAmountSAR
+        return goldValueSAR + manufacturingAmountSAR + vatAmountSAR
     }
 
     var totalValueUSD: Double {
@@ -148,7 +156,6 @@ struct GoldCalculatorView: View {
 
     // MARK: - Fetch Price
     func fetchPrice() async {
-        // لا نرجع للـ loading إذا عندنا سعر سابق — يبقى الحساب شغّال أثناء الـ refresh
         if lastKnownPrice == nil {
             priceState = .loading
         }
