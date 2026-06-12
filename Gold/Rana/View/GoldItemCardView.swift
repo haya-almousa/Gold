@@ -181,6 +181,7 @@ struct GoldItemCardView: View {
             // Tags row
             HStack(spacing: 6) {
                 Spacer()
+                if piece.profitPerGram > 0 { tagPill("ر \(piece.profitPerGram.clean)/جم") }
                 if !piece.store.isEmpty { tagPill(piece.store) }
                 tagPill("\(piece.karat.rawValue)K")
                 tagPill("\(piece.grams.clean)g")

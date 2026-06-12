@@ -27,6 +27,7 @@ final class PersistedComparisonPiece {
     var karatRawValue: Int
     var mfgFeePercent: Double
     var shopPrice:     Double
+    var profitPerGram: Double?        // optional so SwiftData lightweight-migrates existing rows to nil
     var savedGoldPrice24KSAR: Double?
     @Attribute(.externalStorage) var imageData: Data?
 
@@ -38,6 +39,7 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
+        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
@@ -49,6 +51,7 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
+        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
@@ -69,6 +72,7 @@ final class PersistedComparisonPiece {
             karat:         karat,
             mfgFeePercent: mfgFeePercent,
             shopPrice:     shopPrice,
+            profitPerGram: profitPerGram ?? 0.0,
             savedGoldPrice24KSAR: savedGoldPrice24KSAR,
             image:         image
         )
@@ -148,7 +152,8 @@ final class ComparisonListViewModel: ObservableObject {
             store:         piece.store,
             gramsText:     piece.grams.clean,
             karat:         piece.karat,
-            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : ""
+            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : "",
+            profitText:    piece.profitPerGram > 0 ? piece.profitPerGram.clean : ""
         )
         showForm = true
     }
@@ -184,6 +189,7 @@ final class ComparisonListViewModel: ObservableObject {
                 karat:         updated.karat,
                 mfgFeePercent: updated.mfgFeePercent,
                 shopPrice:     updated.shopPrice,
+                profitPerGram: updated.profitPerGram,
                 savedGoldPrice24KSAR: liveGoldPrice24KSAR,
                 image:         updated.image
             )

@@ -15,11 +15,13 @@ struct AddGoldFormState {
     var gramsText:     String = ""
     var karat:         Karat  = .k21
     var shopPriceText: String = ""
+    var profitText:    String = ""
 
     static func empty() -> AddGoldFormState { AddGoldFormState() }
 
     var grams:     Double? { Self.parseDouble(gramsText) }
     var shopPrice: Double? { Self.parseDouble(shopPriceText) }
+    var profit:    Double? { Self.parseDouble(profitText) }
 
     private static func parseDouble(_ text: String) -> Double? {
         let normalized = text.replacingOccurrences(of: ",", with: ".")
@@ -51,6 +53,7 @@ extension AddGoldFormState {
             karat:         karat,
             mfgFeePercent: 0.0,
             shopPrice:     p,
+            profitPerGram: profit ?? 0.0,
             image:         image
         )
     }
