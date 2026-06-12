@@ -3,7 +3,7 @@
 //  Gold
 //
 //  Created by Haya almousa on 22/04/2026.
-//jjjj
+//jjjjلازال
 
 internal import SwiftUI
 
@@ -58,11 +58,12 @@ struct DashboardView: View {
                 let width = geo.size.width
                 let scale = min(max(width / 390, 0.92), 1.0)
 
-                ZStack(alignment: .bottom) {
-                    Color("background")
-                        .ignoresSafeArea()
+                ZStack {
+                    Color("background").ignoresSafeArea()
 
-                    VStack(spacing: 14 * scale) {
+                    VStack(spacing: 0) {
+
+                        // MARK: - الهيدر الأخضر ثابت مثل صفحة المقارنة
                         DashboardTopPriceCard(
                             scale: scale,
                             topInset: geo.safeAreaInsets.top,
@@ -73,38 +74,40 @@ struct DashboardView: View {
                             lastUpdatedText: viewModel.lastUpdatedText,
                             selectedKarat: $selectedKarat
                         )
-                        .padding(.horizontal, 0)
-                        .padding(.top, 0)
 
-                        DashboardQuickActionsCard(scale: scale)
-                            .padding(.horizontal, 16 * scale)
+                        // MARK: - المحتوى المتحرك فقط
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 14 * scale) {
 
-                        DashboardPortfolioZakatCard(
-                            scale: scale,
-                            portfolioValue: viewModel.formattedPortfolioValueToday,
-                            weeklyChange: viewModel.formattedWeeklyPortfolioChange,
-                            weeklyChangeIsPositive: viewModel.weeklyPortfolioChangeIsPositive,
-                            gramsProgress: viewModel.totalGramsProgressToNisab,
-                            totalGrams: viewModel.formattedTotalTojoryGrams,
-                            zakatDueText: viewModel.formattedZakatDueText,
-                            zakatStatusText: viewModel.zakatStatusText,
-                            nisabStatusText: viewModel.nisabStatusText,
-                            meetsNisab: viewModel.meetsNisab
-                        )
-                        .padding(.horizontal, 16 * scale)
+                                DashboardQuickActionsCard(scale: scale)
+                                    .padding(.horizontal, 16 * scale)
 
-                        Spacer(minLength: 0)
+                                DashboardPortfolioZakatCard(
+                                    scale: scale,
+                                    portfolioValue: viewModel.formattedPortfolioValueToday,
+                                    weeklyChange: viewModel.formattedWeeklyPortfolioChange,
+                                    weeklyChangeIsPositive: viewModel.weeklyPortfolioChangeIsPositive,
+                                    gramsProgress: viewModel.totalGramsProgressToNisab,
+                                    totalGrams: viewModel.formattedTotalTojoryGrams,
+                                    zakatDueText: viewModel.formattedZakatDueText,
+                                    zakatStatusText: viewModel.zakatStatusText,
+                                    nisabStatusText: viewModel.nisabStatusText,
+                                    meetsNisab: viewModel.meetsNisab
+                                )
+                                .padding(.horizontal, 16 * scale)
+
+                                Spacer(minLength: 0)
+                            }
+                            .padding(.top, 14 * scale)
+                            .padding(.bottom, 92 * scale)
+                        }
                     }
-                    .padding(.top, 0)
-                    .padding(.bottom, 92 * scale)
                 }
             }
             .environment(\.layoutDirection, .rightToLeft)
             .toolbar(.hidden, for: .navigationBar)
         }
-        .refreshable {
-            await viewModel.refreshManually()
-        }
+        .refreshable { await viewModel.refreshManually() }
         .preferredColorScheme(.light)
         .task { viewModel.start() }
         .onDisappear { viewModel.stop() }
@@ -120,46 +123,34 @@ struct DashboardView: View {
 
     private var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour >= 5 && hour < 12 {
-            return "صباح الخير ☀️"
-        } else if hour >= 12 && hour < 17 {
-            return "مساء الخير 🌤️"
-        } else {
-            return "مساء الخير 🌙"
-        }
+        if hour >= 5 && hour < 12 { return "صباح الخير ☀️" }
+        else if hour >= 12 && hour < 17 { return "مساء الخير 🌤️" }
+        else { return "مساء الخير 🌙" }
     }
 
     private var displayedUserName: String {
         let name = authManager.userName
-        if name.isEmpty {
-            return "مرحباً!"
-        }
-        return "\(name)!"
+        return name.isEmpty ? "مرحباً!" : "مرحباً \(name)!"
     }
 
     private var displayedPrice: String {
         switch selectedKarat {
-        case .k24:
-            viewModel.formatted24K
-        case .k21:
-            viewModel.formatted21K
-        case .k18:
-            viewModel.formatted18K
+        case .k24: viewModel.formatted24K
+        case .k21: viewModel.formatted21K
+        case .k18: viewModel.formatted18K
         }
     }
 
     private var displayedChartValues: [Double] {
         let history = viewModel.chart24KHistory
         switch selectedKarat {
-        case .k24:
-            return history
-        case .k21:
-            return history.map { $0 * (21.0 / 24.0) }
-        case .k18:
-            return history.map { $0 * (18.0 / 24.0) }
+        case .k24: return history
+        case .k21: return history.map { $0 * (21.0 / 24.0) }
+        case .k18: return history.map { $0 * (18.0 / 24.0) }
         }
     }
 }
+
 
 // MARK: - Top Price Card
 

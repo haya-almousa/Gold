@@ -16,29 +16,9 @@ struct PaywallView: View {
             Color("background").ignoresSafeArea()
 
             VStack(spacing: 0) {
-                closeButton
                 subscriptionContent
             }
         }
-    }
-
-    // MARK: - Close Button
-
-    private var closeButton: some View {
-        HStack {
-            Button { dismiss() } label: {
-                Image(systemName: "xmark")
-                    .font(.appBody(.semibold))
-                    .foregroundColor(Color("Grey"))
-                    .frame(width: 36, height: 36)
-                    .background(Color("Lightest blue"))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
     }
 
     // MARK: - Subscription Content
@@ -60,7 +40,7 @@ struct PaywallView: View {
                     .foregroundColor(Color("Grey"))
 
                 VStack(alignment: .trailing, spacing: 12) {
-                    featureRow(icon: "bookmark.fill", text: "مقارنة غير محدودة لقطع الذهب")
+                    featureRow(icon: "briefcase.fill", text: "تجوري غير محدود لحفظ قطع الذهب")
                     featureRow(icon: "bell.fill", text: "تنبيهات أسعار الذهب")
                     featureRow(icon: "chart.line.uptrend.xyaxis", text: "تقارير وإحصائيات متقدمة")
                     featureRow(icon: "moon.fill", text: "حاسبة زكاة متقدمة")

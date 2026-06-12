@@ -16,25 +16,23 @@ import AuthenticationServices
 struct SignInView: View {
     @EnvironmentObject var auth: AuthenticationManager
 
-    // لما تكون Sheet نحتاج dismiss
     @Environment(\.dismiss) private var dismiss
     @ScaledMetric(relativeTo: .largeTitle) private var logoIconSize: CGFloat = 68
+    @State private var showPrivacyPolicy = false
 
     var body: some View {
         ZStack {
             Color("background").ignoresSafeArea()
 
             VStack {
-                Spacer().frame(height: 150) // مسافة من الأعلى
+                Spacer().frame(height: 150)
 
-                // شعار تبرة
                 Image("RH")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 140, height: 140)
                     .padding(.bottom, 40)
 
-                // زر تسجيل الدخول
                 SignInWithAppleButton(.signIn) { request in
                     request.requestedScopes = [.fullName, .email]
                 } onCompletion: { result in
@@ -47,7 +45,6 @@ struct SignInView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 20)
 
-                // فاصل "أو"
                 HStack {
                     Rectangle().frame(height: 1).foregroundColor(Color("Light grey").opacity(0.3))
                     Text("أو").font(.caption).foregroundColor(Color("Grey"))
@@ -56,28 +53,36 @@ struct SignInView: View {
                 .padding(.horizontal, 40)
                 .padding(.bottom, 10)
 
-                // رابط الدخول بدون حساب
                 Button {
                     auth.skipSignIn()
                 } label: {
                     Text("مجرد تصفح الآن - الدخول بدون حساب")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.appSubheadline(.semibold))
                         .foregroundColor(Color("maincolor"))
                 }
 
                 Spacer()
 
-                // نص الخصوصية
-                Text("باستمرارك، أنت توافق على الشروط وسياسة الخصوصية الخاصة بنا")
-                    .font(.footnote)
-                    .foregroundColor(Color("Light grey"))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 30)
+                VStack(spacing: 6) {
+                    Text("باستمرارك، أنت توافق على الشروط وسياسة الخصوصية")
+                        .font(.appCaption())
+                        .foregroundColor(Color("Light grey"))
+
+                    Button { showPrivacyPolicy = true } label: {
+                        Text("اقرأ سياسة الخصوصية قبل المتابعة")
+                            .font(.appCaption(.medium))
+                            .foregroundColor(Color("maincolor"))
+                            .underline()
+                    }
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 30)
             }
-
         }
-
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyView()
+        }
     }
 }
 #Preview {

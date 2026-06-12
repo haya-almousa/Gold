@@ -53,24 +53,34 @@ final class AuthenticationManager: ObservableObject {
             else { return }
 
             let id    = credential.user
-            let name  = [credential.fullName?.givenName,
-                         credential.fullName?.familyName]
-                        .compactMap { $0 }.joined(separator: " ")
-            let email = credential.email ?? ""
+            let newName  = [credential.fullName?.givenName,
+                            credential.fullName?.familyName]
+                           .compactMap { $0 }.joined(separator: " ")
+            let newEmail = credential.email ?? ""
 
-            // حفظ البيانات محلياً
-            UserDefaults.standard.set(id,    forKey: "userID")
-            UserDefaults.standard.set(name,  forKey: "userName")
-            UserDefaults.standard.set(email, forKey: "userEmail")
+            UserDefaults.standard.set(id, forKey: "userID")
+
+            let savedName = UserDefaults.standard.string(forKey: "userName") ?? ""
+            let finalName = newName.isEmpty ? savedName : newName
+            UserDefaults.standard.set(finalName, forKey: "userName")
+
+            let savedEmail = UserDefaults.standard.string(forKey: "userEmail") ?? ""
+            let finalEmail = newEmail.isEmpty ? savedEmail : newEmail
+            UserDefaults.standard.set(finalEmail, forKey: "userEmail")
 
             self.userID    = id
-            self.userName  = name
-            self.userEmail = email
+            self.userName  = finalName
+            self.userEmail = finalEmail
             self.isSignedIn = true
 
         case .failure(let error):
             print("Sign in failed: \(error.localizedDescription)")
         }
+    }
+
+    func updateUserName(_ newName: String) {
+        userName = newName
+        UserDefaults.standard.set(newName, forKey: "userName")
     }
 
     // ─── تسجيل الخروج ───

@@ -15,8 +15,9 @@ struct ComparisonListView: View {
     @State private var showSearch:    Bool    = false
     @State private var showFilter:    Bool    = false
     @State private var filterKarat:   Karat?  = nil
-    @State private var showPaywall:   Bool    = false
-    @ObservedObject private var subscription = SubscriptionManager.shared
+    @State private var showSignInPrompt: Bool = false
+    @State private var showSignIn:       Bool = false
+    @ObservedObject private var auth = AuthenticationManager.shared
 
     @Binding var selectedTab: AppTab
     
@@ -46,12 +47,7 @@ struct ComparisonListView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        if !subscription.isPremium {
-                            premiumBannerView
-                        }
-
                         if !vm.pieces.isEmpty {
-                            draftWarningView
                             filterSearchRow
 
                             if showSearch {
@@ -97,14 +93,21 @@ struct ComparisonListView: View {
         }
         .onAppear { vm.refreshLivePrice() }
         .environment(\.layoutDirection, .leftToRight)
-        .sheet(isPresented: $showPaywall) {
-            PaywallView()
-        }
         .sheet(isPresented: $vm.showForm, onDismiss: { vm.cancelForm() }) {
             AddGoldFormView(vm: vm)
                 .environment(\.layoutDirection, .rightToLeft)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
+        }
+        .alert("تسجيل الدخول مطلوب", isPresented: $showSignInPrompt) {
+            Button("تسجيل الدخول") { showSignIn = true }
+            Button("إلغاء", role: .cancel) {}
+        } message: {
+            Text("سجّل دخولك لإضافة قطع ذهب للمقارنة")
+        }
+        .sheet(isPresented: $showSignIn) {
+            SignInView()
+                .environmentObject(auth)
         }
     }
 
@@ -112,7 +115,13 @@ struct ComparisonListView: View {
 
     private var headerBar: some View {
         HStack(alignment: .center) {
-            Button(action: { withAnimation { vm.toggleForm() } }) {
+            Button {
+                if auth.userID.isEmpty {
+                    showSignInPrompt = true
+                } else {
+                    withAnimation { vm.toggleForm() }
+                }
+            } label: {
                 ZStack {
                     Circle()
                         .fill(Color("Gold"))
@@ -121,84 +130,13 @@ struct ComparisonListView: View {
                         .font(.appTitle3(.bold))
                         .foregroundColor(Color("background"))
                 }
-                        .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
-
+                .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
             }
             Spacer()
             Text("قائمة المقارنة")
                 .font(.appTitle2(.bold))
                 .foregroundColor(Color(.black))
         }
-    }
-
-    // MARK: - Premium Banner
-
-    private var premiumBannerView: some View {
-        HStack(spacing: 12) {
-            Button(action: { showPaywall = true }) {
-                Text("جرب مجانا")
-                    .font(.appFootnote(.semibold))
-                    .foregroundColor(Color(.navy))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color("Very Light blue"))
-                    .cornerRadius(22)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22)
-                            .stroke(Color(.navy).opacity(0.2), lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-
-            HStack(alignment: .top, spacing: 6) {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("فتح المقارنة بالكامل")
-                        .font(.appSubheadline(.bold))
-                        .foregroundColor(Color(.navy))
-                    Text("جرّب كل المميزات لمدة 7 أيام مجانًا\nثم 19.99 ر.س شهريًا فقط")
-                        .font(.appCaption())
-                        .foregroundColor(Color(.navy))
-                        .lineLimit(3)
-                        .multilineTextAlignment(.trailing)
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-
-                VStack(spacing: 2) {
-                    Image(systemName: "sparkle")
-                        .font(.appTitle2(.bold))
-                        .foregroundColor(Color(.lightGold))
-                    Image(systemName: "sparkle")
-                        .font(.appSubheadline(.bold))
-                        .foregroundColor(Color(.lightGold))
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(Color("Lightest blue"))
-        .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color(.navy).opacity(0.7), lineWidth: 0.2))
-        .onTapGesture { showPaywall = true }
-    }
-
-    // MARK: - Draft Warning
-
-    private var draftWarningView: some View {
-        Text("محفوظة كمسودة تنتهي خلال 4 ايام")
-            .font(.appFootnote(.bold))
-            .foregroundColor(Color("Dark gold"))
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 12)
-            .background(Color("Lightest gold"))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(
-                        style: StrokeStyle(lineWidth: 1.5, dash: [6, 4])
-                    )
-                    .foregroundColor(Color("Gold"))
-            )
-            .padding(.bottom, 12)
     }
 
     // MARK: - Filter / Search Row
