@@ -2,7 +2,7 @@
 //  Goldcalculator.swift
 //  Gold
 //
-//  Created by Raghad Alamoudi on 2/12/1447 AH.
+//  Created by Raghadi on 2/12/1447 AH.
 //
 
 
