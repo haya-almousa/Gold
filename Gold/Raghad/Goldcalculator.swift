@@ -2,7 +2,7 @@
 //  Goldcalculator.swift
 //  Gold
 //
-//  Created by Raghad Alamoudi on 2/12/1447 AH.
+//  Created by Raghadi on 2/12/1447 AH.
 //
 
 
@@ -64,9 +64,9 @@ struct GoldCalculatorView: View {
         /// Exact purity = karat ÷ 24
         var purity: Double {
             switch self {
-            case .k24: return 24.0 / 24.0  // = 1.0
-            case .k21: return 21.0 / 24.0  // = 0.875
-            case .k18: return 18.0 / 24.0  // = 0.75
+            case .k24: return 24.0 / 24.0
+            case .k21: return 21.0 / 24.0
+            case .k18: return 18.0 / 24.0
             }
         }
     }
@@ -77,7 +77,6 @@ struct GoldCalculatorView: View {
         return nil
     }
 
-    /// Returns nil only on very first load — uses lastKnownPrice during refresh
     var goldPrice24KSAR: Double? {
         currentQuote?.price24KPerGramSAR ?? lastKnownPrice
     }
@@ -86,10 +85,12 @@ struct GoldCalculatorView: View {
         currentQuote?.usdPerGram
     }
 
-    // MARK: - Computed
-    /// Gold value = weight × karat purity × 24k price per gram
+    // MARK: - Computed (Reverse Breakdown)
+    private let vatRate: Double = 0.15
+
+    /// سعر الذهب الخالص = وزن × نقاء العيار × سعر جرام 24k
     var goldValueSAR: Double {
-        guard let price = goldPrice24KSAR else { return 0 }
+        guard let price = goldPrice24KSAR, weight > 0 else { return 0 }
         return weight * selectedKarat.purity * price
     }
 
@@ -266,9 +267,9 @@ struct GoldCalculatorView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    private var manufacturingFeeSection: some View {
+    private var totalPriceSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            Text("المصنعية (ريال/جرام)*")
+            Text("السعر الإجمالي (ريال)*")
                 .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
@@ -277,25 +278,25 @@ struct GoldCalculatorView: View {
                     .fill(softTeal)
                     .frame(height: 40)
 
-                if manufacturingFeeText.isEmpty {
-                    Text("مثال:10")
+                if totalPriceText.isEmpty {
+                    Text("مثال:1500")
                         .font(.appBody(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
                 }
 
-                TextField("", text: $manufacturingFeeText)
+                TextField("", text: $totalPriceText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .font(.appTitle3(.semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
-                    .focused($focusedField, equals: .fee)
-                    .onChange(of: manufacturingFeeText) {
-                        let filtered = manufacturingFeeText.filter { $0.isNumber || $0 == "." }
-                        if filtered != manufacturingFeeText { manufacturingFeeText = filtered }
-                        manufacturingFee = Double(filtered) ?? 0
+                    .focused($focusedField, equals: .totalPrice)
+                    .onChange(of: totalPriceText) {
+                        let filtered = totalPriceText.filter { $0.isNumber || $0 == "." }
+                        if filtered != totalPriceText { totalPriceText = filtered }
+                        totalPrice = Double(filtered) ?? 0
                     }
             }
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
@@ -400,32 +401,24 @@ struct GoldCalculatorView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Helpers
-    func breakdownRow(_ label: String, value: String) -> some View {
+    private func breakdownRow(label: String, value: String, color: Color, bold: Bool = false) -> some View {
         HStack {
-            Text(label)
-            Spacer()
             Text(value)
+                .font(bold ? .appTitle3(.bold) : .appBody(.semibold))
+                .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Spacer()
+
+            Text(label)
+                .font(bold ? .appTitle3(.bold) : .appBody(.semibold))
+                .foregroundColor(bold ? primaryTeal : primaryTeal.opacity(0.75))
+                .multilineTextAlignment(.trailing)
         }
     }
 
-    func stepperButtons(increment: @escaping () -> Void, decrement: @escaping () -> Void) -> some View {
-        VStack(spacing: 0) {
-            Button(action: increment) {
-                Image(systemName: "chevron.up")
-                    .font(.appCaption(.semibold))
-                    .foregroundColor(secondaryTeal)
-                    .frame(width: 28, height: 18)
-            }
-            Button(action: decrement) {
-                Image(systemName: "chevron.down")
-                    .font(.appCaption(.semibold))
-                    .foregroundColor(secondaryTeal)
-                    .frame(width: 28, height: 18)
-            }
-        }
-    }
-
+    // MARK: - Helpers
     func fmt(_ v: Double) -> String {
         v == floor(v) ? String(Int(v)) : String(format: "%.1f", v)
     }
@@ -455,10 +448,3 @@ struct GoldCalculatorView: View {
     GoldCalculatorView(apiService: MockGoldAPIService())
         .preferredColorScheme(.dark)
 }
-
-// MARK: - Placeholder Color Helper
-// Call this once in your App's init() to make all placeholders subtle:
-// UITextField.appearance().attributedPlaceholder = NSAttributedString(
-//     string: " ",
-//     attributes: [.foregroundColor: UIColor.systemGray.withAlphaComponent(0.45)]
-// )
