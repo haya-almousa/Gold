@@ -68,7 +68,6 @@ struct DashboardView: View {
                             scale: scale,
                             topInset: geo.safeAreaInsets.top,
                             greetingText: greetingText,
-                            userName: displayedUserName,
                             price: displayedPrice,
                             chartValues: displayedChartValues,
                             lastUpdatedText: viewModel.lastUpdatedText,
@@ -78,9 +77,6 @@ struct DashboardView: View {
                         // MARK: - المحتوى المتحرك فقط
                         ScrollView(showsIndicators: false) {
                             VStack(spacing: 14 * scale) {
-
-                                DashboardQuickActionsCard(scale: scale)
-                                    .padding(.horizontal, 16 * scale)
 
                                 DashboardPortfolioZakatCard(
                                     scale: scale,
@@ -128,11 +124,6 @@ struct DashboardView: View {
         else { return "مساء الخير 🌙" }
     }
 
-    private var displayedUserName: String {
-        let name = authManager.userName
-        return name.isEmpty ? "مرحباً!" : "مرحباً \(name)!"
-    }
-
     private var displayedPrice: String {
         switch selectedKarat {
         case .k24: viewModel.formatted24K
@@ -158,7 +149,6 @@ private struct DashboardTopPriceCard: View {
     let scale: CGFloat
     let topInset: CGFloat
     let greetingText: String
-    let userName: String
     let price: String
     let chartValues: [Double]
     let lastUpdatedText: String
@@ -168,17 +158,9 @@ private struct DashboardTopPriceCard: View {
         VStack(spacing: 11 * scale) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 0) {
-                    VStack(alignment: .leading, spacing: 2 * scale) {
-                        Text(greetingText)
-                            .font(.appSubheadline(.medium))
-                            .foregroundStyle(DashboardColors.warmLight)
-
-                        Text(userName)
-                            .font(.system(size: 21 * scale, weight: .bold))
-                            .foregroundStyle(DashboardColors.goldMain)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                    }
+                    Text(greetingText)
+                        .font(.appSubheadline(.medium))
+                        .foregroundStyle(DashboardColors.warmLight)
 
                     Spacer().frame(height: 12 * scale)
 
@@ -290,66 +272,6 @@ private struct DashboardTopPriceCard: View {
     }
 }
 
-// MARK: - Quick Actions Card
-
-private struct DashboardQuickActionsCard: View {
-    let scale: CGFloat
-
-    var body: some View {
-        VStack(alignment: .trailing, spacing: 10 * scale) {
-            Text("الاجراءات السريعة")
-                .font(.appTitle3(.bold))
-                .foregroundStyle(.black)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, 2 * scale)
-                .padding(.top, 9 * scale)
-
-            NavigationLink {
-                GoldCalculatorView()
-            } label: {
-                HStack(spacing: 10 * scale) {
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 3 * scale) {
-                        Text("حاسبة الذهب")
-                            .font(.appBody(.bold))
-                            .foregroundStyle(Color("maincolor"))
-
-                        Text("احسب سعر الذهب فورياً مع الضريبة")
-                            .font(.appCaption(.semibold))
-                            .foregroundStyle(DashboardColors.mutedTealText)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .multilineTextAlignment(.trailing)
-
-                    ZStack {
-                        Circle()
-                            .fill(Color("maincolor"))
-                            .frame(width: 48 * scale, height: 48 * scale)
-
-                        VStack(spacing: 3 * scale) {
-                            Image(systemName: "plus")
-                            Image(systemName: "minus")
-                        }
-                        .font(.appBody(.bold))
-                        .foregroundStyle(Color.white.opacity(0.95))
-                    }
-                }
-                .environment(\.layoutDirection, .leftToRight)
-                .padding(.horizontal, 14 * scale)
-                .padding(.vertical, 12 * scale)
-                .background(
-                    RoundedRectangle(cornerRadius: 18 * scale, style: .continuous)
-                        .fill(DashboardColors.quickActionBackground)
-                )
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(.maincolor), lineWidth: 0.2))
-
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
-
 // MARK: - Portfolio & Zakat Card
 
 private struct DashboardPortfolioZakatCard: View {
@@ -375,7 +297,9 @@ private struct DashboardPortfolioZakatCard: View {
 
             VStack(spacing: 0) {
                 portfolioSection
-                zakatSection
+                if meetsNisab {
+                    zakatSection
+                }
             }
         }
         .padding(.top, 2 * scale)

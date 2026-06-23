@@ -21,6 +21,7 @@ struct TajouriView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
     @ScaledMetric(relativeTo: .title)      private var zakatFontSize: CGFloat = 34
     @State private var showProfile = false
+    @State private var showEducation = false
     @State private var showSignInPrompt = false
     @ObservedObject private var subscription = SubscriptionManager.shared
     @EnvironmentObject var auth: AuthenticationManager
@@ -66,6 +67,9 @@ struct TajouriView: View {
         .sheet(isPresented: $showProfile) {
             ProfileView()
         }
+        .sheet(isPresented: $showEducation) {
+            EducationView()
+        }
         .alert("تسجيل الدخول مطلوب", isPresented: $showSignInPrompt) {
             Button("تسجيل الدخول") { showProfile = true }
             Button("إلغاء", role: .cancel) {}
@@ -104,18 +108,32 @@ struct TajouriView: View {
     private var headerContent: some View {
         VStack(spacing: 0) {
             HStack {
-                Button { showProfile = true } label: {
-                    ZStack {
-                        Circle()
-                            .fill(Color("Dark green"))
-                            .frame(width: 46, height: 46)
-                        Image(systemName: "person.fill")
-                            .foregroundColor(Color("background"))
-                            .font(.appTitle3())
+                VStack(spacing: 8) {
+                    Button { showProfile = true } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color("Dark green"))
+                                .frame(width: 46, height: 46)
+                            Image(systemName: "person.fill")
+                                .foregroundColor(Color("background"))
+                                .font(.appTitle3())
+                        }
                     }
+                    .buttonStyle(.plain)
+
+                    Button { showEducation = true } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color("Dark green"))
+                                .frame(width: 40, height: 40)
+                            Image(systemName: "book.closed.fill")
+                                .foregroundColor(Color("background"))
+                                .font(.appSubheadline(.bold))
+                        }
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-                
+
                 Spacer()
                 Text("التجوري")
                     .font(.appTitle2(.bold))

@@ -12,5 +12,5 @@
 import Foundation
 
 enum AppTab: Hashable {
-    case home, comparison, education, tojory
+    case home, comparison, calculator, tojory
 }
