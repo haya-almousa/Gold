@@ -267,9 +267,9 @@ struct GoldCalculatorView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    private var totalPriceSection: some View {
+    private var manufacturingFeeSection: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            Text("السعر الإجمالي (ريال)*")
+            Text("المصنعية (ريال/جرام)*")
                 .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
 
@@ -278,25 +278,25 @@ struct GoldCalculatorView: View {
                     .fill(softTeal)
                     .frame(height: 40)
 
-                if totalPriceText.isEmpty {
-                    Text("مثال:1500")
+                if manufacturingFeeText.isEmpty {
+                    Text("مثال:10")
                         .font(.appBody(.semibold))
                         .foregroundColor(secondaryTeal.opacity(0.75))
                         .padding(.horizontal, 18)
                         .allowsHitTesting(false)
                 }
 
-                TextField("", text: $totalPriceText)
+                TextField("", text: $manufacturingFeeText)
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .font(.appTitle3(.semibold))
                     .foregroundColor(primaryTeal)
                     .padding(.horizontal, 18)
-                    .focused($focusedField, equals: .totalPrice)
-                    .onChange(of: totalPriceText) {
-                        let filtered = totalPriceText.filter { $0.isNumber || $0 == "." }
-                        if filtered != totalPriceText { totalPriceText = filtered }
-                        totalPrice = Double(filtered) ?? 0
+                    .focused($focusedField, equals: .fee)
+                    .onChange(of: manufacturingFeeText) {
+                        let filtered = manufacturingFeeText.filter { $0.isNumber || $0 == "." }
+                        if filtered != manufacturingFeeText { manufacturingFeeText = filtered }
+                        manufacturingFee = Double(filtered) ?? 0
                     }
             }
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
