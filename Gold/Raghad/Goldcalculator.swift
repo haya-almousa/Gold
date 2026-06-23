@@ -19,6 +19,7 @@ enum PriceState {
 struct GoldCalculatorView: View {
     // MARK: - API
     let apiService: any GoldPriceProviding
+    let showBackButton: Bool
     let onBack: (() -> Void)?
     @State private var priceState: PriceState = .loading
     @State private var lastRefreshed: Date? = nil
@@ -39,8 +40,10 @@ struct GoldCalculatorView: View {
     init(apiService: any GoldPriceProviding = GoldAPIService(),
          initialKarat: KaratOption? = nil,
          initialWeight: Double? = nil,
+         showBackButton: Bool = true,
          onBack: (() -> Void)? = nil) {
         self.apiService = apiService
+        self.showBackButton = showBackButton
         self.onBack = onBack
         if let k = initialKarat { _selectedKarat = State(initialValue: k) }
         if let w = initialWeight, w > 0 {
@@ -176,29 +179,29 @@ struct GoldCalculatorView: View {
                 .font(.appTitle2(.bold))
                 .foregroundColor(.black)
                 .minimumScaleFactor(0.6)
-                .offset(x: 115)
+                .frame(maxWidth: .infinity, alignment: showBackButton ? .center : .trailing)
 
-            Spacer()
+            if showBackButton {
+                Spacer()
 
-            NavigationLink(value: "back") { EmptyView() }
-
-            Button(action: {
-                if let back = onBack {
-                    back()
-                } else {
-                    dismiss()
+                Button(action: {
+                    if let back = onBack {
+                        back()
+                    } else {
+                        dismiss()
+                    }
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(primaryTeal)
+                            .frame(width: 42, height: 42)
+                        Image(systemName: "chevron.right")
+                            .font(.appTitle3(.bold))
+                            .foregroundColor(.white)
+                    }
                 }
-            }) {
-                ZStack {
-                    Circle()
-                        .fill(primaryTeal)
-                        .frame(width: 42, height: 42)
-                    Image(systemName: "chevron.right")
-                        .font(.appTitle3(.bold))
-                        .foregroundColor(.white)
-                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.top, 20)
     }

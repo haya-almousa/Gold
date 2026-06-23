@@ -91,7 +91,6 @@ private let articles: [EducationArticle] = [
 ]
 
 struct EducationView: View {
-    @Binding var selectedTab: AppTab
     @State private var selectedArticle: EducationArticle?
 
     var body: some View {
@@ -219,5 +218,5 @@ struct EducationView: View {
 }
 
 #Preview {
-    EducationView(selectedTab: .constant(.education))
+    EducationView()
 }

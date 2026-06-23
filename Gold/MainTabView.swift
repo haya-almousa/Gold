@@ -14,8 +14,10 @@ struct MainTabView: View {
                 ComparisonListView(selectedTab: $selectedTab)
                     .tag(AppTab.comparison)
                     .toolbar(.hidden, for: .tabBar)
-                EducationView(selectedTab: $selectedTab)
-                    .tag(AppTab.education)
+                NavigationStack {
+                    GoldCalculatorView(showBackButton: false)
+                }
+                    .tag(AppTab.calculator)
                     .toolbar(.hidden, for: .tabBar)
                 TajouriView(dashboardVM: dashboardVM)
                     .tag(AppTab.tojory)
@@ -28,13 +30,13 @@ struct MainTabView: View {
     }
     private var customTabBar: some View {
         HStack(spacing: 0) {
-            tabItem(tab: .tojory, symbol: "briefcase.fill", title: "التجوري")
+            tojoryTabItem
             Spacer()
-            tabItem(tab: .education, symbol: "book.closed.fill", title: "تعلم")
+            calculatorTabItem
             Spacer()
-            tabItem(tab: .comparison, symbol: "bookmark.fill", title: "المقارنة")
+            comparisonTabItem
             Spacer()
-            tabItem(tab: .home, symbol: "house.fill", title: "اليوم")
+            homeTabItem
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
@@ -49,6 +51,106 @@ struct MainTabView: View {
         )
         .padding(.horizontal, 15)
         .padding(.bottom, 5)
+    }
+
+    private var tojoryTabItem: some View {
+        let active = selectedTab == .tojory
+        return Button { selectedTab = .tojory } label: {
+            VStack(spacing: 4) {
+                Image("TojoryIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+                Text("التجوري")
+                    .font(.appCaption(active ? .semibold : .regular))
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+            }
+            .padding(.horizontal, active ? 14 : 0)
+            .padding(.vertical, active ? 7 : 0)
+            .background(
+                active
+                    ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
+                    : AnyView(Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var homeTabItem: some View {
+        let active = selectedTab == .home
+        return Button { selectedTab = .home } label: {
+            VStack(spacing: 4) {
+                Image("HomeIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+                Text("اليوم")
+                    .font(.appCaption(active ? .semibold : .regular))
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+            }
+            .padding(.horizontal, active ? 14 : 0)
+            .padding(.vertical, active ? 7 : 0)
+            .background(
+                active
+                    ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
+                    : AnyView(Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var comparisonTabItem: some View {
+        let active = selectedTab == .comparison
+        return Button { selectedTab = .comparison } label: {
+            VStack(spacing: 4) {
+                Image("ComparisonIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+                Text("المقارنة")
+                    .font(.appCaption(active ? .semibold : .regular))
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+            }
+            .padding(.horizontal, active ? 14 : 0)
+            .padding(.vertical, active ? 7 : 0)
+            .background(
+                active
+                    ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
+                    : AnyView(Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var calculatorTabItem: some View {
+        let active = selectedTab == .calculator
+        return Button { selectedTab = .calculator } label: {
+            VStack(spacing: 4) {
+                Image("CalculatorIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 26, height: 26)
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+                Text("الحاسبة")
+                    .font(.appCaption(active ? .semibold : .regular))
+                    .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
+            }
+            .padding(.horizontal, active ? 14 : 0)
+            .padding(.vertical, active ? 7 : 0)
+            .background(
+                active
+                    ? AnyView(RoundedRectangle(cornerRadius: 16).fill(Color("Lightest blue").opacity(0.6)))
+                    : AnyView(Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func tabItem(tab: AppTab, symbol: String, title: String) -> some View {
