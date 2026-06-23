@@ -23,7 +23,7 @@ final class DashboardViewModel: ObservableObject {
     private let autoRefreshInterval: Duration
     private var refreshTask: Task<Void, Never>?
     private var tojoryObserver: AnyCancellable?
-    private var chart24KSamples: [GoldChartSample]
+    @Published private(set) var chart24KSamples: [GoldChartSample]
     private var hasStarted = false
 
     init(
@@ -348,7 +348,8 @@ private struct GoldQuoteCache {
     }
 }
 
-private struct GoldChartSample: Codable {
+struct GoldChartSample: Codable, Identifiable {
+    var id: Date { timestamp }
     let timestamp: Date
     let price24KPerGramSAR: Double
 }
