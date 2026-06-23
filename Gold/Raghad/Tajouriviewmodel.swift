@@ -51,6 +51,14 @@ final class TajouriViewModel: ObservableObject {
                 self.isLoading = false
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .tajouriPiecesDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.pieces = Self.loadPieces(from: self.modelContext)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Zakat Eligible Pieces

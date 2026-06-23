@@ -12,26 +12,40 @@ struct GoldItemCardView: View {
     let piece:           GoldPiece
     let isBest:          Bool
     let livePrice24KSAR: Double?
-    let previousPrice24KSAR: Double?
-    let onEdit:          () -> Void
-    let onDelete:        () -> Void
+    let onEdit:                 () -> Void
+    let onRequestDelete:        () -> Void
+    let onRequestSaveToTajouri: () -> Void
 
     @State private var dragOffset: CGFloat = 0
-    @State private var showDeleteAlert = false
-    private let deleteThreshold: CGFloat = 80
+    private let actionThreshold: CGFloat = 80
 
     var body: some View {
-        ZStack(alignment: .leading) {
-            // Delete background revealed on swipe
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color("Light red"))
-                .overlay(
-                    Image(systemName: "trash")
-                        .font(.appTitle3(.bold))
-                        .foregroundColor(Color("Red"))
-                        .padding(.leading, 24),
-                    alignment: .leading
-                )
+        ZStack {
+            // Delete background revealed swiping right
+            if dragOffset > 0 {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color("Light red"))
+                    .overlay(
+                        Image(systemName: "trash")
+                            .font(.appTitle3(.bold))
+                            .foregroundColor(Color("Red"))
+                            .padding(.leading, 24),
+                        alignment: .leading
+                    )
+            }
+
+            // Save-to-Tajouri background revealed swiping left
+            if dragOffset < 0 {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color("Light blue"))
+                    .overlay(
+                        Image(systemName: "briefcase.fill")
+                            .font(.appTitle3(.bold))
+                            .foregroundColor(Color("maincolor"))
+                            .padding(.trailing, 24),
+                        alignment: .trailing
+                    )
+            }
 
             // Card content
             HStack(spacing: 0) {
@@ -52,16 +66,20 @@ struct GoldItemCardView: View {
             .gesture(
                 DragGesture(minimumDistance: 20, coordinateSpace: .local)
                     .onChanged { value in
-                        guard abs(value.translation.width) > abs(value.translation.height),
-                              value.translation.width > 0 else { return }
-                        dragOffset = min(value.translation.width, 120)
+                        guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                        dragOffset = max(min(value.translation.width, 120), -120)
                     }
                     .onEnded { _ in
-                        if dragOffset > deleteThreshold {
+                        if dragOffset > actionThreshold {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 dragOffset = 0
                             }
-                            showDeleteAlert = true
+                            onRequestDelete()
+                        } else if dragOffset < -actionThreshold {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                dragOffset = 0
+                            }
+                            onRequestSaveToTajouri()
                         } else {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 dragOffset = 0
@@ -71,12 +89,6 @@ struct GoldItemCardView: View {
             )
         }
         .clipped()
-        .alert("\tحذف القطعة",isPresented: $showDeleteAlert) {
-            Button("حذف", role: .destructive) { onDelete() }
-            Button("الغاء", role: .cancel) { }
-        } message: {
-            Text("\t\tهل أنت متأكد من حذف \(piece.name)؟")
-        }
     }
 
     // MARK: - Price View
@@ -89,8 +101,8 @@ struct GoldItemCardView: View {
     }
 
     private var priceDiff: Double? {
-        guard let live = livePrice24KSAR, let prev = previousPrice24KSAR else { return nil }
-        return piece.liveTotalWithVAT(price24KSAR: live) - piece.liveTotalWithVAT(price24KSAR: prev)
+        guard livePrice24KSAR != nil else { return nil }
+        return displayedPrice - piece.shopTotalWithVAT
     }
 
     private var priceView: some View {
@@ -181,7 +193,6 @@ struct GoldItemCardView: View {
             // Tags row
             HStack(spacing: 6) {
                 Spacer()
-                if piece.profitPerGram > 0 { tagPill("ر \(piece.profitPerGram.clean)/جم") }
                 if !piece.store.isEmpty { tagPill(piece.store) }
                 tagPill("\(piece.karat.rawValue)K")
                 tagPill("\(piece.grams.clean)g")

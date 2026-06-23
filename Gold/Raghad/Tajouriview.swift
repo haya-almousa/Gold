@@ -15,6 +15,7 @@ struct TajouriView: View {
 
     @State private var showAddForm  = false
     @State private var pieceToEdit: GoldPieceItem? = nil
+    @State private var pieceToDelete: GoldPieceItem? = nil
     @State private var showPaywall = false
 
     @ScaledMetric(relativeTo: .largeTitle) private var portfolioFontSize: CGFloat = 44
@@ -71,6 +72,22 @@ struct TajouriView: View {
         } message: {
             Text("سجّل دخولك لحفظ قطع الذهب في تجوريك")
         }
+        .overlay {
+            if let piece = pieceToDelete {
+                ConfirmDeleteOverlay(
+                    title: "حذف القطعة",
+                    message: "هل أنت متأكد من حذف \(piece.name)؟",
+                    onConfirm: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            vm.deletePiece(id: piece.id)
+                        }
+                        pieceToDelete = nil
+                    },
+                    onCancel: { pieceToDelete = nil }
+                )
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: pieceToDelete?.id)
     }
 
 
@@ -335,14 +352,10 @@ struct TajouriView: View {
 
             ForEach(vm.pieces) { piece in
                 TajouriPieceCard(
-                    piece:    piece,
-                    vm:       vm,
-                    onEdit:   { pieceToEdit = piece },
-                    onDelete: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            vm.deletePiece(id: piece.id)
-                        }
-                    }
+                    piece:           piece,
+                    vm:              vm,
+                    onEdit:          { pieceToEdit = piece },
+                    onRequestDelete: { pieceToDelete = piece }
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.97)))
             }
@@ -365,13 +378,12 @@ struct TajouriView: View {
 
 private struct TajouriPieceCard: View {
 
-    let piece:    GoldPieceItem
-    let vm:       TajouriViewModel
-    let onEdit:   () -> Void
-    let onDelete: () -> Void
+    let piece:           GoldPieceItem
+    let vm:              TajouriViewModel
+    let onEdit:          () -> Void
+    let onRequestDelete: () -> Void
 
-    @State private var dragOffset:       CGFloat = 0
-    @State private var showDeleteAlert:  Bool    = false
+    @State private var dragOffset: CGFloat = 0
     private let deleteThreshold: CGFloat = 80
 
     private func fmt(_ value: Double) -> String {
@@ -486,7 +498,7 @@ private struct TajouriPieceCard: View {
                     .onEnded { _ in
                         if dragOffset > deleteThreshold {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragOffset = 0 }
-                            showDeleteAlert = true
+                            onRequestDelete()
                         } else {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { dragOffset = 0 }
                         }
@@ -494,12 +506,6 @@ private struct TajouriPieceCard: View {
             )
         }
         .clipped()
-        .alert("حذف القطعة", isPresented: $showDeleteAlert) {
-            Button("حذف", role: .destructive) { onDelete() }
-            Button("الغاء", role: .cancel) {}
-        } message: {
-            Text("هل أنت متأكد من حذف \(piece.name)؟")
-        }
         .environment(\.layoutDirection, .leftToRight)
     }
 
