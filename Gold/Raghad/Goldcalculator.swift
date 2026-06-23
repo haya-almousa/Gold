@@ -31,10 +31,12 @@ struct GoldCalculatorView: View {
     @State private var selectedKarat: KaratOption = .k18
     @State private var manufacturingFeeText: String = ""
     @State private var manufacturingFee: Double = 0
+    @State private var profitText: String = ""
+    @State private var profit: Double = 0
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) private var dismiss
 
-    enum Field { case weight, fee }
+    enum Field { case weight, fee, profit }
 
     // MARK: - Init
     init(apiService: any GoldPriceProviding = GoldAPIService(),
@@ -65,9 +67,9 @@ struct GoldCalculatorView: View {
         /// Exact purity = karat ÷ 24
         var purity: Double {
             switch self {
-            case .k24: return 24.0 / 24.0  // = 1.0
-            case .k21: return 21.0 / 24.0  // = 0.875
-            case .k18: return 18.0 / 24.0  // = 0.75
+            case .k24: return 24.0 / 24.0
+            case .k21: return 21.0 / 24.0
+            case .k18: return 18.0 / 24.0
             }
         }
     }
@@ -78,7 +80,6 @@ struct GoldCalculatorView: View {
         return nil
     }
 
-    /// Returns nil only on very first load — uses lastKnownPrice during refresh
     var goldPrice24KSAR: Double? {
         currentQuote?.price24KPerGramSAR ?? lastKnownPrice
     }
@@ -87,10 +88,12 @@ struct GoldCalculatorView: View {
         currentQuote?.usdPerGram
     }
 
-    // MARK: - Computed
-    /// Gold value = weight × karat purity × 24k price per gram
+    // MARK: - Computed (Reverse Breakdown)
+    private let vatRate: Double = 0.15
+
+    /// سعر الذهب الخالص = وزن × نقاء العيار × سعر جرام 24k
     var goldValueSAR: Double {
-        guard let price = goldPrice24KSAR else { return 0 }
+        guard let price = goldPrice24KSAR, weight > 0 else { return 0 }
         return weight * selectedKarat.purity * price
     }
 
@@ -99,18 +102,25 @@ struct GoldCalculatorView: View {
         weight * manufacturingFee
     }
 
-    /// VAT = 15% on (gold value + manufacturing fee)
-    private let vatRate: Double = 0.15
-
-    var vatAmountSAR: Double {
-        guard goldPrice24KSAR != nil else { return 0 }
-        return (goldValueSAR + manufacturingAmountSAR) * vatRate
+    /// Profit = SAR per gram × weight
+    var profitAmountSAR: Double {
+        weight * profit
     }
 
-    /// Total = gold value + manufacturing fee + VAT
-    var totalValueSAR: Double {
+    /// Pre-tax subtotal
+    var preTaxTotalSAR: Double {
         guard goldPrice24KSAR != nil else { return 0 }
-        return goldValueSAR + manufacturingAmountSAR + vatAmountSAR
+        return goldValueSAR + manufacturingAmountSAR + profitAmountSAR
+    }
+
+    /// VAT 15%
+    var vatAmountSAR: Double {
+        preTaxTotalSAR * 0.15
+    }
+
+    /// Total including VAT
+    var totalValueSAR: Double {
+        preTaxTotalSAR * 1.15
     }
 
     var totalValueUSD: Double {
@@ -140,6 +150,7 @@ struct GoldCalculatorView: View {
                     karatSection
                     weightSection
                     manufacturingFeeSection
+                    profitSection
                     totalSection
                     Spacer(minLength: 16)
                 }
@@ -159,6 +170,7 @@ struct GoldCalculatorView: View {
 
     // MARK: - Fetch Price
     func fetchPrice() async {
+        // لا نرجع للـ loading إذا عندنا سعر سابق — يبقى الحساب شغّال أثناء الـ refresh
         if lastKnownPrice == nil {
             priceState = .loading
         }
@@ -295,20 +307,82 @@ struct GoldCalculatorView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    private var totalSection: some View {
-        VStack(spacing: 8) {
-            Text("إجمالي السعر التقديري")
-                .font(.appTitle2(.bold))
-                .foregroundColor(mutedGold)
-
-            Text("SAR \(fmtCurrency(totalValueSAR))")
-                .font(.appTitle(.heavy))
+    private var profitSection: some View {
+        VStack(alignment: .trailing, spacing: 10) {
+            Text("الربح (ريال/جرام)")
+                .font(.appTitle3(.semibold))
                 .foregroundColor(primaryTeal)
-                .minimumScaleFactor(0.6)
-                .lineLimit(1)
-                .animation(.easeInOut(duration: 0.25), value: totalValueSAR)
+
+            ZStack(alignment: .trailing) {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(softTeal)
+                    .frame(height: 40)
+
+                if profitText.isEmpty {
+                    Text("مثال:5")
+                        .font(.appBody(.semibold))
+                        .foregroundColor(secondaryTeal.opacity(0.75))
+                        .padding(.horizontal, 18)
+                        .allowsHitTesting(false)
+                }
+
+                TextField("", text: $profitText)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(.appTitle3(.semibold))
+                    .foregroundColor(primaryTeal)
+                    .padding(.horizontal, 18)
+                    .focused($focusedField, equals: .profit)
+                    .onChange(of: profitText) {
+                        let filtered = profitText.filter { $0.isNumber || $0 == "." }
+                        if filtered != profitText { profitText = filtered }
+                        profit = Double(filtered) ?? 0
+                    }
+            }
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+
+    private var totalSection: some View {
+        VStack(spacing: 0) {
+            // Breakdown rows
+            VStack(spacing: 10) {
+                breakdownLine("المجموع قبل الضريبة", value: preTaxTotalSAR)
+                breakdownLine("ضريبة القيمة المضافة (15%)", value: vatAmountSAR)
+            }
+            .padding(.horizontal, 4)
+            .padding(.bottom, 12)
+
+            // Final total
+            VStack(spacing: 6) {
+                Text("إجمالي السعر التقديري")
+                    .font(.appTitle2(.bold))
+                    .foregroundColor(mutedGold)
+
+                Text("SAR \(fmtCurrency(totalValueSAR))")
+                    .font(.appTitle(.heavy))
+                    .foregroundColor(primaryTeal)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                    .animation(.easeInOut(duration: 0.25), value: totalValueSAR)
+            }
+            .padding(.top, 12)
         }
         .padding(.top, 28)
+    }
+
+    private func breakdownLine(_ label: String, value: Double) -> some View {
+        HStack {
+            Text("SAR \(fmtCurrency(value))")
+                .font(.appBody(.semibold))
+                .foregroundColor(primaryTeal)
+                .animation(.easeInOut(duration: 0.2), value: value)
+            Spacer()
+            Text(label)
+                .font(.appBody(.regular))
+                .foregroundColor(secondaryTeal)
+        }
     }
 
     // MARK: - Small Components
@@ -330,32 +404,24 @@ struct GoldCalculatorView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Helpers
-    func breakdownRow(_ label: String, value: String) -> some View {
+    private func breakdownRow(label: String, value: String, color: Color, bold: Bool = false) -> some View {
         HStack {
-            Text(label)
-            Spacer()
             Text(value)
+                .font(bold ? .appTitle3(.bold) : .appBody(.semibold))
+                .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Spacer()
+
+            Text(label)
+                .font(bold ? .appTitle3(.bold) : .appBody(.semibold))
+                .foregroundColor(bold ? primaryTeal : primaryTeal.opacity(0.75))
+                .multilineTextAlignment(.trailing)
         }
     }
 
-    func stepperButtons(increment: @escaping () -> Void, decrement: @escaping () -> Void) -> some View {
-        VStack(spacing: 0) {
-            Button(action: increment) {
-                Image(systemName: "chevron.up")
-                    .font(.appCaption(.semibold))
-                    .foregroundColor(secondaryTeal)
-                    .frame(width: 28, height: 18)
-            }
-            Button(action: decrement) {
-                Image(systemName: "chevron.down")
-                    .font(.appCaption(.semibold))
-                    .foregroundColor(secondaryTeal)
-                    .frame(width: 28, height: 18)
-            }
-        }
-    }
-
+    // MARK: - Helpers
     func fmt(_ v: Double) -> String {
         v == floor(v) ? String(Int(v)) : String(format: "%.1f", v)
     }
@@ -385,10 +451,3 @@ struct GoldCalculatorView: View {
     GoldCalculatorView(apiService: MockGoldAPIService())
         .preferredColorScheme(.dark)
 }
-
-// MARK: - Placeholder Color Helper
-// Call this once in your App's init() to make all placeholders subtle:
-// UITextField.appearance().attributedPlaceholder = NSAttributedString(
-//     string: " ",
-//     attributes: [.foregroundColor: UIColor.systemGray.withAlphaComponent(0.45)]
-// )

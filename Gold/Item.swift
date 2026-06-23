@@ -12,7 +12,8 @@ enum DataStore {
     static let shared: ModelContainer = {
         let schema = Schema([
             PersistedTajouriPiece.self,
-            PersistedComparisonPiece.self
+            PersistedComparisonPiece.self,
+            PersistedGoldList.self
         ])
         let config = ModelConfiguration(isStoredInMemoryOnly: false)
         return try! ModelContainer(for: schema, configurations: [config])

@@ -30,7 +30,7 @@ struct AddGoldFormView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 12)
 
-            
+
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 18) {
@@ -40,6 +40,7 @@ struct AddGoldFormView: View {
                     weightSection
                     karatSection
                     shopPriceTaxRow
+                    profitSection
                     storeSection
 
                 }
@@ -72,9 +73,20 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var topBar: some View {
         HStack {
-            Button(action: {
-                vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
-            }) {
+            Menu {
+                Button("حفظ") {
+                    vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
+                }
+                if !vm.lists.isEmpty {
+                    Menu("حفظ في قائمة") {
+                        ForEach(vm.lists) { list in
+                            Button(list.name) {
+                                vm.isEditing ? vm.saveEdit(listID: list.id) : vm.saveAndCompare(listID: list.id)
+                            }
+                        }
+                    }
+                }
+            } label: {
                 Text("قارن")
                     .font(.appSubheadline(.semibold))
                     .foregroundColor(Color("background"))
@@ -298,7 +310,7 @@ struct AddGoldFormView: View {
                     inlineError(error)
                 }
             }
-            
+
 
             VStack(alignment: .center, spacing: 6) {
                 Text("الضريبة")
@@ -331,6 +343,23 @@ struct AddGoldFormView: View {
         )
     }
 
+    // MARK: - Profit
+
+    @ViewBuilder
+    private var profitSection: some View {
+        labeledField("الربح (ريال/جرام)") {
+            ThemedTextField(
+                "مثال: 5",
+                text: Binding(
+                    get: { vm.form.profitText },
+                    set: { vm.updateField(\.profitText, value: $0) }
+                ),
+                keyboardType: .decimalPad
+            )
+            .cornerRadius(20)
+        }
+    }
+
     // MARK: - Store Info
 
     @ViewBuilder
@@ -348,7 +377,7 @@ struct AddGoldFormView: View {
     }
 
     // MARK: - inlineError
-    
+
     @ViewBuilder
     private func inlineError(_ message: String) -> some View {
         HStack(spacing: 4) {

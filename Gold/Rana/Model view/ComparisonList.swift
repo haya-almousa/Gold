@@ -16,6 +16,28 @@ extension Notification.Name {
     static let tojoryPiecesDidChange = Notification.Name("tojoryPiecesDidChange")
 }
 
+// MARK: - Comparison List
+
+struct GoldList: Identifiable, Equatable {
+    let id:   UUID
+    var name: String
+}
+
+@Model
+final class PersistedGoldList {
+    @Attribute(.unique) var listID: UUID
+    var name:      String
+    var createdAt: Date
+
+    init(id: UUID = UUID(), name: String, createdAt: Date = Date()) {
+        self.listID    = id
+        self.name      = name
+        self.createdAt = createdAt
+    }
+
+    func toDomain() -> GoldList { GoldList(id: listID, name: name) }
+}
+
 // MARK: - SwiftData Model
 
 @Model
@@ -27,7 +49,9 @@ final class PersistedComparisonPiece {
     var karatRawValue: Int
     var mfgFeePercent: Double
     var shopPrice:     Double
+    var profitPerGram: Double?        // optional so SwiftData lightweight-migrates existing rows to nil
     var savedGoldPrice24KSAR: Double?
+    var listID:        UUID?
     @Attribute(.externalStorage) var imageData: Data?
 
     init(from piece: GoldPiece) {
@@ -38,7 +62,9 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
+        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
+        self.listID        = piece.listID
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
 
@@ -49,7 +75,9 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
+        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
+        self.listID        = piece.listID
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
     }
 
@@ -69,7 +97,9 @@ final class PersistedComparisonPiece {
             karat:         karat,
             mfgFeePercent: mfgFeePercent,
             shopPrice:     shopPrice,
+            profitPerGram: profitPerGram ?? 0.0,
             savedGoldPrice24KSAR: savedGoldPrice24KSAR,
+            listID:        listID,
             image:         image
         )
     }
@@ -88,9 +118,12 @@ final class ComparisonListViewModel: ObservableObject {
     @Published private(set) var gramsError:           String?           = nil
     @Published private(set) var priceError:           String?           = nil
     @Published private(set) var editingID:            UUID?             = nil
+    @Published private(set) var editingListID:        UUID?             = nil
     @Published private(set) var isSyncing:            Bool              = false
     @Published private(set) var liveGoldPrice24KSAR:  Double?
     @Published private(set) var previousGoldPrice24KSAR: Double?
+    @Published private(set) var lists:                [GoldList]        = []
+    @Published var            selectedListID:         UUID?             = nil
 
     private let apiService        = GoldAPIService()
     private var priceRefreshTask: Task<Void, Never>?
@@ -101,6 +134,7 @@ final class ComparisonListViewModel: ObservableObject {
     init(modelContext: ModelContext? = nil) {
         self.modelContext = modelContext ?? DataStore.context
         pieces = Self.loadPieces(from: self.modelContext)
+        lists  = Self.loadLists(from: self.modelContext)
         startLivePriceUpdates()
     }
 
@@ -142,21 +176,24 @@ final class ComparisonListViewModel: ObservableObject {
 
     func beginEdit(piece: GoldPiece) {
         editingID     = piece.id
+        editingListID = piece.listID
         selectedImage = piece.image
         form = AddGoldFormState(
             name:          piece.name,
             store:         piece.store,
             gramsText:     piece.grams.clean,
             karat:         piece.karat,
-            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : ""
+            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : "",
+            profitText:    piece.profitPerGram > 0 ? piece.profitPerGram.clean : ""
         )
         showForm = true
     }
 
-    func saveAndCompare() {
+    func saveAndCompare(listID: UUID? = nil) {
         do {
             var piece = try form.validated(image: selectedImage)
             piece.savedGoldPrice24KSAR = liveGoldPrice24KSAR
+            piece.listID = listID
             pieces.append(piece)
             persistSave(piece)
             resetForm()
@@ -172,8 +209,8 @@ final class ComparisonListViewModel: ObservableObject {
         }
     }
 
-    func saveEdit() {
-        guard let id = editingID else { saveAndCompare(); return }
+    func saveEdit(listID: UUID? = nil) {
+        guard let id = editingID else { saveAndCompare(listID: listID); return }
         do {
             var updated = try form.validated(image: selectedImage)
             updated = GoldPiece(
@@ -184,7 +221,9 @@ final class ComparisonListViewModel: ObservableObject {
                 karat:         updated.karat,
                 mfgFeePercent: updated.mfgFeePercent,
                 shopPrice:     updated.shopPrice,
+                profitPerGram: updated.profitPerGram,
                 savedGoldPrice24KSAR: liveGoldPrice24KSAR,
+                listID:        listID ?? editingListID,
                 image:         updated.image
             )
             if let idx = pieces.firstIndex(where: { $0.id == id }) {
@@ -203,6 +242,32 @@ final class ComparisonListViewModel: ObservableObject {
         } catch {
             nameError = error.localizedDescription
         }
+    }
+
+    // MARK: - Lists
+
+    func createList(name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let list = GoldList(id: UUID(), name: trimmed)
+        lists.append(list)
+        persistList(list)
+    }
+
+    func toggleListFilter(_ id: UUID) {
+        selectedListID = (selectedListID == id) ? nil : id
+    }
+
+    func deleteList(id: UUID) {
+        let idsToRemove = pieces.filter { $0.listID == id }.map { $0.id }
+        pieces.removeAll { $0.listID == id }
+        for pieceID in idsToRemove { persistDelete(id: pieceID) }
+
+        lists.removeAll { $0.id == id }
+        persistDeleteList(id: id)
+
+        if selectedListID == id { selectedListID = nil }
+        if let editingID, idsToRemove.contains(editingID) { resetForm(); showForm = false }
     }
 
     func deletePiece(id: UUID) {
@@ -305,10 +370,33 @@ final class ComparisonListViewModel: ObservableObject {
         return results.compactMap { $0.toDomain() }
     }
 
+    private func persistList(_ list: GoldList) {
+        let persisted = PersistedGoldList(id: list.id, name: list.name)
+        modelContext.insert(persisted)
+        try? modelContext.save()
+    }
+
+    private static func loadLists(from context: ModelContext) -> [GoldList] {
+        let descriptor = FetchDescriptor<PersistedGoldList>(
+            sortBy: [SortDescriptor(\.createdAt)]
+        )
+        guard let results = try? context.fetch(descriptor) else { return [] }
+        return results.map { $0.toDomain() }
+    }
+
+    private func persistDeleteList(id: UUID) {
+        let predicate = #Predicate<PersistedGoldList> { $0.listID == id }
+        if let existing = try? modelContext.fetch(FetchDescriptor(predicate: predicate)).first {
+            modelContext.delete(existing)
+            try? modelContext.save()
+        }
+    }
+
     // MARK: - Private
 
     private func resetForm() {
         form = .empty(); selectedImage = nil
-        nameError = nil; gramsError = nil; priceError = nil; editingID = nil
+        nameError = nil; gramsError = nil; priceError = nil
+        editingID = nil; editingListID = nil
     }
 }
