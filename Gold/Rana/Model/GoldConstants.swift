@@ -33,6 +33,7 @@ struct GoldPiece: Identifiable, Equatable {
     var shopPrice:     Double
     var profitPerGram: Double
     var savedGoldPrice24KSAR: Double?
+    var listID:        UUID?
     var image:         UIImage?
 
     init(id: UUID = UUID(), name: String, store: String = "",
@@ -41,6 +42,7 @@ struct GoldPiece: Identifiable, Equatable {
          shopPrice: Double = 0.0,
          profitPerGram: Double = 0.0,
          savedGoldPrice24KSAR: Double? = nil,
+         listID: UUID? = nil,
          image: UIImage? = nil) {
         self.id = id; self.name = name; self.store = store
         self.grams = grams; self.karat = karat
@@ -48,6 +50,7 @@ struct GoldPiece: Identifiable, Equatable {
         self.shopPrice = shopPrice
         self.profitPerGram = profitPerGram
         self.savedGoldPrice24KSAR = savedGoldPrice24KSAR
+        self.listID = listID
         self.image = image
     }
 

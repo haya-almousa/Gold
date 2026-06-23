@@ -73,9 +73,20 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var topBar: some View {
         HStack {
-            Button(action: {
-                vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
-            }) {
+            Menu {
+                Button("حفظ") {
+                    vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
+                }
+                if !vm.lists.isEmpty {
+                    Menu("حفظ في قائمة") {
+                        ForEach(vm.lists) { list in
+                            Button(list.name) {
+                                vm.isEditing ? vm.saveEdit(listID: list.id) : vm.saveAndCompare(listID: list.id)
+                            }
+                        }
+                    }
+                }
+            } label: {
                 Text("قارن")
                     .font(.appSubheadline(.semibold))
                     .foregroundColor(Color("background"))

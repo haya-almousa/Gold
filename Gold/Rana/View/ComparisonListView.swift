@@ -17,6 +17,9 @@ struct ComparisonListView: View {
     @State private var filterKarat:   Karat?  = nil
     @State private var showSignInPrompt: Bool = false
     @State private var showSignIn:       Bool = false
+    @State private var showAddOptions:   Bool = false
+    @State private var showCreateList:   Bool = false
+    @State private var newListName:      String = ""
     @ObservedObject private var auth = AuthenticationManager.shared
 
     @Binding var selectedTab: AppTab
@@ -31,7 +34,8 @@ struct ComparisonListView: View {
                 || piece.name.localizedCaseInsensitiveContains(searchText)
                 || piece.store.localizedCaseInsensitiveContains(searchText)
             let matchesKarat = filterKarat == nil || piece.karat == filterKarat
-            return matchesSearch && matchesKarat
+            let matchesList  = vm.selectedListID == nil || piece.listID == vm.selectedListID
+            return matchesSearch && matchesKarat && matchesList
         }
     }
 
@@ -47,7 +51,7 @@ struct ComparisonListView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        if !vm.pieces.isEmpty {
+                        if !vm.pieces.isEmpty || !vm.lists.isEmpty {
                             filterSearchRow
 
                             if showSearch {
@@ -109,6 +113,25 @@ struct ComparisonListView: View {
             SignInView()
                 .environmentObject(auth)
         }
+        .confirmationDialog("اضافة", isPresented: $showAddOptions, titleVisibility: .hidden) {
+            Button("اضافة قطعة ذهب") { withAnimation { vm.toggleForm() } }
+            Button("انشاء قائمة جديدة") { newListName = ""; showCreateList = true }
+            Button("الغاء", role: .cancel) {}
+        }
+        .presentationCompactAdaptation(.popover)
+        .alert("قائمة جديدة", isPresented: $showCreateList) {
+            Group {
+                TextField("اسم القائمة", text: $newListName)
+                Button("حفظ") { vm.createList(name: newListName) }
+                Button("الغاء", role: .cancel) {}
+            
+            }
+            .environment(\.layoutDirection, .leftToRight)
+        } message: {
+            Text("ادخل اسم القائمة الجديدة")
+                .multilineTextAlignment(.trailing)
+               // .environment(\.layoutDirection, .leftToRight)
+        }
     }
 
     // MARK: - Header
@@ -119,7 +142,7 @@ struct ComparisonListView: View {
                 if auth.userID.isEmpty {
                     showSignInPrompt = true
                 } else {
-                    withAnimation { vm.toggleForm() }
+                    showAddOptions = true
                 }
             } label: {
                 ZStack {
@@ -157,7 +180,11 @@ struct ComparisonListView: View {
             }
             .buttonStyle(.plain)
 
-            Spacer()
+            if vm.lists.isEmpty {
+                Spacer()
+            } else {
+                listsRow
+            }
 
             Button(action: {
                 withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
@@ -194,6 +221,41 @@ struct ComparisonListView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
 
         
+    }
+
+    // MARK: - Lists Row
+
+    private var listsRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(vm.lists) { list in
+                    listChip(list)
+                }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func listChip(_ list: GoldList) -> some View {
+        let active = vm.selectedListID == list.id
+        return Button(action: { withAnimation { vm.toggleListFilter(list.id) } }) {
+            Text(list.name)
+                .font(.appFootnote(.semibold))
+                .foregroundColor(active ? Color("background") : Color(.navy))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(active ? Color("maincolor") : Color("Lightest blue"))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color(.maincolor), lineWidth: 0.2))
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(role: .destructive) {
+                withAnimation { vm.deleteList(id: list.id) }
+            } label: {
+                Label("حذف القائمة", systemImage: "trash")
+            }
+        }
     }
 
     // MARK: - Filter Chips
