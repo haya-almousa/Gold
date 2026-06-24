@@ -31,7 +31,6 @@ struct GoldPiece: Identifiable, Equatable {
     var karat:         Karat
     var mfgFeePercent: Double
     var shopPrice:     Double
-    var profitPerGram: Double
     var savedGoldPrice24KSAR: Double?
     var listID:        UUID?
     var image:         UIImage?
@@ -40,7 +39,6 @@ struct GoldPiece: Identifiable, Equatable {
          grams: Double, karat: Karat = .k21,
          mfgFeePercent: Double = 0.0,
          shopPrice: Double = 0.0,
-         profitPerGram: Double = 0.0,
          savedGoldPrice24KSAR: Double? = nil,
          listID: UUID? = nil,
          image: UIImage? = nil) {
@@ -48,7 +46,6 @@ struct GoldPiece: Identifiable, Equatable {
         self.grams = grams; self.karat = karat
         self.mfgFeePercent = mfgFeePercent
         self.shopPrice = shopPrice
-        self.profitPerGram = profitPerGram
         self.savedGoldPrice24KSAR = savedGoldPrice24KSAR
         self.listID = listID
         self.image = image

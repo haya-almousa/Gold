@@ -16,12 +16,16 @@ private enum ImageSource: Identifiable {
     }
 }
 
+private enum SaveMenuStage { case options, pickList }
+
 struct AddGoldFormView: View {
     @ObservedObject var vm: ComparisonListViewModel
 
     @State private var showSourceSheet  = false
     @State private var imageSource: ImageSource? = nil
     @State private var showCalculator   = false
+    @State private var showSaveMenu      = false
+    @State private var saveMenuStage: SaveMenuStage = .options
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,7 +44,6 @@ struct AddGoldFormView: View {
                     weightSection
                     karatSection
                     shopPriceTaxRow
-                    profitSection
                     storeSection
 
                 }
@@ -73,19 +76,9 @@ struct AddGoldFormView: View {
     @ViewBuilder
     private var topBar: some View {
         HStack {
-            Menu {
-                Button("حفظ") {
-                    vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
-                }
-                if !vm.lists.isEmpty {
-                    Menu("حفظ في قائمة") {
-                        ForEach(vm.lists) { list in
-                            Button(list.name) {
-                                vm.isEditing ? vm.saveEdit(listID: list.id) : vm.saveAndCompare(listID: list.id)
-                            }
-                        }
-                    }
-                }
+            Button {
+                saveMenuStage = .options
+                showSaveMenu = true
             } label: {
                 Text("قارن")
                     .font(.appSubheadline(.semibold))
@@ -96,6 +89,10 @@ struct AddGoldFormView: View {
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
+            .popover(isPresented: $showSaveMenu) {
+                saveMenuPopover
+                    .presentationCompactAdaptation(.popover)
+            }
 
             Spacer()
 
@@ -110,6 +107,61 @@ struct AddGoldFormView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    // MARK: - Save Menu Popover
+
+    @ViewBuilder
+    private var saveMenuPopover: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            switch saveMenuStage {
+            case .options:
+                saveMenuRow(title: "قارن", icon: nil) {
+                    showSaveMenu = false
+                    vm.isEditing ? vm.saveEdit() : vm.saveAndCompare()
+                }
+                if !vm.lists.isEmpty {
+                    Divider()
+                    saveMenuRow(title: "قارن في قائمة", icon: "chevron.left") {
+                        withAnimation { saveMenuStage = .pickList }
+                    }
+                }
+            case .pickList:
+                ForEach(vm.lists) { list in
+                    saveMenuRow(title: list.name, icon: nil) {
+                        showSaveMenu = false
+                        vm.isEditing ? vm.saveEdit(listID: list.id) : vm.saveAndCompare(listID: list.id)
+                    }
+                    if list.id != vm.lists.last?.id {
+                        Divider()
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    private func saveMenuRow(title: String, icon: String?, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Text(title)
+                    .font(.appSubheadline(.semibold))
+                    .foregroundColor(Color(.navy))
+                Spacer()
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.appCaption(.semibold))
+                        .foregroundColor(Color("maincolor"))
+                }
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(Color("background"))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Title
@@ -341,23 +393,6 @@ struct AddGoldFormView: View {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color(.grey), lineWidth: 0.4)
         )
-    }
-
-    // MARK: - Profit
-
-    @ViewBuilder
-    private var profitSection: some View {
-        labeledField("الربح (ريال/جرام)") {
-            ThemedTextField(
-                "مثال: 5",
-                text: Binding(
-                    get: { vm.form.profitText },
-                    set: { vm.updateField(\.profitText, value: $0) }
-                ),
-                keyboardType: .decimalPad
-            )
-            .cornerRadius(20)
-        }
     }
 
     // MARK: - Store Info

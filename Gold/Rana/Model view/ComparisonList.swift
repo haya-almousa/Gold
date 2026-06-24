@@ -49,7 +49,6 @@ final class PersistedComparisonPiece {
     var karatRawValue: Int
     var mfgFeePercent: Double
     var shopPrice:     Double
-    var profitPerGram: Double?        // optional so SwiftData lightweight-migrates existing rows to nil
     var savedGoldPrice24KSAR: Double?
     var listID:        UUID?
     @Attribute(.externalStorage) var imageData: Data?
@@ -62,7 +61,6 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
-        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
         self.listID        = piece.listID
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
@@ -75,7 +73,6 @@ final class PersistedComparisonPiece {
         self.karatRawValue = piece.karat.rawValue
         self.mfgFeePercent = piece.mfgFeePercent
         self.shopPrice     = piece.shopPrice
-        self.profitPerGram = piece.profitPerGram
         self.savedGoldPrice24KSAR = piece.savedGoldPrice24KSAR
         self.listID        = piece.listID
         self.imageData     = piece.image?.jpegData(compressionQuality: 0.7)
@@ -97,7 +94,6 @@ final class PersistedComparisonPiece {
             karat:         karat,
             mfgFeePercent: mfgFeePercent,
             shopPrice:     shopPrice,
-            profitPerGram: profitPerGram ?? 0.0,
             savedGoldPrice24KSAR: savedGoldPrice24KSAR,
             listID:        listID,
             image:         image
@@ -121,7 +117,6 @@ final class ComparisonListViewModel: ObservableObject {
     @Published private(set) var editingListID:        UUID?             = nil
     @Published private(set) var isSyncing:            Bool              = false
     @Published private(set) var liveGoldPrice24KSAR:  Double?
-    @Published private(set) var previousGoldPrice24KSAR: Double?
     @Published private(set) var lists:                [GoldList]        = []
     @Published var            selectedListID:         UUID?             = nil
 
@@ -183,8 +178,7 @@ final class ComparisonListViewModel: ObservableObject {
             store:         piece.store,
             gramsText:     piece.grams.clean,
             karat:         piece.karat,
-            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : "",
-            profitText:    piece.profitPerGram > 0 ? piece.profitPerGram.clean : ""
+            shopPriceText: piece.shopPrice > 0 ? piece.shopPrice.clean : ""
         )
         showForm = true
     }
@@ -221,7 +215,6 @@ final class ComparisonListViewModel: ObservableObject {
                 karat:         updated.karat,
                 mfgFeePercent: updated.mfgFeePercent,
                 shopPrice:     updated.shopPrice,
-                profitPerGram: updated.profitPerGram,
                 savedGoldPrice24KSAR: liveGoldPrice24KSAR,
                 listID:        listID ?? editingListID,
                 image:         updated.image
@@ -282,6 +275,23 @@ final class ComparisonListViewModel: ObservableObject {
         for id in toDelete { persistDelete(id: id) }
     }
 
+    // MARK: - Save to Tajouri
+
+    func saveToTajouri(_ piece: GoldPiece) {
+        let item = GoldPieceItem(
+            name:          piece.name,
+            weightGrams:   piece.grams,
+            karat:         GoldKarat(rawValue: piece.karat.rawValue) ?? .k21,
+            condition:     .worn,
+            purchasePrice: piece.shopTotalWithVAT,
+            imageData:     piece.image?.jpegData(compressionQuality: 0.7)
+        )
+        let persisted = PersistedTajouriPiece(from: item)
+        modelContext.insert(persisted)
+        try? modelContext.save()
+        NotificationCenter.default.post(name: .tajouriPiecesDidChange, object: nil)
+    }
+
     // MARK: - Live Gold Price
 
     private func startLivePriceUpdates() {
@@ -302,14 +312,7 @@ final class ComparisonListViewModel: ObservableObject {
     private func fetchLivePrice() async {
         if let quote = try? await apiService.fetchGoldQuote() {
             let newPrice = quote.price24KPerGramSAR
-            if let current = liveGoldPrice24KSAR {
-                if current != newPrice {
-                    previousGoldPrice24KSAR = current
-                    liveGoldPrice24KSAR = newPrice
-                }
-            } else {
-                liveGoldPrice24KSAR = newPrice
-            }
+            liveGoldPrice24KSAR = newPrice
             backfillBaselines(currentPrice: newPrice)
         }
     }

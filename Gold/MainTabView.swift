@@ -27,6 +27,7 @@ struct MainTabView: View {
 
             customTabBar
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
     private var customTabBar: some View {
         HStack(spacing: 0) {

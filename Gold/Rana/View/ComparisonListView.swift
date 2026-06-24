@@ -20,6 +20,9 @@ struct ComparisonListView: View {
     @State private var showAddOptions:   Bool = false
     @State private var showCreateList:   Bool = false
     @State private var newListName:      String = ""
+    @State private var showListsMenu:    Bool = false
+    @State private var pieceToDelete:    GoldPiece? = nil
+    @State private var pieceToSaveToTajouri: GoldPiece? = nil
     @ObservedObject private var auth = AuthenticationManager.shared
 
     @Binding var selectedTab: AppTab
@@ -78,9 +81,9 @@ struct ComparisonListView: View {
                                 piece:           piece,
                                 isBest:          piece.id == vm.bestPiece?.id && vm.pieces.count > 1,
                                 livePrice24KSAR: vm.liveGoldPrice24KSAR,
-                                previousPrice24KSAR: vm.previousGoldPrice24KSAR,
                                 onEdit:          { withAnimation { vm.beginEdit(piece: piece) } },
-                                onDelete:        { withAnimation { vm.deletePiece(id: piece.id) } }
+                                onRequestDelete: { pieceToDelete = piece },
+                                onRequestSaveToTajouri: { pieceToSaveToTajouri = piece }
                             )
                             .transition(.opacity.combined(with: .scale(scale: 0.97)))
                         }
@@ -113,25 +116,40 @@ struct ComparisonListView: View {
             SignInView()
                 .environmentObject(auth)
         }
-        .confirmationDialog("اضافة", isPresented: $showAddOptions, titleVisibility: .hidden) {
-            Button("اضافة قطعة ذهب") { withAnimation { vm.toggleForm() } }
-            Button("انشاء قائمة جديدة") { newListName = ""; showCreateList = true }
-            Button("الغاء", role: .cancel) {}
-        }
-        .presentationCompactAdaptation(.popover)
-        .alert("قائمة جديدة", isPresented: $showCreateList) {
-            Group {
-                TextField("اسم القائمة", text: $newListName)
-                Button("حفظ") { vm.createList(name: newListName) }
-                Button("الغاء", role: .cancel) {}
-            
+        .overlay {
+            if showCreateList {
+                createListOverlay
             }
-            .environment(\.layoutDirection, .leftToRight)
-        } message: {
-            Text("ادخل اسم القائمة الجديدة")
-                .multilineTextAlignment(.trailing)
-               // .environment(\.layoutDirection, .leftToRight)
         }
+        .animation(.easeInOut(duration: 0.2), value: showCreateList)
+        .overlay {
+            if let piece = pieceToDelete {
+                ConfirmDeleteOverlay(
+                    title: "حذف القطعة",
+                    message: "هل أنت متأكد من حذف \(piece.name)؟",
+                    onConfirm: {
+                        withAnimation { vm.deletePiece(id: piece.id) }
+                        pieceToDelete = nil
+                    },
+                    onCancel: { pieceToDelete = nil }
+                )
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: pieceToDelete?.id)
+        .overlay {
+            if let piece = pieceToSaveToTajouri {
+                ConfirmSaveOverlay(
+                    title: "حفظ في تجوريك",
+                    message: "هل تريد حفظ \(piece.name) في تجوريك؟",
+                    onConfirm: {
+                        vm.saveToTajouri(piece)
+                        pieceToSaveToTajouri = nil
+                    },
+                    onCancel: { pieceToSaveToTajouri = nil }
+                )
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: pieceToSaveToTajouri?.id)
     }
 
     // MARK: - Header
@@ -155,11 +173,110 @@ struct ComparisonListView: View {
                 }
                 .overlay(RoundedRectangle(cornerRadius:25).stroke(Color(.darkGold), lineWidth: 0.2))
             }
+            .buttonStyle(.plain)
+            .popover(isPresented: $showAddOptions) {
+                addOptionsPopover
+                    .presentationCompactAdaptation(.popover)
+            }
             Spacer()
             Text("قائمة المقارنة")
                 .font(.appTitle2(.bold))
                 .foregroundColor(Color(.black))
         }
+    }
+
+    // MARK: - Add Options Popover
+
+    private var addOptionsPopover: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            addOptionRow(title: "اضافة قطعة ذهب", icon: "plus.circle") {
+                showAddOptions = false
+                withAnimation { vm.toggleForm() }
+            }
+
+            Divider()
+
+            addOptionRow(title: "انشاء قائمة جديدة", icon: "folder.badge.plus") {
+                showAddOptions = false
+                newListName = ""
+                showCreateList = true
+            }
+        }
+        .frame(minWidth: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    private func addOptionRow(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Text(title)
+                    .font(.appSubheadline(.semibold))
+                    .foregroundColor(Color(.navy))
+                Spacer()
+                Image(systemName: icon)
+                    .foregroundColor(Color("maincolor"))
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(Color("background"))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Create List Overlay
+
+    private var createListOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+                .onTapGesture { showCreateList = false }
+
+            VStack(spacing: 18) {
+                Text("قائمة جديدة")
+                    .font(.appTitle3(.bold))
+                    .foregroundColor(Color("maincolor"))
+
+                ThemedTextField("اسم القائمة", text: $newListName)
+
+                HStack {
+                    Button(action: { showCreateList = false }) {
+                        Text("الغاء")
+                            .font(.appSubheadline(.medium))
+                            .foregroundColor(Color("background"))
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color("Light grey"))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Button(action: {
+                        vm.createList(name: newListName)
+                        showCreateList = false
+                    }) {
+                        Text("حفظ")
+                            .font(.appSubheadline(.semibold))
+                            .foregroundColor(Color("background"))
+                            .padding(.horizontal, 28)
+                            .padding(.vertical, 10)
+                            .background(Color("maincolor"))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(24)
+            .background(Color("background"))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.darkGold), lineWidth: 0.3))
+            .padding(.horizontal, 40)
+            .environment(\.layoutDirection, .rightToLeft)
+        }
+        .transition(.opacity)
     }
 
     // MARK: - Filter / Search Row
@@ -180,12 +297,6 @@ struct ComparisonListView: View {
             }
             .buttonStyle(.plain)
 
-            if vm.lists.isEmpty {
-                Spacer()
-            } else {
-                listsRow
-            }
-
             Button(action: {
                 withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
             }) {
@@ -198,6 +309,12 @@ struct ComparisonListView: View {
                     .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
             }
             .buttonStyle(.plain)
+
+            Spacer()
+
+            if !vm.lists.isEmpty {
+                listsMenuButton
+            }
         }
     }
 
@@ -223,39 +340,99 @@ struct ComparisonListView: View {
         
     }
 
-    // MARK: - Lists Row
+    // MARK: - Lists Menu
 
-    private var listsRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(vm.lists) { list in
-                    listChip(list)
-                }
-            }
-            .padding(.horizontal, 4)
+    private let listsMenuRowHeight: CGFloat = 46
+
+    private var listsMenuButton: some View {
+        Button {
+            showListsMenu = true
+        } label: {
+            Image(systemName: "list.bullet")
+                .font(.appBody(.medium))
+                .foregroundColor(Color("background"))
+                .frame(width: 36, height: 36)
+                .background(vm.selectedListID != nil ? Color("maincolor") : Color("Gold"))
+                .clipShape(Circle())
+                .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $showListsMenu) {
+            listsMenuPopover
+                .presentationCompactAdaptation(.popover)
         }
     }
 
-    private func listChip(_ list: GoldList) -> some View {
-        let active = vm.selectedListID == list.id
-        return Button(action: { withAnimation { vm.toggleListFilter(list.id) } }) {
-            Text(list.name)
-                .font(.appFootnote(.semibold))
-                .foregroundColor(active ? Color("background") : Color(.navy))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(active ? Color("maincolor") : Color("Lightest blue"))
-                .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color(.maincolor), lineWidth: 0.2))
+    private var listsMenuPopover: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            listsMenuRow(title: "الكل", isSelected: vm.selectedListID == nil) {
+                withAnimation { vm.selectedListID = nil }
+                showListsMenu = false
+            }
+
+            Divider()
+
+            ScrollView(showsIndicators: vm.lists.count > 3) {
+                VStack(spacing: 0) {
+                    ForEach(vm.lists) { list in
+                        listMenuListRow(list)
+                        if list.id != vm.lists.last?.id {
+                            Divider()
+                        }
+                    }
+                }
+            }
+            .frame(maxHeight: listsMenuRowHeight * 3.5)
+        }
+        .frame(minWidth: 200)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .environment(\.layoutDirection, .rightToLeft)
+    }
+
+    private func listsMenuRow(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .font(.appSubheadline(.semibold))
+                    .foregroundColor(isSelected ? Color("background") : Color(.navy))
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, minHeight: listsMenuRowHeight)
+            .background(isSelected ? Color("maincolor") : Color.clear)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .contextMenu {
-            Button(role: .destructive) {
+    }
+
+    private func listMenuListRow(_ list: GoldList) -> some View {
+        let active = vm.selectedListID == list.id
+        return HStack {
+            Button {
+                withAnimation { vm.toggleListFilter(list.id) }
+                showListsMenu = false
+            } label: {
+                HStack {
+                    Text(list.name)
+                        .font(.appSubheadline(.semibold))
+                        .foregroundColor(active ? Color("background") : Color(.navy))
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
                 withAnimation { vm.deleteList(id: list.id) }
             } label: {
-                Label("حذف القائمة", systemImage: "trash")
+                Image(systemName: "trash")
+                    .foregroundColor(active ? Color("background") : .red)
             }
+            .buttonStyle(.plain)
         }
+        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, minHeight: listsMenuRowHeight)
+        .background(active ? Color("maincolor") : Color.clear)
     }
 
     // MARK: - Filter Chips

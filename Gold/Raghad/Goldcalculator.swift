@@ -33,6 +33,7 @@ struct GoldCalculatorView: View {
     @State private var manufacturingFee: Double = 0
     @State private var profitText: String = ""
     @State private var profit: Double = 0
+    @State private var showEducation = false
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) private var dismiss
 
@@ -157,7 +158,6 @@ struct GoldCalculatorView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 0)
                 .padding(.bottom, 16)
-                .safeAreaInset(edge: .top) { Color.clear.frame(height: 8) }
             }
             .refreshable {
                 await fetchPrice()
@@ -166,6 +166,9 @@ struct GoldCalculatorView: View {
         .navigationBarBackButtonHidden(true)
         .onTapGesture { focusedField = nil }
         .task { await fetchPrice() }
+        .sheet(isPresented: $showEducation) {
+            EducationView()
+        }
     }
 
     // MARK: - Fetch Price
@@ -187,6 +190,20 @@ struct GoldCalculatorView: View {
     // MARK: - Layout Sections
     private var topBar: some View {
         HStack {
+            if !showBackButton {
+                Button { showEducation = true } label: {
+                    ZStack {
+                        Circle()
+                            .fill(primaryTeal)
+                            .frame(width: 46, height: 46)
+                        Image(systemName: "book.closed.fill")
+                            .foregroundColor(.white)
+                            .font(.appTitle3())
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
             Text("حاسبة الذهب")
                 .font(.appTitle2(.bold))
                 .foregroundColor(.black)
@@ -215,7 +232,7 @@ struct GoldCalculatorView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(.top, 20)
+        .padding(.top, 16)
     }
 
     private var karatSection: some View {
