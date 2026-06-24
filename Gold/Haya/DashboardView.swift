@@ -3,7 +3,7 @@
 //  Gold
 //
 //  Created by Haya almousa on 22/04/2026.
-//jjjjلازال
+//h
 
 internal import SwiftUI
 import Charts
