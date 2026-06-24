@@ -3,9 +3,10 @@
 //  Gold
 //
 //  Created by Haya almousa on 22/04/2026.
-//jjjjلازال
+//h
 
 internal import SwiftUI
+import Charts
 
 // MARK: - KaratOption
 
@@ -69,7 +70,8 @@ struct DashboardView: View {
                             topInset: geo.safeAreaInsets.top,
                             greetingText: greetingText,
                             price: displayedPrice,
-                            chartValues: displayedChartValues,
+                            chartSamples: viewModel.chart24KSamples,
+                            karatMultiplier: karatMultiplier,
                             lastUpdatedText: viewModel.lastUpdatedText,
                             selectedKarat: $selectedKarat
                         )
@@ -132,12 +134,11 @@ struct DashboardView: View {
         }
     }
 
-    private var displayedChartValues: [Double] {
-        let history = viewModel.chart24KHistory
+    private var karatMultiplier: Double {
         switch selectedKarat {
-        case .k24: return history
-        case .k21: return history.map { $0 * (21.0 / 24.0) }
-        case .k18: return history.map { $0 * (18.0 / 24.0) }
+        case .k24: return 1.0
+        case .k21: return 21.0 / 24.0
+        case .k18: return 18.0 / 24.0
         }
     }
 }
@@ -150,9 +151,11 @@ private struct DashboardTopPriceCard: View {
     let topInset: CGFloat
     let greetingText: String
     let price: String
-    let chartValues: [Double]
+    let chartSamples: [GoldChartSample]
+    let karatMultiplier: Double
     let lastUpdatedText: String
     @Binding var selectedKarat: KaratOption
+    @State private var selectedDate: Date?
 
     var body: some View {
         VStack(spacing: 11 * scale) {
@@ -190,29 +193,36 @@ private struct DashboardTopPriceCard: View {
                 Spacer()
             }
 
-            ZStack(alignment: .bottomLeading) {
-                GoldLineChartFillShape(values: chartValues)
-                    .fill(
-                        LinearGradient(
-                            colors: [DashboardColors.goldMain.opacity(0.30), DashboardColors.goldMain.opacity(0.03)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(height: 108 * scale)
-
-                GoldLineChartShape(values: chartValues)
-                    .stroke(DashboardColors.goldMain, style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
-                    .frame(height: 108 * scale)
-            }
+            InteractiveGoldChart(
+                samples: chartSamples,
+                karatMultiplier: karatMultiplier,
+                scale: scale,
+                selectedDate: $selectedDate
+            )
 
             HStack {
-                Text(lastUpdatedText)
-                                   .font(.appFootnote(.semibold))
-                                   .foregroundStyle(DashboardColors.warmLight)
-                                   .lineLimit(1)
-                                   .minimumScaleFactor(0.85)
-
+                if let selectedDate,
+                   let closest = chartSamples.min(by: {
+                       abs($0.timestamp.timeIntervalSince(selectedDate)) < abs($1.timestamp.timeIntervalSince(selectedDate))
+                   }) {
+                    let selectedPrice = closest.price24KPerGramSAR * karatMultiplier
+                    HStack(spacing: 6 * scale) {
+                        Text(String(format: "%.2f", selectedPrice) + " ر.س/ج")
+                            .font(.appCaption(.bold))
+                            .foregroundStyle(DashboardColors.goldMain)
+                        Text("•")
+                            .foregroundStyle(DashboardColors.warmLight.opacity(0.5))
+                        Text(formatChartTime(closest.timestamp))
+                            .font(.appCaption(.medium))
+                            .foregroundStyle(DashboardColors.warmLight)
+                    }
+                } else {
+                    Text(lastUpdatedText)
+                        .font(.appFootnote(.semibold))
+                        .foregroundStyle(DashboardColors.warmLight)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
 
                 Spacer()
 
@@ -253,6 +263,16 @@ private struct DashboardTopPriceCard: View {
         .padding(.horizontal, 12 * scale)
         .padding(.vertical, 3 * scale)
         .background(Capsule().fill(DashboardColors.liveBackground))
+    }
+
+    private func formatChartTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        if Calendar.current.isDateInToday(date) {
+            formatter.dateFormat = "h:mm a"
+        } else {
+            formatter.dateFormat = "d MMM h:mm a"
+        }
+        return formatter.string(from: date)
     }
 
     private func karatPill(_ option: KaratOption) -> some View {
@@ -395,68 +415,110 @@ private struct DashboardPortfolioZakatCard: View {
     }
 }
 
-// MARK: - Chart Shapes
+// MARK: - Interactive Chart
 
-private struct GoldLineChartShape: Shape {
-    let values: [Double]
+private struct InteractiveGoldChart: View {
+    let samples: [GoldChartSample]
+    let karatMultiplier: Double
+    let scale: CGFloat
+    @Binding var selectedDate: Date?
 
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-
-        let samples = normalizedSamples(from: values)
-        guard samples.count > 1 else { return path }
-
-        let mapped = samples.enumerated().map { index, value in
-            let xProgress = CGFloat(index) / CGFloat(max(samples.count - 1, 1))
-            let x = rect.minX + xProgress * rect.width
-            let y = rect.maxY - CGFloat(value) * rect.height
-            return CGPoint(x: x, y: y)
-        }
-        guard let first = mapped.first else { return path }
-
-        path.move(to: first)
-        for index in 1..<mapped.count {
-            let previous = mapped[index - 1]
-            let current = mapped[index]
-            let mid = CGPoint(x: (previous.x + current.x) / 2, y: (previous.y + current.y) / 2)
-            path.addQuadCurve(to: mid, control: previous)
-            path.addQuadCurve(to: current, control: current)
-        }
-
-        return path
+    private struct ChartPoint: Identifiable {
+        var id: Date { date }
+        let date: Date
+        let price: Double
     }
 
-    private func normalizedSamples(from values: [Double]) -> [Double] {
-        let clampedValues: [Double]
-        if values.count >= 2 {
-            clampedValues = values
-        } else if let single = values.first {
-            clampedValues = [single, single]
+    private var points: [ChartPoint] {
+        samples.map {
+            ChartPoint(date: $0.timestamp, price: $0.price24KPerGramSAR * karatMultiplier)
+        }
+    }
+
+    private var selectedPoint: ChartPoint? {
+        guard let selectedDate else { return nil }
+        return points.min(by: {
+            abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate))
+        })
+    }
+
+    private var yDomain: ClosedRange<Double> {
+        let prices = points.map(\.price)
+        let minP = (prices.min() ?? 0) * 0.998
+        let maxP = (prices.max() ?? 1) * 1.002
+        return minP...maxP
+    }
+
+    var body: some View {
+        if points.count >= 2 {
+            chartView
         } else {
-            clampedValues = [0.5, 0.5]
-        }
-
-        guard let minValue = clampedValues.min(), let maxValue = clampedValues.max() else {
-            return Array(repeating: 0.5, count: clampedValues.count)
-        }
-
-        let spread = max(maxValue - minValue, 0.0001)
-        return clampedValues.map { value in
-            let normalized = (value - minValue) / spread
-            return min(max(normalized * 0.70 + 0.15, 0.0), 1.0)
+            Text("جاري تجميع البيانات...")
+                .font(.appCaption(.medium))
+                .foregroundStyle(DashboardColors.warmLight.opacity(0.6))
+                .frame(height: 108 * scale)
+                .frame(maxWidth: .infinity)
         }
     }
-}
 
-private struct GoldLineChartFillShape: Shape {
-    let values: [Double]
+    private var chartView: some View {
+        Chart {
+            ForEach(points) { point in
+                AreaMark(
+                    x: .value("Time", point.date),
+                    y: .value("Price", point.price)
+                )
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            DashboardColors.goldMain.opacity(0.30),
+                            DashboardColors.goldMain.opacity(0.03)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .interpolationMethod(.catmullRom)
 
-    func path(in rect: CGRect) -> Path {
-        var line = GoldLineChartShape(values: values).path(in: rect)
-        line.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        line.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        line.closeSubpath()
-        return line
+                LineMark(
+                    x: .value("Time", point.date),
+                    y: .value("Price", point.price)
+                )
+                .foregroundStyle(DashboardColors.goldMain)
+                .lineStyle(StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
+                .interpolationMethod(.catmullRom)
+            }
+
+            if let point = selectedPoint {
+                RuleMark(x: .value("", point.date))
+                    .foregroundStyle(DashboardColors.goldMain.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
+
+                PointMark(
+                    x: .value("", point.date),
+                    y: .value("", point.price)
+                )
+                .foregroundStyle(DashboardColors.goldMain)
+                .symbolSize(60)
+                .annotation(position: .top, spacing: 4) {
+                    Text(String(format: "%.2f", point.price))
+                        .font(.appCaption(.bold))
+                        .foregroundStyle(DashboardColors.goldMain)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color("maincolor").opacity(0.8))
+                        )
+                }
+            }
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartYScale(domain: yDomain)
+        .chartXSelection(value: $selectedDate)
+        .chartScrollableAxes(.horizontal)
+        .frame(height: 108 * scale)
     }
 }
 

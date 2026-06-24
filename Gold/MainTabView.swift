@@ -108,7 +108,7 @@ struct MainTabView: View {
         let active = selectedTab == .comparison
         return Button { selectedTab = .comparison } label: {
             VStack(spacing: 4) {
-                Image("ComparisonIcon")
+                Image("ComparisonIcon2")
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
