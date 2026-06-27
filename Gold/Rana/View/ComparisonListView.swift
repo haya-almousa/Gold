@@ -329,9 +329,12 @@ struct ComparisonListView: View {
         Button {
             showListsMenu = true
         } label: {
-            Image(systemName: "list.bullet")
-                .font(.appTitle3(.bold))
-                .foregroundColor(Color("background"))
+            Image("listIcon")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .foregroundColor(.white)
                 .frame(width: 42, height: 42)
                 .background(vm.selectedListID != nil ? Color("maincolor") : Color("Gold"))
                 .clipShape(Circle())
