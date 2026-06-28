@@ -33,9 +33,9 @@ struct MainTabView: View {
         HStack(spacing: 0) {
             tojoryTabItem
             Spacer()
-            calculatorTabItem
-            Spacer()
             comparisonTabItem
+            Spacer()
+            calculatorTabItem
             Spacer()
             homeTabItem
         }
@@ -64,7 +64,7 @@ struct MainTabView: View {
                     .scaledToFit()
                     .frame(width: 26, height: 26)
                     .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
-                Text("التجوري")
+                Text("الخزنة")
                     .font(.appCaption(active ? .semibold : .regular))
                     .foregroundColor(active ? Color("maincolor") : Color(.navy).opacity(0.3))
             }
