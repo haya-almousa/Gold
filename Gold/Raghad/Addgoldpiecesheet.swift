@@ -78,19 +78,6 @@ struct AddGoldPieceSheet: View {
 
     private var topBar: some View {
         HStack {
-            Button(action: attemptSave) {
-                Text("حفظ")
-                    .font(.appBody(.semibold))
-                    .foregroundColor(Color("background"))
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 10)
-                    .background(Color("maincolor"))
-                    .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
             Button(action: { dismiss() }) {
                 Text("إلغاء")
                     .font(.appBody(.semibold))
@@ -98,6 +85,19 @@ struct AddGoldPieceSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.vertical, 10)
                     .background(Color("Light grey"))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Button(action: attemptSave) {
+                Text("حفظ")
+                    .font(.appBody(.semibold))
+                    .foregroundColor(Color("background"))
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 10)
+                    .background(Color("maincolor"))
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -347,7 +347,7 @@ struct AddGoldPieceSheet: View {
                 .foregroundColor(selected ? Color("background") : Color("Dark green"))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
-                .background(selected ? Color("Dark green") : Color("Lightest gold"))
+                .background(selected ? Color("maincolor") : Color("Lightest gold"))
                 .cornerRadius(20)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
