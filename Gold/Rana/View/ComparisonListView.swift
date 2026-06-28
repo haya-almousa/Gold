@@ -12,7 +12,6 @@ struct ComparisonListView: View {
     @StateObject private var vm = ComparisonListViewModel()
 
     @State private var searchText:    String  = ""
-    @State private var showSearch:    Bool    = false
     @State private var showFilter:    Bool    = false
     @State private var filterKarat:   Karat?  = nil
     @State private var showSignInPrompt: Bool = false
@@ -57,10 +56,6 @@ struct ComparisonListView: View {
                         if !vm.pieces.isEmpty || !vm.lists.isEmpty {
                             filterSearchRow
 
-                            if showSearch {
-                                searchBar
-                            }
-
                             if showFilter {
                                 filterChips
                             }
@@ -91,7 +86,6 @@ struct ComparisonListView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 100)
                     .animation(.spring(response: 0.35, dampingFraction: 0.85), value: vm.pieces)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.85), value: showSearch)
                     .animation(.spring(response: 0.3, dampingFraction: 0.85), value: showFilter)
                 }
             }
@@ -178,6 +172,11 @@ struct ComparisonListView: View {
                 addOptionsPopover
                     .presentationCompactAdaptation(.popover)
             }
+
+            if !vm.lists.isEmpty {
+                listsMenuButton
+            }
+
             Spacer()
             Text("قائمة المقارنة")
                 .font(.appTitle2(.bold))
@@ -282,9 +281,9 @@ struct ComparisonListView: View {
     // MARK: - Filter / Search Row
 
     private var filterSearchRow: some View {
-        HStack {
+        HStack(spacing: 10) {
             Button(action: {
-                withAnimation { showFilter.toggle(); if showFilter { showSearch = false } }
+                withAnimation { showFilter.toggle() }
             }) {
                 Image(systemName: showFilter ? "xmark" : "slider.horizontal.3")
                     .font(.appBody(.medium))
@@ -297,24 +296,7 @@ struct ComparisonListView: View {
             }
             .buttonStyle(.plain)
 
-            Button(action: {
-                withAnimation { showSearch.toggle(); if showSearch { showFilter = false } }
-            }) {
-                Image(systemName: showSearch ? "xmark" : "magnifyingglass")
-                    .font(.appBody(.medium))
-                    .foregroundColor(Color("background"))
-                    .frame(width: 36, height: 36)
-                    .background(showSearch ? Color("maincolor") : Color("Gold"))
-                    .clipShape(Circle())
-                    .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            if !vm.lists.isEmpty {
-                listsMenuButton
-            }
+            searchBar
         }
     }
 
@@ -332,12 +314,11 @@ struct ComparisonListView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
         .background(Color(.lightestBlue))
         .cornerRadius(12)
         .environment(\.layoutDirection, .leftToRight)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.maincolor), lineWidth: 0.2))
-
-        
     }
 
     // MARK: - Lists Menu
@@ -348,10 +329,13 @@ struct ComparisonListView: View {
         Button {
             showListsMenu = true
         } label: {
-            Image(systemName: "list.bullet")
-                .font(.appBody(.medium))
-                .foregroundColor(Color("background"))
-                .frame(width: 36, height: 36)
+            Image("listIcon")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .foregroundColor(.white)
+                .frame(width: 42, height: 42)
                 .background(vm.selectedListID != nil ? Color("maincolor") : Color("Gold"))
                 .clipShape(Circle())
                 .overlay(RoundedRectangle(cornerRadius: 25).stroke(Color(.darkGold), lineWidth: 0.2))
